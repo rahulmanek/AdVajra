@@ -1,0 +1,186 @@
+.ip-blocker-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 10px;
+
+    .ip-blocker-header {
+        margin-bottom: 30px;
+
+        h3 {
+            font-size: 1.25rem;
+            color: #1e293b;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        p {
+            color: #64748b;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+    }
+
+    .ip-blocker-input-area {
+        margin-bottom: 40px;
+
+        .ip-input-wrapper {
+            display: flex;
+            align-items: center;
+            position: relative;
+            gap: 16px;
+
+            .ip-icon {
+                position: absolute;
+                left: 16px;
+                font-size: 1.2rem;
+                color: #94a3b8;
+                pointer-events: none;
+            }
+
+            .advajra-ip-input {
+                flex: 1;
+                padding: 14px 16px 14px 48px;
+                border: 1px solid #cbd5e1; /* Replicating standard input border */
+                border-radius: 50px; /* Pill Shape */
+                font-size: 1rem;
+                color: #334155;
+                transition: all 0.2s ease;
+                font-family: monospace;
+                background-color: #ffffff;
+
+                &:focus {
+                    outline: none;
+                    border-color: #6366f1; /* Indigo 500 */
+                    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); /* Replicating focus ring */
+                }
+
+                &.has-error {
+                    border-color: #ef4444;
+                    &:focus {
+                        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+                    }
+                }
+            }
+
+            .advajra-ip-textarea {
+                resize: vertical;
+                min-height: 52px;
+                line-height: 1.5;
+            }
+        }
+
+        .ip-error-message {
+            margin-top: 10px;
+            color: #ef4444;
+            font-size: 0.875rem;
+            font-weight: 500;
+            padding-left: 48px;
+        }
+    }
+
+    .ip-list-section {
+        .ip-list-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e2e8f0;
+
+            h4 {
+                font-size: 1.1rem;
+                color: #334155;
+                font-weight: 600;
+                margin: 0;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+
+                .ip-count {
+                    background: #f1f5f9;
+                    color: #475569;
+                    padding: 4px 12px;
+                    border-radius: 20px;
+                    font-size: 0.85rem;
+                    font-weight: 700;
+                }
+            }
+        }
+
+        .advajra-ip-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 16px;
+
+            .advajra-ip-card {
+                background: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                overflow: hidden;
+                transition: all 0.2s ease;
+
+                &:hover {
+                    border-color: #cbd5e1;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+
+                    .ip-remove-btn {
+                        background: #fee2e2;
+                        color: #ef4444;
+                    }
+                }
+
+                .ip-card-content {
+                    padding: 12px 16px;
+                    flex: 1;
+
+                    .ip-label {
+                        font-family: monospace;
+                        font-size: 0.95rem;
+                        color: #1e293b;
+                        font-weight: 500;
+                    }
+                }
+
+                .ip-remove-btn {
+                    padding: 12px 14px;
+                    background: transparent;
+                    border: none;
+                    color: #94a3b8;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: all 0.2s ease;
+
+                    &:focus {
+                        outline: none;
+                        background: #fee2e2;
+                        color: #ef4444;
+                    }
+                }
+            }
+        }
+
+        .advajra-empty-state {
+            text-align: center;
+            padding: 60px 40px;
+            background: #f8fafc;
+            border-radius: 16px;
+            border: 2px dashed #e2e8f0;
+
+            .empty-icon {
+                font-size: 3rem;
+                margin-bottom: 20px;
+                opacity: 0.8;
+            }
+
+            h4 {
+                font-size: 1.25rem;
+                color: #334155;
+                margin-bottom: 12px;
+            }
+        }
+    }
+}

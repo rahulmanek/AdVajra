@@ -1,0 +1,416 @@
+/*
+ * AdVajra Tables & Lists
+ * Location: src/scss/components/_tables.scss
+ */
+
+/* 5. Interactive Tables */
+.advajra-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 12px; /* Floating rows */
+    margin-top: -12px;
+
+    thead th {
+        text-transform: uppercase;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        color: var(--av-text-muted);
+        font-weight: 700;
+        padding: 0 24px 8px 24px;
+        border: none;
+    }
+
+    tbody tr {
+        background: #fff;
+        box-shadow: var(--av-shadow-xs);
+        transition: all 0.2s var(--av-ease-spring);
+        cursor: pointer;
+
+        /* Rounded corners for row */
+        td:first-child { border-radius: var(--av-radius-md) 0 0 var(--av-radius-md); }
+        td:last-child { border-radius: 0 var(--av-radius-md) var(--av-radius-md) 0; }
+
+        &:hover {
+            transform: scale(1.01) translateX(4px);
+            box-shadow: var(--av-shadow-sm);
+            z-index: 10;
+            position: relative;
+        }
+    }
+
+    td {
+        padding: 20px 24px;
+        border: none;
+        color: var(--av-text-body);
+        font-weight: 500;
+    }
+}
+
+/* Placement List Rows */
+.av-placement-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.av-placement-row {
+  display: flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px 20px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #fff;
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px -2px rgba(0,0,0,0.05);
+    transform: translateY(-1px);
+
+    .av-btn-delete {
+      opacity: 1;
+    }
+  }
+}
+
+.av-col-visual {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 20px;
+  flex-shrink: 0;
+}
+
+.av-col-location {
+  flex: 1;
+  min-width: 150px;
+}
+
+.av-col-connector {
+  padding: 0 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.av-col-content {
+  flex: 2;
+  border-left: 2px solid #f1f5f9;
+  padding-left: 30px;
+}
+
+.av-col-actions {
+  margin-left: auto;
+  padding-left: 20px;
+}
+
+.av-label-primary {
+  color: #1e293b;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.av-label-secondary {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.av-btn-delete {
+  opacity: 0;
+  color: #cbd5e1 !important;
+  transition: all 0.2s;
+
+  &:hover {
+    color: #ef4444 !important;
+    background: #fee2e2 !important;
+  }
+}
+
+/* SPOTLIGHT ROW Interaction */
+.advajra-row {
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    background-color: #ffffff; // Default background
+
+    // Borders need to be on cells for table-layout
+    td {
+        border-top: 1px solid #f1f5f9;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    // Clickable title
+    .advajra-row-title {
+        margin-right: 12px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: 500;
+        color: #1e293b;
+        cursor: pointer;
+        transition: color 0.15s ease;
+        max-width: calc(100% - 140px);
+
+        &:hover {
+            color: var(--av-primary);
+        }
+    }
+
+    &.spotlight-row {
+        position: relative;
+        // The overlay cell
+        .row-overlay {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        &:hover {
+            transform: scale(1.02); // Pop out
+            z-index: 10;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08); // Deep shadow
+            background: #fff;
+
+            // Show Actions
+            .row-overlay {
+                opacity: 1;
+                pointer-events: auto;
+                right: 30px; // Slide in slightly
+            }
+
+            .advajra-row-actions {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    }
+
+    // Actions Container (Hidden initially, revealed on hover)
+    .advajra-row-actions {
+        opacity: 0;
+        transform: translateX(-10px);
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        display: inline-flex;
+        margin-left: 10px;
+        pointer-events: none; // Prevent accidental clicks when invisible
+
+        .actions-pill {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 4px;
+            border-radius: 20px;
+            box-shadow:
+                0 4px 6px -1px rgba(0, 0, 0, 0.05),
+                0 2px 4px -1px rgba(0, 0, 0, 0.03),
+                0 0 0 1px rgba(0,0,0,0.05);
+            backdrop-filter: blur(8px);
+
+            .action-item {
+                width: 32px;
+                height: 32px;
+                min-width: 32px;
+                flex-shrink: 0;
+                padding: 0;
+                border: none;
+                background: transparent;
+                color: #64748b;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                cursor: pointer;
+                transition: all 0.2s;
+
+                svg { width: 16px; height: 16px; fill: currentColor; }
+
+                &:hover {
+                    color: #0f172a;
+                    background: #f1f5f9;
+                }
+
+                &.primary {
+                    color: #3b82f6;
+                    background: #eff6ff;
+
+                    &:hover {
+                        background: #3b82f6;
+                        color: #fff;
+                    }
+                }
+
+                &.destructive {
+                    &:hover {
+                        color: #ef4444;
+                        background: #fef2f2;
+                    }
+                }
+
+                &.pro-feature {
+                    opacity: 0.5;
+                    cursor: pointer;
+                }
+            }
+
+            // Wrapper for PRO-locked items
+            .action-item-wrapper {
+                position: relative;
+                display: inline-flex;
+                align-items: center;
+
+                &.is-pro-locked {
+                    .action-item {
+                        opacity: 0.6;
+                    }
+                }
+
+
+
+            }
+        }
+    }
+
+    // Hover State - CRITICAL: reveal actions on row hover
+    &:hover {
+        background: #f8fafc !important;
+        position: relative;
+        z-index: 5;
+
+        .advajra-row-actions {
+            opacity: 1 !important;
+            transform: translateX(0) !important;
+            pointer-events: auto !important; // Enable clicks when visible
+        }
+
+        // Also highlight the title cell
+        td:first-child {
+            background: #f8fafc;
+        }
+    }
+}
+
+/* HOLOGRAPHIC OVERLAY */
+@keyframes overlayPop {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.advajra-row {
+    position: relative;
+    transition: all 0.2s;
+
+    &.is-overlay-active {
+        // We handle the blur on the TD level in JS for better performance with absolute positioning,
+        // but here we ensure the row itself doesn't do anything weird.
+        z-index: 10;
+        background: transparent !important;
+    }
+}
+
+.advajra-holographic-overlay {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    animation: overlayPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+
+    .overlay-glass-panel {
+        background: rgba(255, 255, 255, 0.6); // Frosted Glass
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow:
+            0 8px 32px rgba(31, 38, 135, 0.1),
+            0 1px 1px rgba(255, 255, 255, 0.5);
+        border-radius: 50px; // Pill shape
+        padding: 6px 10px;
+        display: flex;
+        align-items: center;
+
+        .overlay-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+
+            .action-btn {
+                width: 44px;
+                height: 44px;
+                border-radius: 50%;
+                border: none;
+                background: transparent;
+                color: #475569;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s;
+                cursor: pointer;
+
+                svg { width: 20px; height: 20px; fill: currentColor; }
+
+                &:hover {
+                    background: #fff;
+                    color: #0f172a;
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+                }
+
+                // Primary Action (Edit)
+                &.primary {
+                    background: #3b82f6;
+                    color: #fff;
+                    width: auto;
+                    padding: 0 20px;
+                    border-radius: 24px;
+
+                    &:hover {
+                        background: #2563eb;
+                        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+                        transform: translateY(-2px);
+                    }
+                }
+
+                &.destructive {
+                    &:hover {
+                        background: #fee2e2;
+                        color: #ef4444;
+                    }
+                }
+
+                &.close {
+                   margin-left: 8px;
+                   background: rgba(0,0,0,0.05);
+                   width: 36px;
+                   height: 36px;
+
+                   &:hover { background: rgba(0,0,0,0.1); color: #000; }
+                }
+            }
+
+            .separator {
+                width: 1px;
+                height: 24px;
+                background: rgba(0,0,0,0.1);
+                margin: 0 8px;
+            }
+        }
+    }
+}
+
+// Ensure the row above loses its bottom border to blend
+.advajra-row.is-expanded td {
+    border-bottom-color: transparent !important;
+    background: #f8fafc !important;
+    font-weight: 500;
+    color: #0f172a;
+}

@@ -1,0 +1,24 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "advajra/ad",
+	"version": "1.0.0",
+	"title": "AdVajra Ad / Placement",
+	"category": "widgets",
+	"description": "Insert a specific AdVajra Ad or Placement directly into your content.",
+	"attributes": {
+		"type": {
+			"type": "string",
+			"default": "ad"
+		},
+		"id": {
+			"type": "string",
+			"default": ""
+		}
+	},
+	"supports": {
+		"html": false,
+		"customClassName": true
+	},
+	"textdomain": "advajra"
+}

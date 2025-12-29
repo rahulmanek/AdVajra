@@ -1,0 +1,271 @@
+// ActionDropdown Component
+// Uses advajra- prefix for shared component (per styling guidelines)
+
+// -----------------------------------------------------------------------------
+// Container
+// -----------------------------------------------------------------------------
+.advajra-action-dropdown {
+    position: relative;
+    display: inline-flex;
+}
+
+// -----------------------------------------------------------------------------
+// Trigger Button
+// -----------------------------------------------------------------------------
+.advajra-action-trigger {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.5);
+        border-color: rgba(255, 255, 255, 0.7);
+        transform: scale(1.05);
+        box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
+    }
+
+    &:active {
+        transform: scale(0.95);
+    }
+
+    &.is-open {
+        background: rgba(99, 102, 241, 0.1);
+        border-color: rgba(99, 102, 241, 0.3);
+        box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+    }
+
+    svg {
+        fill: #64748b;
+        transition: all 0.2s;
+    }
+
+    &:hover svg,
+    &.is-open svg {
+        fill: #6366f1;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Dropdown Panel (Portal)
+// -----------------------------------------------------------------------------
+.advajra-action-panel {
+    position: fixed;
+    min-width: 160px;
+    padding: 8px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow:
+        0 20px 40px -10px rgba(0, 0, 0, 0.15),
+        0 10px 20px -5px rgba(99, 102, 241, 0.08),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+    z-index: 999999;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px) scale(0.95);
+    transform-origin: top right;
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                visibility 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+
+    &.is-visible {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+    }
+
+    // Gradient border effect
+    &::before {
+        content: '';
+        position: absolute;
+        inset: -1px;
+        border-radius: 17px;
+        padding: 1px;
+        background: linear-gradient(
+            135deg,
+            rgba(99, 102, 241, 0.3),
+            rgba(168, 85, 247, 0.2),
+            rgba(236, 72, 153, 0.2),
+            rgba(6, 182, 212, 0.3)
+        );
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    &:hover::before {
+        opacity: 1;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Action Items
+// -----------------------------------------------------------------------------
+.advajra-action-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    width: 100%;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: #334155;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateX(10px);
+
+    .advajra-action-panel.is-visible & {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 10px;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+
+    &:hover::before {
+        opacity: 1;
+    }
+
+    &:active {
+        transform: scale(0.98);
+    }
+}
+
+// Staggered animation delays
+@for $i from 1 through 5 {
+    .advajra-action-panel.is-visible .advajra-action-item:nth-child(#{$i}) {
+        transition-delay: #{$i * 0.05}s;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Icon Wrapper
+// -----------------------------------------------------------------------------
+.advajra-action-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+
+    svg {
+        width: 16px;
+        height: 16px;
+        transition: transform 0.2s;
+    }
+
+    .advajra-action-item:hover & svg {
+        transform: scale(1.15);
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Action Variants
+// -----------------------------------------------------------------------------
+
+// Primary (Blue)
+.advajra-action-item--primary {
+    .advajra-action-icon {
+        background: rgba(99, 102, 241, 0.1);
+        svg { fill: #6366f1; }
+    }
+
+    &:hover {
+        background: rgba(99, 102, 241, 0.1);
+        .advajra-action-icon {
+            background: rgba(99, 102, 241, 0.2);
+            box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
+        }
+    }
+}
+
+// Info (Purple)
+.advajra-action-item--info {
+    .advajra-action-icon {
+        background: rgba(168, 85, 247, 0.1);
+        svg { fill: #a855f7; }
+    }
+
+    &:hover {
+        background: rgba(168, 85, 247, 0.1);
+        .advajra-action-icon {
+            background: rgba(168, 85, 247, 0.2);
+            box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
+        }
+    }
+}
+
+// Success (Green)
+.advajra-action-item--success {
+    .advajra-action-icon {
+        background: rgba(16, 185, 129, 0.1);
+        svg { fill: #10b981; }
+    }
+
+    &:hover {
+        background: rgba(16, 185, 129, 0.1);
+        .advajra-action-icon {
+            background: rgba(16, 185, 129, 0.2);
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+        }
+    }
+}
+
+// Danger (Red)
+.advajra-action-item--danger {
+    .advajra-action-icon {
+        background: rgba(239, 68, 68, 0.1);
+        svg { fill: #ef4444; }
+    }
+
+    &:hover {
+        background: rgba(239, 68, 68, 0.08);
+        color: #dc2626;
+        .advajra-action-icon {
+            background: rgba(239, 68, 68, 0.2);
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
+        }
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Divider
+// -----------------------------------------------------------------------------
+.advajra-action-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.3), transparent);
+    margin: 6px 8px;
+}

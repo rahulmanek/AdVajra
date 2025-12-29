@@ -1,0 +1,78 @@
+/*
+ * AdVajra Variables
+ * Location: src/scss/base/_variables.scss
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+// Font Variables
+// - Display/Headings: Clash Display (loaded via assets/css/fonts.css)
+// - Body/UI: Inter (loaded via Google Fonts)
+
+:root {
+    /*
+     * AdVajra Light Theme (2025)
+     * Concept: "Abstract Air"
+     */
+
+    /* Palette: Porcelain & AdVajra Shield */
+    --av-bg-main: #f8fafc;        /* Slate 50 */
+    --av-bg-surface: #ffffff;
+    --av-bg-glass: rgba(255, 255, 255, 0.85);
+
+    /* Decoration - Brand Mesh */
+    --av-gradient-mesh:
+        radial-gradient(at 0% 0%, rgba(15, 28, 46, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(237, 175, 3, 0.08) 0px, transparent 50%);
+
+    /* Brand Colors */
+    --av-primary: #0f1c2e;        /* Deep Navy */
+    --av-primary-rgb: 15, 28, 46; /* rgb(--av-primary) for rgba() usage */
+    --av-primary-hover: #1f2e44;  /* Steel Navy */
+    --av-primary-soft: rgba(15, 28, 46, 0.08);
+    --av-accent-gold: #edaf03;    /* Core Gold */
+    --av-accent-gold-rgb: 237, 175, 3; /* rgb(--av-accent-gold) for rgba() usage */
+    --av-accent-gold-soft: #ffe66d;
+    --av-pro-badge: #f59e0b;     /* Amber 500 - PRO feature badges */
+
+    /* Legacy aliases (kept for Tailwind utilities that referenced --az-*) */
+    --az-primary: var(--av-primary);
+
+    /* Status Colors (Ad States) */
+    --av-status-publish: #10b981;  /* Green 500 - Active */
+    --av-status-future: #3b82f6;   /* Blue 500 - Scheduled */
+    --av-status-draft: #94a3b8;    /* Slate 400 - Draft */
+    --av-status-paused: #f59e0b;   /* Amber 500 - Paused */
+    --av-status-expired: #ef4444;  /* Red 500 - Expired */
+    --av-status-archived: #a855f7; /* Purple 500 - Archived */
+    --av-status-pending: #94a3b8;  /* Slate 400 - Pending */
+
+    /* Text */
+    --av-text-heading: #1e293b;  /* Slate 800 */
+    --av-text-body: #475569;     /* Slate 600 */
+    --av-text-muted: #94a3b8;    /* Slate 400 */
+
+    /* Borders */
+    --av-border: #e2e8f0;        /* Slate 200 */
+    --av-border-hover: #cbd5e1;  /* Slate 300 */
+
+    /* Dimensions */
+    --av-radius-pill: 999px; /* Pill shape for all elements */
+    --av-radius-xl: 24px;
+    --av-radius-lg: 16px;
+    --av-radius-md: 12px;
+    --av-nav-height: 72px;
+
+    /* Shadows */
+    --av-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
+    --av-shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+    --av-shadow-float: 0 20px 40px -4px rgba(0, 0, 0, 0.04), 0 8px 16px -4px rgba(0, 0, 0, 0.02);
+    --av-shadow-glow: 0 0 0 4px rgba(237, 175, 3, 0.2);
+
+    /* Focus State (Consistent Glow) */
+    --av-focus-glow: 0 0 0 4px rgba(237, 175, 3, 0.14); /* Brand gold glow */
+
+    /* Animation Utilities */
+    --av-ease-spring: cubic-bezier(0.4, 0, 0.2, 1);
+    --av-ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+}

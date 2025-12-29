@@ -1,0 +1,472 @@
+/*
+ * AdVajra Inputs & Forms
+ * Location: src/scss/components/_inputs.scss
+ */
+
+/* 11. Headless / Stealth Form Design */
+
+.document-title-area {
+    margin-bottom: 40px;
+    padding-left: 20px; /* Align with content */
+
+    .huge-title-input {
+        width: 100%;
+        font-size: 36px;
+        font-weight: 700;
+        color: #0f172a;
+        border: none;
+        background: transparent;
+        outline: none;
+        padding: 0;
+        margin: 0;
+        letter-spacing: -0.02em;
+        font-family: inherit;
+
+        &::placeholder {
+            color: #cbd5e1;
+        }
+
+        &:focus {
+            box-shadow: none;
+            /* Maybe a subtle caret color change */
+        }
+    }
+}
+
+.headless-form-group {
+    padding-left: 20px;
+    padding-right: 20px;
+    margin-bottom: 60px;
+}
+
+.section-label-stealth {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #94a3b8;
+    font-weight: 700;
+    margin-bottom: 24px;
+    margin-top: 40px;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 8px;
+    display: inline-block;
+}
+
+/* Stealth Inputs override WP components */
+.stealth-input {
+    input[type="text"], input[type="url"], input[type="number"] {
+        border: none;
+        background: #f8fafc;
+        border-radius: var(--av-radius-pill); /* PILL */
+        padding: 12px 16px;
+        font-size: 15px;
+        color: #334155;
+        box-shadow: none;
+        transition: all 0.2s;
+
+        &:focus {
+            background: white;
+            box-shadow: var(--av-focus-glow); /* CONSISTENT */
+        }
+    }
+
+    .components-base-control__label {
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+}
+
+/* Standard WP Component Overrides */
+.components-text-control__input,
+.components-select-control__input,
+.components-textarea-control__input {
+    background-color: #f8fafc !important; /* Slate 50 */
+    color: #1e293b !important;          /* Slate 800 - Stark Dark */
+    border: 1px solid #cbd5e1 !important; /* Slate 300 */
+    border-radius: var(--av-radius-pill) !important; /* PILL */
+    padding: 0 12px !important;           /* Remove vertical padding to let line-height/height center it */
+    min-height: 40px !important;          /* Explicit height */
+    line-height: normal !important;         /* Vertical center approx */
+    font-size: 14px !important;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.02) !important;
+    vertical-align: middle !important;
+
+    &:focus {
+        background-color: #ffffff !important;
+        border-color: var(--av-primary) !important;
+        box-shadow: var(--av-focus-glow) !important; /* CONSISTENT */
+        color: #0f172a !important;      /* Slate 900 - Black */
+    }
+}
+
+.components-textarea-control__input {
+    padding: 12px !important; /* Restore padding for textarea */
+    min-height: 100px !important;
+    line-height: 1.5 !important;
+}
+
+/* Fix for Select elements specifically */
+select.components-select-control__input {
+    appearance: auto !important; /* Restoration of arrow */
+    padding-right: 32px !important;
+    background-image: none !important; /* Remove custom arrows if conflicting */
+    line-height: normal !important;
+    height: 40px !important;
+}
+
+/* Custom Selects within the Card (Pill) */
+.advajra-rule-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.advajra-control-pill {
+    position: relative;
+
+    select {
+        appearance: none;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: var(--av-radius-pill); /* PILL */
+        padding: 8px 16px;
+        padding-right: 32px;
+        font-weight: 600;
+        color: #334155;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+
+        &:hover {
+            border-color: var(--av-primary);
+            color: var(--av-primary);
+            background: #fff;
+            transform: translateY(-1px);
+        }
+    }
+
+    /* Custom Arrow - Only for native selects */
+    &:has(select)::after {
+        content: '▼';
+        font-size: 8px;
+        color: #94a3b8;
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+}
+
+/* Toggle Switch */
+.advajra-toggle {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 14px;
+    color: #334155;
+    user-select: none;
+
+    input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 0;
+        width: 0;
+    }
+
+    .slider {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+        background-color: #cbd5e1;
+        border-radius: 34px;
+        transition: .3s;
+        margin-right: 12px;
+        flex-shrink: 0;
+
+        &:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    }
+
+    input:checked + .slider {
+        background-color: var(--av-primary);
+    }
+
+    input:checked + .slider:before {
+        transform: translateX(20px);
+    }
+
+    &:hover .slider {
+        background-color: #94a3b8;
+    }
+
+    &:hover input:checked + .slider {
+        background-color: var(--av-primary-hover);
+    }
+}
+
+/* Image Upload Zone */
+.media-uploader-zone {
+    margin-bottom: 24px;
+
+    label {
+        font-weight: 600;
+        color: #334155;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+        display: block;
+    }
+}
+
+.advajra-drop-zone {
+    border: 2px dashed #cbd5e1; /* Slate 300 */
+    border-radius: var(--av-radius-xl); /* ROUNDED */
+    padding: 60px 20px;
+    text-align: center;
+    cursor: pointer;
+    background: #f8fafc; /* Slate 50 */
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+
+    &:hover {
+        border-color: var(--av-primary);
+        background: rgba(var(--av-accent-gold-rgb), 0.06);
+        transform: translateY(-1px);
+    }
+
+    /* Content State */
+    &.has-content {
+        padding: 0;
+        border: 0;
+        background: transparent;
+
+        .preview-mini {
+            position: relative;
+            border-radius: var(--av-radius-xl); /* ROUNDED */
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+
+            img {
+                display: block;
+                max-width: 100%;
+                height: auto;
+                width: 100%;
+            }
+
+            button {
+                position: absolute;
+                top: 12px;
+                right: 12px;
+                background: rgba(255, 255, 255, 0.9);
+                border: 1px solid rgba(0,0,0,0.1);
+                color: #ef4444; /* Red 500 */
+                font-weight: 600;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+                &:hover {
+                    background: #fff;
+                    color: #dc2626;
+                }
+            }
+        }
+    }
+
+    /* Placeholder State */
+    .placeholder {
+        color: #64748b; /* Slate 500 */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+
+        svg {
+            color: #94a3b8;
+            transition: color 0.2s;
+        }
+
+        span {
+            font-size: 14px;
+            font-weight: 500;
+        }
+    }
+
+    &:hover .placeholder svg {
+        color: var(--av-primary);
+    }
+}
+
+/* List Selector */
+.av-list-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.av-list-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border: 1px solid #f1f5f9;
+    border-radius: var(--av-radius-pill); /* PILL */
+    cursor: pointer;
+    transition: all 0.2s;
+
+    .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #cbd5e1;
+        margin-right: 12px;
+    }
+
+    .title {
+        font-weight: 600;
+        color: #334155;
+        flex: 1;
+    }
+
+    .id {
+        font-size: 11px;
+        color: #94a3b8;
+        background: #f1f5f9;
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+
+    &:hover {
+        background: #f8fafc;
+    }
+
+    &.selected {
+        border-color: var(--av-primary);
+        background: rgba(var(--av-primary-rgb), 0.05);
+
+        .dot {
+            background: var(--av-primary);
+            box-shadow: 0 0 0 4px rgba(var(--av-primary-rgb), 0.2);
+        }
+    }
+}
+
+/* Global Dropdown Item Styles */
+.components-popover__content {
+    border-radius: 12px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+    border: 1px solid rgba(0,0,0,0.05) !important;
+}
+
+.av-menu-item-destructive,
+.av-menu-item-destructive .components-menu-item__item {
+    color: #ef4444 !important;
+
+    &:hover {
+        background: #fef2f2 !important;
+    }
+}
+
+/* Unified AdVajra Input - Pill Shaped */
+#advajra-app .advajra-input {
+    @apply rounded-full bg-white text-slate-800 text-sm focus:outline-none transition-all;
+    border: 1px solid var(--av-border);
+
+    &:focus {
+        border-color: var(--av-accent-gold);
+        box-shadow: var(--av-focus-glow);
+    }
+}
+
+/* Unified AdVajra Input Label */
+#advajra-app .advajra-label {
+    @apply block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2;
+}
+
+/* Segmented Control (Pills) */
+.advajra-segmented-control-wrapper {
+    margin-bottom: 0;
+
+    .control-label {
+        @extend .advajra-label;
+    }
+}
+
+.advajra-segmented-control {
+    display: flex;
+    background: #f1f5f9;
+    padding: 4px;
+    border-radius: 999px; /* Pill */
+    position: relative;
+    border: 1px solid #e2e8f0;
+    gap: 2px;
+
+    .segment-btn {
+        flex: 1;
+        position: relative;
+        z-index: 1;
+        padding: 6px 12px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #64748b;
+        background: transparent;
+        border: none;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        text-align: center;
+        white-space: nowrap;
+
+        &:hover {
+            color: #334155;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        &.active {
+            background: white;
+            color: var(--av-primary);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+    }
+}
+
+/**
+ * Toolbar Input (Name Field)
+ *
+ * Reusable class for toolbar name inputs (Ad Editor, Placement Create, etc.)
+ * Use: className="av-toolbar-input"
+ */
+#advajra-app .av-toolbar-input {
+    @apply w-full text-xl font-bold px-2 py-2;
+    @apply bg-transparent;
+    @apply placeholder:text-slate-400;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    outline: none !important;
+
+    &:hover,
+    &:focus {
+        box-shadow: none !important;
+        outline: none !important;
+        border: none !important;
+    }
+}

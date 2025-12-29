@@ -1,0 +1,481 @@
+/*
+ * Ad Manager - List View Styles
+ */
+
+.glass-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    /* Transparent container, but we inject a background layer relative to it */
+    position: relative;
+    overflow: hidden; /* contain the orbs */
+    font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* GLOW LAYER */
+.glass-ambient-layer {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.5;
+    animation: floatOrb 10s ease-in-out infinite;
+}
+
+.orb-1 {
+    top: -10%; left: -10%; width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.4) 0%, rgba(168, 85, 247, 0.1) 70%);
+    animation-delay: 0s;
+}
+
+.orb-2 {
+    bottom: 10%; right: -5%; width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(6, 182, 212, 0.3) 0%, rgba(59, 130, 246, 0.1) 70%);
+    animation-delay: -5s;
+}
+
+.orb-3 {
+    top: 40%; left: 30%; width: 300px; height: 300px;
+    background: rgba(236, 72, 153, 0.15);
+    animation-duration: 15s;
+}
+
+@keyframes floatOrb {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-20px) scale(1.05); }
+}
+
+/* GRID DEFINITION */
+/* Checkbox, Creative (flex), Stats (flex), Trend, Schedule, Created, Modified, Actions */
+.glass-grid-layout {
+    display: grid;
+    grid-template-columns: 20px minmax(160px, 1fr) minmax(120px, 0.5fr) minmax(100px, 0.5fr) minmax(150px, 0.6fr) minmax(140px, 0.6fr) minmax(140px, 0.6fr) 48px;
+    gap: 16px; /* Increased gap (8px -> 16px) for less congestion */
+    align-items: center;
+    padding: 0 12px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* HEADER */
+.glass-header {
+    position: relative;
+    z-index: 2;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    margin-bottom: 8px;
+    opacity: 0.8;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #64748b;
+}
+
+/* GLASS ROW */
+.glass-row {
+    /* Inherits .glass-grid-layout via className */
+
+    /* Much more transparent to show the orbs */
+    background: rgba(255, 255, 255, 0.45);
+    /* Strong blur for refraction feel */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 16px; /* softer roundness */
+
+    /* Crisp white border for "cut glass" look */
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-bottom-color: rgba(255, 255, 255, 0.4);
+
+    overflow: hidden; /* Fix horizontal scroll from shimmer effect */
+
+    /* Colored shadow tint matches the orbs */
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.02),
+        0 2px 4px -1px rgba(99, 102, 241, 0.05),
+        inset 0 0 20px rgba(255, 255, 255, 0.5); /* Inner light */
+
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: visible; /* changed to visible for HUD actions if needed */
+    transform: translateZ(0);
+    will-change: transform, box-shadow;
+
+    padding-top: 0; /* Align items centered by grid */
+    padding-bottom: 0;
+}
+
+/* HOVER STATE */
+.glass-row:hover {
+    transform: translateY(-2px) translateZ(0);
+    background: rgba(255, 255, 255, 0.65);
+    border-color: rgba(255, 255, 255, 0.95);
+    box-shadow:
+        0 12px 32px -8px rgba(99, 102, 241, 0.25),
+        0 4px 12px -4px rgba(99, 102, 241, 0.15),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+    z-index: 10;
+    /* create a new stacking context */
+    position: relative;
+}
+
+/* SELECTED STATE - Neon Glow */
+.glass-row.selected {
+    background: rgba(238, 242, 255, 0.8); /* Indigo-50 tint */
+    border-color: #818cf8; /* Indigo-400 */
+    box-shadow:
+        0 0 0 1px #818cf8,
+        0 10px 25px -5px rgba(99, 102, 241, 0.15);
+    z-index: 5;
+}
+
+
+.glass-row:hover .glass-actions {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+}
+
+.glass-thumb {
+    width: 64px;
+    height: 48px; /* Slightly taller */
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(241, 245, 249, 0.5); /* Semi-transparent thumb bg */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05); /* Inner depth */
+    margin-right: 16px;
+    border: 1px solid rgba(255,255,255,0.6);
+    flex-shrink: 0;
+}
+
+.glass-actions {
+    display: flex;
+    gap: 8px; /* More space */
+    opacity: 0;
+    transform: translateX(10px); /* Slide in effect */
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-left: auto;
+    margin-right: 20px;
+    pointer-events: none;
+    background: rgba(255,255,255,0.5);
+    padding: 4px 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.5);
+    backdrop-filter: blur(4px);
+}
+
+/* Button Overrides */
+button.glass-btn.components-button {
+    min-width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: transform 0.1s !important;
+}
+button.glass-btn:active {
+    transform: scale(0.95);
+}
+
+/* Thumbnail Modifiers */
+.glass-thumb.no-pad { padding: 0; }
+.glass-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.glass-thumb.code { background: rgba(224, 231, 255, 0.6); }
+.glass-thumb.image { background: rgba(236, 253, 245, 0.6); }
+.glass-thumb.default { background: rgba(241, 245, 249, 0.5); }
+
+.thumb-icon { width: 24px; height: 24px; }
+.thumb-icon.code { fill: #6366f1; }
+.thumb-icon.image { fill: #10b981; }
+.thumb-icon.default { fill: #94a3b8; }
+
+
+/* SELECTION RING */
+.selection-trigger {
+    /* No longer absolute - aligned by Grid */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 20;
+}
+
+.selection-ring {
+    width: 16px; /* SMALLER: Was 20px */
+    height: 16px; /* SMALLER: Was 20px */
+    border-radius: 50%;
+    border: 2px solid #6366f1; /* Indigo-500: Visible color */
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 0; /* Default hidden */
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: scale(0.8);
+}
+
+/* Show ring on row hover or if selected */
+.glass-row:hover .selection-ring,
+.glass-row.selected .selection-ring {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.glass-row.selected .selection-ring {
+    background: #6366f1; /* Filled when selected */
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+}
+
+.check-icon {
+    width: 10px; /* SMALLER: Was 12px */
+    height: 10px; /* SMALLER: Was 12px */
+    fill: white;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.2s ease;
+}
+
+.glass-row.selected .check-icon {
+    opacity: 1;
+    transform: scale(1);
+}
+
+
+
+/* BULK ACTION HUD */
+.bulk-hud {
+    position: fixed; /* Changed from absolute - floats at viewport bottom */
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px); /* Start hidden below */
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 16px 8px 24px;
+
+    /* DARK GLASS THEME */
+    background: rgba(15, 23, 42, 0.9); /* Slate-900 + 90% opacity */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle white border */
+
+    border-radius: 999px; /* Pill shape */
+    box-shadow:
+        0 20px 40px -5px rgba(0, 0, 0, 0.3), /* Deeper shadow */
+        0 0 0 1px rgba(0,0,0,0.2);
+    z-index: 100;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.bulk-hud.visible {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Vertical divider inside HUD */
+.hud-divider {
+    width: 1px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.3); /* INCREASED OPACITY: Was 0.15 */
+}
+
+/* Action Buttons (Duplicate, Delete) */
+.hud-btn {
+    background: transparent;
+    border: none;
+    color: #e2e8f0; /* Slate-200: Light text */
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* FORCE ICON COLOR TO MATCH TEXT */
+.hud-btn svg {
+    fill: currentColor !important;
+}
+
+.hud-btn:hover {
+    background: rgba(255, 255, 255, 0.1); /* White tint on hover */
+    color: #ffffff;
+}
+
+.hud-btn.danger {
+    color: #f87171; /* Red-400 */
+}
+.hud-btn.danger:hover {
+    background: rgba(248, 113, 113, 0.1);
+    color: #ef4444; /* Red-500 */
+}
+
+/* CANCEL BUTTON - Lighter than Slate-400 but not white */
+.hud-btn.cancel {
+    color: #94a3b8; /* Slate-400 base */
+}
+.hud-btn.cancel:hover {
+    color: #cbd5e1; /* Slate-300 on hover (Brighter) */
+    background: transparent; /* No bg for cancel */
+}
+
+/* Text Button (e.g. Select All) */
+.hud-text-btn {
+    background: transparent;
+    border: none;
+    color: #818cf8; /* Indigo-400 */
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 8px;
+    transition: color 0.2s;
+}
+.hud-text-btn:hover {
+    color: #a5b4fc; /* Indigo-300 */
+    text-decoration: none; /* REMOVED UNDERLINE */
+}
+
+
+
+
+/* --- CELL CONTENT CLASSES --- */
+
+/* Creative Cell */
+.ad-creative-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.ad-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.ad-meta {
+    font-size: 11px;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.ad-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+.ad-id {
+    opacity: 0.7;
+    font-family: monospace;
+    font-size: 10px;
+}
+
+/* Stats Cell - Rich Vertical Stack */
+.ad-stats-cell {
+    display: flex;
+    gap: 20px; /* Wider gap for separation */
+    align-items: center;
+}
+
+.stat-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+.stat-value {
+    font-size: 13px;
+    font-weight: 700; /* Bolder */
+    color: #1e293b; /* Dark Slate */
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+}
+
+.stat-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+    font-weight: 600;
+}
+
+/* Color Modifiers for Stats */
+.stat-value.good { color: #10b981; }
+.stat-value.mid { color: #3b82f6; }
+.stat-value.neutral { color: #64748b; }
+
+
+/* Schedule Cell */
+.ad-schedule-cell {
+    display: flex;
+    align-items: center;
+    min-height: 24px; /* Ensure height even if empty */
+}
+
+.schedule-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px; /* Fully rounded pill */
+    font-size: 11px;
+    font-weight: 600;
+    transition: all 0.2s;
+
+    svg {
+        width: 12px;
+        height: 12px;
+    }
+
+    /* Active State (Blue Glass) */
+    &.active {
+        background: rgba(59, 130, 246, 0.1);
+        color: #2563eb;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+
+        svg { fill: currentColor; }
+    }
+
+    /* Inactive State (Slate Glass) */
+    &.inactive {
+        background: rgba(148, 163, 184, 0.1);
+        color: #64748b;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+
+        svg { fill: currentColor; }
+    }
+}
+
+
+/* Date Cells */
+.ad-date-text {
+    font-size: 11px;
+    color: #64748b;
+    white-space: nowrap;
+}
+
+/* Alignments (Use Tailwind) */
+

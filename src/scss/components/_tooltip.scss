@@ -1,0 +1,128 @@
+/**
+ * Tooltip Component Styles
+ *
+ * Tooltip styles with proper animations and arrow positioning.
+ * Uses BEM naming convention: av-tooltip__*
+ */
+
+// ==========================================
+// TOOLTIP TRIGGER
+// ==========================================
+.av-tooltip__trigger {
+    @apply inline-flex items-center justify-center cursor-help;
+    outline: none;
+    vertical-align: middle;
+    transition: all 0.2s ease;
+
+    &:focus-visible {
+        outline: 2px solid rgba(99, 102, 241, 0.5);
+        outline-offset: 2px;
+        border-radius: 4px;
+    }
+}
+
+// Default icon styling
+.tooltip-icon {
+    @apply inline-flex items-center justify-center;
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(139, 92, 246, 0.15) 100%);
+    border-radius: 50%;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-left: 8px;
+
+    &:hover {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.25) 100%);
+        transform: scale(1.1);
+    }
+}
+
+// ==========================================
+// TOOLTIP CONTAINER (Portal-rendered)
+// ==========================================
+.av-tooltip {
+    pointer-events: none;
+    animation: avTooltipFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.av-tooltip__content {
+    @apply leading-relaxed;
+    font-size: inherit;
+    padding: 10px 14px;
+    background: linear-gradient(145deg, #1e293b 0%, #334155 100%);
+    color: #f1f5f9;
+    border-radius: 10px;
+    box-shadow:
+        0 12px 40px rgba(0, 0, 0, 0.28),
+        0 4px 12px rgba(0, 0, 0, 0.18),
+        0 0 0 1px rgba(255, 255, 255, 0.06);
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    line-height: 1.5;
+}
+
+// ==========================================
+// TOOLTIP ARROW
+// ==========================================
+.av-tooltip__arrow {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #1e293b;
+    transform: rotate(45deg);
+    border-radius: 2px;
+}
+
+// Arrow positioning based on tooltip placement
+.av-tooltip--bottom .av-tooltip__arrow {
+    top: -4px;
+    left: 50%;
+    margin-left: -5px;
+}
+
+.av-tooltip--top .av-tooltip__arrow {
+    bottom: -4px;
+    left: 50%;
+    margin-left: -5px;
+    background: #334155;
+}
+
+.av-tooltip--left .av-tooltip__arrow {
+    right: -4px;
+    top: 50%;
+    margin-top: -5px;
+    background: linear-gradient(135deg, #1e293b 50%, #334155 50%);
+}
+
+.av-tooltip--right .av-tooltip__arrow {
+    left: -4px;
+    top: 50%;
+    margin-top: -5px;
+}
+
+// ==========================================
+// ANIMATION
+// ==========================================
+@keyframes avTooltipFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+// ==========================================
+// TOOLTIP IN PANEL HEADER CONTEXT
+// ==========================================
+.panel-header h3 {
+    @apply flex items-center gap-1;
+}
+
+.panel-header .av-tooltip__trigger {
+    display: inline-flex;
+    vertical-align: baseline;
+}

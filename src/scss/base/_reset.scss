@@ -1,0 +1,44 @@
+/*
+ * AdVajra Resets
+ * Location: src/scss/base/_reset.scss
+ */
+
+/* 1. Global Reset & App Shell */
+#wpcontent {
+    padding-left: 0 !important;
+}
+
+/* Hide WP Footer, Notices, and Screen Options inside AdVajra */
+#wpfooter,
+.update-nag,
+.notice:not(.advajra-notice),
+#screen-meta,
+#screen-meta-links {
+    display: none !important;
+}
+
+#wpbody-content {
+    padding-bottom: 0 !important;
+}
+
+.title-action { display: none; } /* Hide default Add New button */
+.wrap { margin: 0; max-width: 100%; }
+
+#advajra-app {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--av-bg-main);
+    background-image: var(--av-gradient-mesh);
+    background-attachment: fixed;
+    color: var(--av-text-body);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+
+    /* Global Box Sizing for App */
+    box-sizing: border-box;
+    *, *:before, *:after {
+        box-sizing: border-box;
+    }
+
+    width: 100%;
+}

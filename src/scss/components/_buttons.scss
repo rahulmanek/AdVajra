@@ -1,0 +1,85 @@
+/*
+ * AdVajra Buttons
+ * Location: src/scss/components/_buttons.scss
+ */
+
+/* 6. Buttons & Inputs (Tactile) */
+.components-button.is-primary {
+    background: linear-gradient(135deg, #ffe66d 0%, #edaf03 100%) !important;
+    color: #0f1c2e !important;
+    border: 1px solid rgba(255, 230, 109, 0.55) !important;
+    border-radius: var(--av-radius-pill) !important; /* PILL SHAPE */
+    padding: 12px 24px !important;
+    height: auto !important;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.01em;
+    box-shadow: 0 10px 26px rgba(237, 175, 3, 0.25);
+    transition: all 0.3s var(--av-ease-spring);
+
+    &:hover {
+        background: linear-gradient(135deg, #ffeb8d 0%, #f2bb2e 100%) !important;
+        color: #0f1c2e !important;
+        transform: translateY(-2px);
+        box-shadow: 0 14px 32px rgba(237, 175, 3, 0.32);
+    }
+
+    &:focus,
+    &:focus-visible {
+        color: #0f1c2e !important;
+        outline: none !important;
+        box-shadow:
+            0 14px 32px rgba(237, 175, 3, 0.32),
+            0 0 0 3px rgba(15, 28, 46, 0.16) !important;
+    }
+
+    &:active {
+        color: #0f1c2e !important;
+        transform: scale(0.98);
+        box-shadow: 0 8px 18px rgba(237, 175, 3, 0.25);
+    }
+}
+
+/* Sexy Create Button Animation */
+.av-btn-create {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 8px;
+
+    /* Target the SVG icon inside */
+    svg, .dashicon {
+        transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); /* Bouncy spring effect */
+    }
+
+    &:hover {
+        svg, .dashicon {
+            transform: rotate(90deg) scale(1.2);
+        }
+    }
+}
+
+/* Add Button (Floating Neon) */
+.advajra-add-rule-btn {
+    background: var(--av-bg-surface);
+    border: 2px dashed #cbd5e1;
+    border-radius: var(--av-radius-pill); /* PILL SHAPE */
+    padding: 12px 24px;
+    width: 100%;
+    color: #64748b;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    &:hover {
+        border-color: var(--av-primary);
+        color: var(--av-primary);
+        border-style: solid;
+        background: #fffdf3;
+        transform: scale(1.02);
+        box-shadow: 0 10px 30px rgba(15, 28, 46, 0.1);
+    }
+}

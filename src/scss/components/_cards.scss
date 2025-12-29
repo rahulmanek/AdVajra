@@ -1,0 +1,242 @@
+/*
+ * AdVajra Cards
+ * Location: src/scss/components/_cards.scss
+ */
+
+/* 4. Glass & Float Cards */
+.advajra-card,
+.components-card,
+.components-panel__body {
+    background: var(--av-bg-surface) !important;
+    border: 1px solid rgba(0,0,0,0.03) !important;
+    border-radius: var(--av-radius-xl) !important;
+    padding: 32px !important;
+    box-shadow: var(--av-shadow-sm) !important;
+    transition: all 0.4s var(--av-ease-spring);
+    position: relative;
+
+    h2, h3 {
+        font-family: 'Inter', sans-serif;
+        color: var(--av-text-heading);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin-bottom: 24px;
+    }
+
+    /* Updated Input Styling */
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+        border-color: #e2e8f0;
+        padding: 10px 12px;
+        font-size: 14px;
+        transition: border-color 0.15s;
+
+        &:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 1px #6366f1;
+        }
+    }
+
+    /* Shape modifiers */
+    input[type="text"],
+    input[type="number"],
+    select {
+        border-radius: var(--av-radius-pill); /* PILL */
+    }
+
+    textarea {
+        border-radius: var(--av-radius-lg); /* 16px - Smooth Rounded */
+    }
+
+    .components-base-control__field {
+        margin-bottom: 24px;
+    }
+}
+
+/* Wizard Selection Cards */
+.av-selection-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.av-select-card {
+    border: 2px solid #e2e8f0;
+    border-radius: var(--av-radius-xl); /* ROUNDED */
+    padding: 30px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    .icon {
+        background: #f1f5f9;
+        width: 64px;
+        height: 64px;
+        border-radius: var(--av-radius-lg); /* ROUNDED */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        color: var(--av-primary);
+        transition: all 0.2s;
+    }
+
+    h4 {
+        margin: 0 0 8px 0;
+        font-size: 16px;
+        font-weight: 700;
+        color: #334155;
+    }
+
+    p {
+        margin: 0;
+        font-size: 13px;
+        color: #94a3b8;
+        line-height: 1.4;
+    }
+
+    &:hover {
+        border-color: #cbd5e1;
+        transform: translateY(-2px);
+    }
+
+    &.selected {
+        border-color: var(--av-primary);
+        background: linear-gradient(to bottom right, rgba(var(--av-primary-rgb), 0.05), transparent);
+
+        .icon {
+            background: var(--av-primary);
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(var(--av-primary-rgb), 0.3);
+        }
+    }
+}
+
+/* Placement Cards (List View) */
+.av-placement-card {
+    background: white;
+    border: 1px solid #f1f5f9;
+    border-radius: var(--av-radius-xl); /* ROUNDED */
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.2s;
+    margin-bottom: 12px;
+
+    .card-icon {
+        width: 48px;
+        height: 48px;
+        background: #f8fafc;
+        border-radius: var(--av-radius-lg); /* ROUNDED */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #64748b;
+    }
+
+    .card-info {
+        flex: 1;
+
+        .card-title {
+            margin: 0 0 4px 0;
+            font-size: 15px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        .card-meta {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+    }
+
+    .card-logic {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
+
+        .av-pill {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: var(--av-radius-pill); /* PILL */
+            font-weight: 600;
+
+            &.logic {
+                background: #eff6ff;
+                color: var(--av-primary);
+            }
+            &.type {
+                background: #f1f5f9;
+                color: #64748b;
+            }
+        }
+    }
+
+    &:hover {
+        border-color: #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        transform: translateY(-1px);
+    }
+}
+
+/* Campaign Settings Card - Weekday Selector */
+.csc-weekday-section {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--av-border);
+
+    .advajra-label {
+        margin-bottom: 10px;
+        display: block;
+    }
+}
+
+.csc-weekday-selector {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.csc-weekday-btn {
+    appearance: none;
+    border: 1.5px solid var(--av-border);
+    background: var(--av-bg-surface);
+    color: var(--av-text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: var(--av-radius-pill);
+    cursor: pointer;
+    transition: all 0.2s var(--av-ease-smooth);
+
+    &:hover {
+        border-color: var(--av-primary);
+        color: var(--av-primary);
+        background: rgba(var(--av-primary-rgb), 0.05);
+    }
+
+    &.active {
+        background: var(--av-primary);
+        border-color: var(--av-primary);
+        color: white;
+        box-shadow: 0 2px 8px rgba(var(--av-primary-rgb), 0.25);
+    }
+}
+
+.csc-weekday-hint {
+    font-size: 11px;
+    color: var(--av-text-muted);
+    margin-top: 8px;
+    margin-bottom: 0;
+}
+
+// PRO locked state for weekday section
+.csc-weekday-section.is-locked {
+    .csc-weekday-selector {
+        opacity: 0.45;
+        pointer-events: none;
+    }
+}

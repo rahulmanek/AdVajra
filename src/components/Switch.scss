@@ -1,0 +1,71 @@
+// Global Reusable Switch component adapted from module cards
+.module-card__switch {
+    @apply inline-flex items-center cursor-pointer;
+    gap: 0;
+    background: transparent;
+    border: none;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.module-card__switch-track {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    border-radius: 999px;
+    background: #cbd5e1;
+    transition: background-color 0.2s ease;
+}
+
+.module-card__switch-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.24);
+    transition: transform 0.2s ease;
+}
+
+.module-card__switch.is-on {
+    .module-card__switch-track {
+        /* Default "blue" in the app = AdVajra brand (gold) */
+        background: linear-gradient(135deg, var(--av-accent-gold-soft) 0%, var(--av-accent-gold) 100%);
+    }
+
+    &.color-green .module-card__switch-track {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    &.color-red .module-card__switch-track {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+
+    /* Back-compat: sometimes passed explicitly */
+    &.color-blue .module-card__switch-track,
+    &.color-indigo .module-card__switch-track {
+        background: linear-gradient(135deg, var(--av-accent-gold-soft) 0%, var(--av-accent-gold) 100%);
+    }
+
+    .module-card__switch-thumb {
+        transform: translateX(18px);
+    }
+}
+
+.module-card__switch:focus-visible {
+    outline: none;
+
+    .module-card__switch-track {
+        box-shadow: 0 0 0 3px rgba(var(--av-accent-gold-rgb), 0.25);
+    }
+
+    &.color-green:focus-visible .module-card__switch-track {
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+    }
+
+    &.color-red:focus-visible .module-card__switch-track {
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25);
+    }
+}

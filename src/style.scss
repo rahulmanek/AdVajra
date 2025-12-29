@@ -1,0 +1,67 @@
+/*
+ * AdVajra Main Stylesheet
+ * Single entry point for all styles.
+ *
+ * Architecture:
+ * 1. Tailwind Base (CSS reset/preflight)
+ * 2. Custom Base (variables, typography)
+ * 3. Tailwind Components
+ * 4. Custom Components
+ * 5. Tailwind Utilities (last for highest specificity)
+ */
+
+/* ============================================
+   1. TAILWIND BASE
+   ============================================ */
+/* ============================================
+   2. CUSTOM BASE (Variables, Reset, Layout)
+   ============================================ */
+@use "scss/base/variables" as *;
+@use "scss/base/reset" as *;
+@use "scss/base/layout" as *;
+@use "scss/base/typography" as *;
+
+/* Core Components (Reusable UI) */
+@use "scss/components/buttons" as *;
+@use "scss/components/inputs" as *;
+@use "scss/components/cards" as *;
+@use "scss/components/badges" as *;
+@use "scss/components/tables" as *;
+@use "scss/components/status" as *;
+@use "scss/components/code-editor" as *;
+
+/* Feature Components (Complex Logic) */
+@use "scss/components/simulator" as *;
+@use "scss/components/wizard" as *;
+@use "scss/components/notifications" as *;
+@use "scss/components/empty-states" as *;
+@use "scss/components/settings-dashboard" as *;
+@use "scss/components/tooltip" as *;
+@use "scss/components/action-dropdown" as *;
+
+/* Pages (Specific Layouts) */
+@use "scss/pages/dashboard" as *;
+@use "scss/pages/ad-editor" as *;
+@use "scss/pages/placements" as *;
+@use "scss/pages/groups" as *;
+@use "scss/pages/settings" as *;
+@use "scss/pages/ad-manager" as *;
+@use "scss/pages/gallery-view" as *;
+@use "scss/pages/custom-code" as *;
+@use "scss/pages/timeline" as *;
+
+
+/* ============================================
+   1. TAILWIND BASE
+   ============================================ */
+@tailwind base;
+
+/* ============================================
+   3. TAILWIND COMPONENTS
+   ============================================ */
+@tailwind components;
+
+/* ============================================
+   5. TAILWIND UTILITIES (Always Last)
+   ============================================ */
+@tailwind utilities;

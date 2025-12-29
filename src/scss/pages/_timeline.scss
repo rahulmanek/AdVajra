@@ -1,0 +1,239 @@
+/**
+ * _timeline.scss
+ *
+ * Styles for the Timeline View (Gantt Chart).
+ * Focused on performance (sticky positioning).
+ */
+
+.av-timeline-view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: var(--av-bg-surface);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--av-border);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+
+    // Controls Header
+    .av-timeline-controls {
+        padding: 12px 20px;
+        border-bottom: 1px solid var(--av-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: var(--av-bg-surface);
+        z-index: 40;
+
+        .av-current-month {
+            font-weight: 600;
+            color: var(--av-text-heading);
+            font-size: 14px;
+        }
+
+        .av-nav-group {
+            display: flex;
+            gap: 8px;
+        }
+    }
+
+    // Scrollable Area
+    .av-timeline-scroll-area {
+        flex: 1;
+        overflow: auto;
+        position: relative;
+
+        // Custom Scrollbar
+        &::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        &::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        &::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+    }
+
+    // Grid Container
+    .av-timeline-grid {
+        display: grid;
+        // columns defined inline for dynamism
+        min-width: fit-content;
+    }
+
+    // Sticky Headers
+    .av-timeline-header-cell {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background-color: var(--av-bg-surface);
+        border-bottom: 1px solid var(--av-border);
+        border-right: 1px solid #f1f5f9;
+        text-align: center;
+        padding: 8px 0;
+        color: #64748b;
+        font-size: 13px;
+        transition: background-color 0.2s ease;
+
+        &.is-today {
+            background-color: #eef2ff;
+            color: var(--av-primary);
+            font-weight: 700;
+            border-bottom: 2px solid var(--av-primary);
+        }
+
+        &.is-weekend {
+            background-color: #f8fafc;
+        }
+
+        .av-day-num {
+            font-size: 14px;
+            line-height: 1.2;
+        }
+        .av-day-name {
+            font-size: 10px;
+            font-size: 10px;
+            text-transform: uppercase;
+            color: var(--av-text-muted);
+            opacity: 1;
+            margin-top: 2px;
+        }
+    }
+
+    // Corner Cell (Top Left)
+    .av-timeline-corner {
+        position: sticky;
+        top: 0;
+        left: 0;
+        z-index: 30;
+        z-index: 30;
+        background-color: var(--av-bg-main);
+        border-bottom: 1px solid var(--av-border);
+        border-right: 1px solid var(--av-border);
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        display: flex;
+        align-items: center;
+        font-weight: 600;
+        color: var(--av-text-body);
+        font-size: 12px;
+        box-shadow: 2px 0 5px rgba(0,0,0,0.02);
+    }
+
+    // Sidebar (Ad Titles)
+    .av-timeline-sidebar-cell {
+        position: sticky;
+        left: 0;
+        z-index: 10;
+        z-index: 10;
+        background-color: var(--av-bg-surface);
+        border-bottom: 1px solid #f1f5f9;
+        border-right: 1px solid var(--av-border);
+        padding: 0 16px;
+        height: 54px; // Taller rows for better comfort
+        display: flex;
+        align-items: center;
+        font-size: 13px;
+        font-weight: 500;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--av-text-body);
+        cursor: pointer;
+        transition: background-color 0.1s;
+        box-shadow: 2px 0 5px rgba(0,0,0,0.02);
+
+        &:hover {
+            background-color: var(--av-bg-main);
+            color: var(--av-text-heading);
+        }
+
+        .av-ad-title {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+    }
+
+    // Grid Cells
+    .av-timeline-cell {
+        height: 54px;
+        border-bottom: 1px solid #f1f5f9;
+        border-right: 1px solid #f8fafc; // Lighter vertical lines
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 0; // Vertical padding for the bars
+
+        &.is-today {
+            background-color: rgba(79, 70, 229, 0.02);
+        }
+        &.is-weekend {
+            background-color: #fcfcfc;
+        }
+    }
+
+    // The Action Bar
+    .av-timeline-bar {
+        height: 28px;
+        width: 100%;
+        border-radius: 4px;
+        cursor: pointer;
+        position: relative;
+        z-index: 5;
+        margin: 0 -1px; // Slight overlap to form continuous bar
+        transition: transform 0.1s, opacity 0.1s;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+
+        &:hover {
+            opacity: 1 !important;
+            transform: scaleY(1.1);
+            z-index: 10;
+        }
+
+        // Per-day status classes
+        &.status-was-active {
+            background-color: #86efac; // Shaded/muted green - was running
+            opacity: 0.7;
+        }
+
+        &.status-active {
+            background-color: #22c55e; // Solid green - currently active
+            opacity: 1;
+        }
+
+        &.status-scheduled {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); // Blue
+            opacity: 0.9;
+        }
+
+        &.status-paused {
+            background-color: var(--av-status-paused, #f59e0b);
+            opacity: 0.8;
+        }
+
+        // Legacy status classes (fallback)
+        &.status-publish {
+            background-color: var(--av-status-publish, #22c55e);
+            opacity: 1;
+        }
+        &.status-future {
+            background-color: var(--av-status-future, #3b82f6);
+            opacity: 1;
+        }
+        &.status-expired {
+            background-color: var(--av-status-expired, #ef4444);
+            opacity: 0.7;
+        }
+
+        &.type-always-on {
+             // Pure flat color, no stripes
+             opacity: 1;
+        }
+    }
+}

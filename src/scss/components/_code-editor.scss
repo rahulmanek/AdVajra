@@ -1,0 +1,87 @@
+/* ==========================================================================
+   Code Editor Theme (CodeMirror override)
+   ========================================================================== */
+
+.CodeMirror.advajra-dark-cm {
+    background-color: #1e293b !important;
+    color: #e2e8f0 !important;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+    font-size: 13px !important;
+    line-height: 1.6 !important;
+    border: none !important;
+    height: auto !important;
+
+    .CodeMirror-scroll {
+        min-height: 150px;
+    }
+
+    .CodeMirror-gutters {
+        background-color: #0f172a !important;
+        border-right: 1px solid #334155 !important;
+        border-left: none !important; // Some default themes add borders
+        border-top: none !important;
+        border-bottom: none !important;
+    }
+
+    .CodeMirror-linenumber {
+        color: #475569 !important;
+        padding-left: 12px !important;
+        padding-right: 8px !important;
+    }
+
+    // Fix gutter background bleeding
+    .CodeMirror-gutter {
+        background-color: #0f172a !important;
+    }
+
+    .CodeMirror-cursor {
+        border-left: 1px solid #f8fafc !important;
+    }
+
+    /* Selection */
+    .CodeMirror-selected {
+        background-color: #334155 !important;
+    }
+    .CodeMirror-focused .CodeMirror-selected {
+        background-color: #475569 !important;
+    }
+
+    /* Token syntax coloring (One Dark inspired) */
+    .cm-keyword { color: #c678dd !important; }
+    .cm-atom { color: #56b6c2 !important; }
+    .cm-number { color: #d19a66 !important; }
+    .cm-def { color: #61afef !important; }
+    .cm-variable, .cm-punctuation, .cm-property, .cm-operator { color: #e2e8f0 !important; }
+    .cm-variable-2 { color: #e5c07b !important; }
+    .cm-variable-3 { color: #e06c75 !important; }
+    .cm-comment { color: #94a3b8 !important; font-style: italic !important; }
+    .cm-string { color: #98c379 !important; }
+    .cm-string-2 { color: #98c379 !important; }
+    .cm-meta { color: #56b6c2 !important; }
+    .cm-qualifier { color: #d19a66 !important; }
+    .cm-builtin { color: #56b6c2 !important; }
+    .cm-bracket { color: #abb2bf !important; }
+    .cm-tag { color: #e06c75 !important; }
+    .cm-attribute { color: #d19a66 !important; }
+    .cm-hr { color: #abb2bf !important; }
+    .cm-link { color: #61afef !important; }
+    .cm-error { background: #f44747 !important; color: white !important; }
+    
+    // Webkit scrollbar for dark theme within codemirror
+    .CodeMirror-vscrollbar, .CodeMirror-hscrollbar {
+        &::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        &::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        &::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        &::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    }
+}

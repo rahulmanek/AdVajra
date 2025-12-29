@@ -1,0 +1,1935 @@
+/*
+ * Ad Editor Page Styles
+ * Location: src/scss/pages/_ad-editor.scss
+ *
+ * This file contains styles specific to the Ad Editor (Ad Studio).
+ */
+
+/* Make main top nav non-fixed when editor is active */
+#advajra-app:has(.advajra-editor-studio) {
+    > .advajra-top-nav {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+    }
+
+    > .advajra-layout {
+        padding-top: 20px; /* Reduced padding since header scrolls away */
+    }
+}
+
+/* 1. Basic Wrapper & Layout */
+.advajra-editor-studio {
+    display: flex;
+    flex-direction: column; /* Toolbar -> Canvas */
+    width: 100%;
+}
+
+/* 0. Toolbar (Header) - STICKY */
+.advajra-editor-toolbar {
+    @apply bg-white;
+    height: 80px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    /* STICKY BEHAVIOR */
+    position: sticky;
+    top: 44px; /* WP Admin bar (32px) + shadow space (12px) */
+    z-index: 1000;
+
+    /* PILL SHAPE & FLOAT */
+    border-radius: var(--av-radius-pill); /* TRUE PILL */
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    box-shadow: 0 8px 32px -8px rgba(0,0,0,0.10); /* Consistent shadow */
+    margin: 12px 0 24px 0; /* Top margin for shadow space before sticky */
+
+    .toolbar-left {
+        display: flex;
+        align-items: center;
+        gap: 12px; /* Reduced to bring input closer */
+        flex: 1;
+
+        .back-btn {
+            color: #64748b;
+            background: transparent;
+            padding: 8px;
+            min-width: 40px;
+
+            &:hover { color: #1e293b; background: #f1f5f9; }
+            svg { width: 24px; height: 24px; }
+        }
+
+        .ad-identity-group {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1; /* Fill remaining width */
+
+            .toolbar-title-input {
+                border: 1px solid transparent;
+                background: transparent;
+                font-size: 18px;
+                font-weight: 600;
+                color: #1e293b;
+                padding: 4px 8px;
+                margin-left: -8px; /* Optical alignment */
+                border-radius: var(--av-radius-pill); /* PILL */
+                width: 300px;
+                transition: all 0.2s;
+
+                &:hover { background: #f8fafc; }
+                &:focus {
+                    background: #fff;
+                    border-color: #e2e8f0;
+                    box-shadow: var(--av-focus-glow); /* CONSISTENT GLOW */
+                    outline: none;
+                }
+                &::placeholder { color: #cbd5e1; font-weight: 500; }
+            }
+        }
+    }
+
+    .toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        /* Status Dropdown in Header */
+        .header-status {
+            .status-select {
+                appearance: none;
+                background: #f1f5f9;
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                padding: 8px 32px 8px 12px;
+                font-size: 13px;
+                font-weight: 600;
+                color: #334155;
+                cursor: pointer;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+                background-repeat: no-repeat;
+                background-position: right 10px center;
+                transition: all 0.15s;
+
+                &:hover {
+                    background-color: #e2e8f0;
+                }
+
+                &:focus {
+                    outline: none;
+                    border-color: #3b82f6;
+                    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+                }
+            }
+        }
+
+        /* Settings Trigger Button */
+        .settings-trigger-btn {
+            background: #f1f5f9;
+            color: #475569;
+            border-radius: var(--av-radius-pill);
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            border: 1px solid #e2e8f0;
+
+            &:hover {
+                background: #f1f5f9;
+                color: #4f46e5;
+                border-color: #4f46e5;
+                transform: rotate(15deg);
+            }
+        }
+
+        .save-btn {
+            background: #4f46e5;
+            color: white;
+            padding: 12px 24px;
+            border-radius: var(--av-radius-pill);
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+            transition: all 0.2s;
+
+            &:hover {
+                background: #4338ca;
+                transform: translateY(-1px);
+                box-shadow: 0 8px 16px rgba(79, 70, 229, 0.3);
+            }
+
+            svg { margin-right: 8px; }
+        }
+    }
+}
+
+/* Campaign Settings Modal (Global scope or outside toolbar) */
+.campaign-settings-modal {
+    .components-modal__content {
+        padding: 0;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    .components-modal__header {
+        border-bottom: 1px solid #f1f5f9;
+        padding: 20px 24px;
+        background: #fff;
+
+        h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
+            letter-spacing: -0.01em;
+        }
+
+        /* Access close button via WP class if needed, usually handles itself */
+    }
+
+    .campaign-settings-content {
+        padding: 24px;
+        background: #fff;
+    }
+
+    .settings-section {
+        margin-bottom: 32px;
+
+        &:last-child { margin-bottom: 0; }
+
+        h3 {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #64748b;
+            margin: 0 0 16px 0;
+            letter-spacing: 0.05em;
+        }
+
+        /* Status Toggles */
+        .status-toggles {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+
+            .status-toggle {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                padding: 16px;
+                border: 1px solid #e2e8f0;
+                background: white;
+                border-radius: 12px;
+                cursor: pointer;
+                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                color: #64748b;
+
+                svg { width: 24px; height: 24px; color: currentColor; }
+                span { font-weight: 600; font-size: 14px; color: currentColor; }
+
+                &:hover {
+                    background: #f8fafc;
+                    border-color: #4f46e5;
+                    transform: translateY(-1px);
+                    color: #4f46e5;
+                }
+
+                &.active {
+                    border-color: transparent;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                    transform: translateY(-1px);
+
+                    &.publish {
+                        background: #ecfdf5;
+                        color: #059669;
+                        svg { color: #059669; }
+                        span { color: #059669; }
+                        border: 2px solid #059669;
+                    }
+
+                    &.paused {
+                        background: #fffbeb;
+                        color: #d97706;
+                        svg { color: #d97706; }
+                        span { color: #d97706; }
+                        border: 2px solid #d97706;
+                    }
+
+                    &.draft {
+                        background: #f1f5f9;
+                        color: #64748b;
+                        svg { color: #64748b; }
+                        span { color: #64748b; }
+                        border: 2px solid #64748b;
+                    }
+
+                    &.archived {
+                        background: #f3e8ff;
+                        color: #7e22ce;
+                        svg { color: #7e22ce; }
+                        span { color: #7e22ce; }
+                        border: 2px solid #7e22ce;
+                    }
+                }
+            }
+        }
+
+        /* Schedule Grid */
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+
+            .input-group {
+                label {
+                    display: block;
+                    font-size: 13px;
+                    font-weight: 600;
+                    color: #475569;
+                    margin-bottom: 8px;
+                }
+
+                input {
+                   width: 100%;
+                   padding: 10px 12px;
+                   border-radius: 8px;
+                   border: 1px solid #cbd5e1;
+                   font-size: 14px;
+                   color: #334155;
+
+                   &:focus {
+                       outline: none;
+                       border-color: #4f46e5;
+                       box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+                   }
+                }
+            }
+        }
+
+        /* Danger Zone */
+        &.danger-zone {
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px solid #f1f5f9;
+
+            h3 { color: #dc2626; }
+            p { font-size: 14px; color: #64748b; margin-bottom: 16px; line-height: 1.5; }
+
+            button.is-destructive {
+                font-weight: 600;
+            }
+        }
+    }
+}
+
+/* Main Canvas (Column Container) */
+.advajra-canvas {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* STATUS & SCHEDULING BAR - Hanging from Header */
+.status-scheduling-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-top: none;
+    border-radius: 0 0 16px 16px;
+    padding: 12px 24px;
+    margin: -8px 40px 24px 40px;
+    gap: 24px;
+    flex-wrap: wrap;
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.06);
+
+    .bar-label {
+        display: block;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #94a3b8;
+        margin-bottom: 4px;
+    }
+
+    .status-section {
+        display: flex;
+        flex-direction: column;
+
+        .segmented-control {
+            height: 34px;
+            font-size: 12px;
+        }
+    }
+
+    .schedule-section {
+        display: flex;
+        gap: 16px;
+        flex: 1;
+        justify-content: flex-end;
+    }
+
+    .schedule-field {
+        display: flex;
+        flex-direction: column;
+        min-width: 180px;
+    }
+
+    .schedule-input {
+        height: 34px;
+        padding: 0 10px;
+        font-size: 12px;
+        border-radius: 8px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+
+        &:focus {
+            background: white;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+    }
+}
+
+/* SECTION 1: Ad Studio (Split View) */
+.zone-ad {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 40px;
+    margin-bottom: 40px;
+
+    .zone-header {
+        padding: 40px 40px 32px 40px;
+        text-align: center;
+
+        h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--av-text-heading);
+            margin: 0 0 8px 0;
+        }
+
+        p {
+            color: var(--av-text-muted);
+            font-size: 14px;
+            margin: 0;
+        }
+    }
+
+    .advajra-studio-grid {
+        display: flex;
+        width: 100%;
+        align-items: flex-start;
+
+        /* Left Column: Ad Input Stage */
+        .advajra-stage {
+            flex: 0 0 70%;
+            min-width: 0;
+
+            .smart-input-grid {
+                display: flex;
+                flex-direction: column;
+                gap: 32px;
+            }
+        }
+    }
+}
+
+/* Ad Type Selector (3 Cards in Row) */
+.ad-type-selector-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.ad-type-card {
+    @apply rounded-3xl;
+    border: 2px solid #e2e8f0;
+    padding: 24px 16px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s var(--av-ease-spring);
+    position: relative;
+    background: #f8fafc; /* Inactive: Slate 50 (Lighter) */
+
+    .info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        .label {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--av-text-heading);
+        }
+
+        .desc {
+            font-size: 12px;
+            color: var(--av-text-muted);
+            line-height: 1.4;
+        }
+    }
+
+    .check-mark {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 24px;
+        height: 24px;
+        background: transparent;
+        color: var(--av-primary); /* Primary Icon Color */
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transform: scale(0.8);
+        transition: all 0.2s;
+
+        svg {
+            width: 20px;
+            height: 20px;
+            stroke-width: 3px; /* make it bolder */
+        }
+    }
+
+    &:hover {
+        border-color: #cbd5e1;
+        transform: translateY(-2px);
+        box-shadow: var(--av-shadow-sm);
+    }
+
+    &.active {
+        border-color: var(--av-primary);
+        background: #ffffff; /* Active: White */
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15); /* Soft Primary Shadow */
+
+        .check-mark {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+}
+
+/* Layout Selector Cards (Matches Ad Type) */
+/* Studio Layout Cards */
+.ad-layout-card {
+    @apply rounded-2xl;
+    border: 1.5px solid #e2e8f0;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.3s var(--av-ease-spring);
+    background: #ffffff;
+    position: relative;
+    overflow: hidden;
+
+    .icon-box {
+        @apply rounded-xl;
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8fafc;
+        border: 1px solid #f1f5f9;
+        color: #94a3b8;
+        transition: all 0.3s;
+        flex-shrink: 0;
+        z-index: 2;
+
+        svg { width: 26px; height: 26px; }
+    }
+
+    .label {
+        font-size: 13px;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        transition: all 0.3s;
+        z-index: 2;
+    }
+
+    &:hover {
+        border-color: #cbd5e1;
+        background: #fcfdfe;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px -4px rgba(0,0,0,0.05);
+
+        .icon-box {
+            background: #fff;
+            color: var(--av-primary);
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.1);
+        }
+        .label {
+            color: var(--av-text-heading);
+        }
+    }
+
+    &.active {
+        border-color: var(--av-primary);
+        background: #ffffff;
+        box-shadow: 0 12px 24px -8px rgba(99, 102, 241, 0.25);
+
+        /* Creative Mesh Gradient */
+        background-image:
+            radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.06) 0px, transparent 50%),
+            radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.04) 0px, transparent 50%);
+
+        .icon-box {
+            background: var(--av-primary);
+            color: #fff;
+            border-color: var(--av-primary);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .label {
+            color: #4338ca;
+            font-weight: 800;
+        }
+    }
+}
+
+/* Sub-option Group */
+.ad-sub-option-group {
+    display: flex;
+    justify-content: center; /* Center them for better balance */
+    gap: 8px;
+    margin-top: 16px;
+    padding: 0; /* Remove bulky padding */
+    border: none;
+    background: transparent;
+}
+
+/* Sub-option Button (Compact Design) */
+.ad-sub-option-btn {
+    display: flex;
+    flex-direction: row; /* Horizontal for less height */
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    border-radius: var(--av-radius-pill); /* Pill shaped */
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.2s var(--av-ease-spring);
+    gap: 8px;
+
+    svg {
+        width: 16px;
+        height: 16px;
+        color: #94a3b8;
+        transition: color 0.2s;
+    }
+
+    span {
+        font-size: 11px;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        white-space: nowrap;
+    }
+
+    &:hover {
+        border-color: var(--av-primary);
+        background: #f0f2ff;
+        transform: translateY(-1px);
+
+        svg { color: var(--av-primary); }
+        span { color: var(--av-primary); }
+    }
+
+    &.active {
+        border-color: var(--av-primary);
+        background: var(--av-primary);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+
+        svg { color: #fff; }
+        span { color: #fff; }
+    }
+
+    /* Mini variant (same for now as they are all row based) */
+    &.mini {
+        padding: 6px 12px;
+        svg { width: 14px; height: 14px; }
+    }
+}
+
+@keyframes azSlideInRight {
+    0% { opacity: 0; transform: translateX(30px); }
+    100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes azSlideInLeft {
+    0% { opacity: 0; transform: translateX(-30px); }
+    100% { opacity: 1; transform: translateX(0); }
+}
+
+.av-slide-right {
+    animation: azSlideInRight 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.av-slide-left {
+    animation: azSlideInLeft 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+
+
+/* Meta Row (URL, Target, Size) */
+.meta-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 16px;
+
+    .meta-field-url { grid-column: span 1; }
+    .meta-field-target { grid-column: span 1; }
+    .meta-field-size {
+        grid-column: span 1;
+
+        .size-inputs {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+
+            .size-input {
+                flex: 1;
+                border: 1px solid #cbd5e1;
+                border-radius: var(--av-radius-pill);
+                padding: 8px 12px;
+                text-align: center;
+                font-size: 14px;
+
+                &:focus {
+                    outline: none;
+                    border-color: var(--av-primary);
+                    box-shadow: var(--av-focus-glow);
+                }
+            }
+
+            .x-sep {
+                color: var(--av-text-muted);
+                font-weight: 600;
+            }
+        }
+    }
+}
+
+/* Right Column: Inspector (Settings + Preview) */
+.advajra-inspector-column {
+    flex: 0 0 30%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: sticky;
+    top: 148px; /* Toolbar sticky pos (44px) + height (80px) + margin (24px) */
+    align-self: flex-start;
+    margin-left: 20px;
+    height: auto;
+}
+
+/* Compact Campaign Settings Card */
+.campaign-settings-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    overflow: visible !important; /* Allow dropdowns to spill out */
+    z-index: 20; /* Ensure it floats above the simulator */
+
+    h3.card-title {
+        font-size: 11px;
+        color: #94a3b8;
+        margin-bottom: 12px;
+    }
+
+    .advajra-label {
+        font-size: 12px;
+        color: #64748b;
+        margin-bottom: 6px;
+    }
+
+    /* Tighter Inputs */
+    .advajra-input {
+        font-size: 13px;
+        padding: 6px 10px;
+        border-radius: 6px;
+    }
+}
+
+/* Device Simulator Card */
+.advajra-simulator {
+    /* Visuals only */
+    background-color: #f1f5f9;
+    background-image:
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.03) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.03) 0px, transparent 50%);
+    border: 1px solid #e2e8f0;
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    /* Reset layout props now handled by parent */
+    flex: unset;
+    margin: 0;
+    top: auto;
+    position: relative;
+
+    .simulator-header {
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 10;
+
+        .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #94a3b8;
+            font-weight: 700;
+        }
+
+        .device-toggles {
+            background: white;
+            padding: 4px;
+            border-radius: 999px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: flex;
+            gap: 2px;
+
+            button {
+                border-radius: 999px;
+                color: #64748b;
+                &:hover { color: #4f46e5; background: #f8fafc; }
+                &.is-pressed {
+                    color: white;
+                    background: #4f46e5;
+                    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+                }
+            }
+        }
+    }
+
+    /* The Stage Center */
+    .simulator-stage-center {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        perspective: 1000px; /* For potential 3D feel */
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+/*  REALISTIC CSS DIVICE FRAMES
+/* -------------------------------------------------------------------------- */
+
+.simulator-frame {
+    position: relative;
+    background: #fff;
+    transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); /* Smooth Morph */
+    margin: 0 auto;
+    box-shadow:
+        0 20px 50px -12px rgba(0, 0, 0, 0.25), /* Deep Shadow */
+        0 0 0 1px rgba(0,0,0,0.02); /* Border boundary */
+
+    /* Inner Screen Wrapper */
+    .simulator-screen {
+        width: 100%;
+        height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: #fff;
+        position: relative;
+        /* Hide scrollbar */
+        &::-webkit-scrollbar { display: none; }
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+}
+
+/* --- 1. DESKTOP (Macbook Pro Style) --- */
+.simulator-frame.device-desktop {
+    width: 480px; /* Smaller width to fit column */
+    height: 300px; /* 16:10 Aspect Ratio */
+    max-width: 100%;
+    border-radius: 12px;
+    border: 1px solid #d1d5db; /* Subtle bezel */
+    box-shadow:
+        0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+    /* The Browser Header (Traffic Lights) */
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 28px;
+        background: #f1f5f9;
+        border-bottom: 1px solid #e2e8f0;
+        border-radius: 11px 11px 0 0;
+        z-index: 20;
+    }
+
+    /* Traffic Light Dots */
+    &::after {
+        content: '';
+        position: absolute;
+        top: 9px;
+        left: 12px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #ef4444; /* Red */
+        box-shadow:
+            16px 0 0 #f59e0b, /* Yellow */
+            32px 0 0 #10b981; /* Green */
+        z-index: 21;
+    }
+
+    .simulator-screen {
+        padding-top: 28px; /* Push content below header */
+    }
+}
+
+/* --- 2. TABLET (iPad Pro Style) --- */
+.simulator-frame.device-tablet {
+    width: 360px;
+    height: 480px;
+    border-radius: 20px;
+    /* Uniform Bezel */
+    border: 10px solid #1e293b;
+    box-shadow:
+        0 0 0 1px #475569, /* Outer Shine */
+        0 25px 50px -12px rgba(0, 0, 0, 0.3);
+}
+
+/* --- 3. MOBILE (iPhone 14+ Style) --- */
+.simulator-frame.device-mobile {
+    width: 280px;
+    height: 520px;
+    border-radius: 36px;
+    /* Thick Bezel */
+    border: 10px solid #1e293b;
+    box-shadow:
+        0 0 0 2px #334155, /* Outer frame */
+        0 25px 50px -12px rgba(0, 0, 0, 0.35);
+
+    /* Dynamic Island Notch */
+    &::before {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 20px;
+        background: #000;
+        border-radius: 12px;
+        z-index: 50;
+    }
+
+    /* Home Indicator */
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: 6px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        height: 4px;
+        background: #1e293b;
+        border-radius: 2px;
+        opacity: 0.5;
+        z-index: 50;
+    }
+
+    .simulator-screen {
+        border-radius: 24px; /* match inner curve */
+        padding-top: 36px; /* Below notch */
+    }
+}
+
+/* Internal Mock UI (Skeleton) */
+.fake-header {
+    height: 40px;
+    background: #fff;
+    border-bottom: 1px solid #f1f5f9;
+    margin-bottom: 20px;
+}
+.fake-content { padding: 0 20px; }
+.fake-text {
+    height: 12px;
+    background: #f1f5f9;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    width: 100%;
+}
+.fake-text.short { width: 60%; }
+
+.ad-spot-render {
+    margin: 20px 0;
+    /* Removed flex centering to follow theme default (Left aligned) */
+    min-height: 0;
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    background: #f8fafc;
+    overflow: hidden;
+
+    .ad-wrapper-preview {
+        max-width: 100%;
+        img { display: block; max-width: 100%; height: auto; }
+    }
+
+    .empty-state {
+        color: #94a3b8;
+        font-size: 13px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+}
+
+
+/* SECTION 2: Targeting (Standalone Full Width) */
+.zone-targeting {
+    width: 100%;
+    margin-top: 40px; /* Space from Ad Studio */
+
+    .zone-header {
+        text-align: center;
+        margin-bottom: 40px;
+
+        h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--av-text-heading);
+            margin: 0 0 8px 0;
+        }
+
+        p {
+            color: var(--av-text-muted);
+            font-size: 14px;
+            margin: 0;
+        }
+    }
+}
+
+/* Targeting Builder: Hide timeline when empty */
+.advajra-logic-stream:not(:has(.advajra-rule-card)) {
+    &::before {
+        display: none;
+    }
+}
+/* 8. Targeting Builder (Prism Logic Stream) */
+.advajra-targeting-builder {
+    /* Container Reset */
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    position: relative;
+}
+
+/* The Logic Stream (Vertical Line) */
+.advajra-logic-stream {
+    position: relative;
+    padding-left: 40px;
+
+    /* REMOVED: The main timeline line - no longer needed */
+    /* Groups have their own internal timelines */
+}
+
+/* Individual Rule Card (The "Gene") */
+.advajra-rule-card {
+    position: relative;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    border-radius: var(--av-radius-xl); /* ROUNDED */
+    padding: 20px;
+    margin-bottom: 20px; /* Spacing between genes */
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+
+    /* Entry Animation */
+    animation: slideUpFade 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    /* Ensure dropdowns appear above sibling cards */
+    &:focus-within {
+        z-index: 100;
+    }
+
+    &:hover {
+        transform: translateX(4px) scale(1.01);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        background: #fff;
+        z-index: 50;
+    }
+
+    /* The Connector Dot */
+    &::before {
+        content: '';
+        position: absolute;
+        left: -26px; /* Align with stream line */
+        top: 50%;
+        transform: translateY(-50%);
+        width: 12px;
+        height: 12px;
+        background: #fff;
+        border: 3px solid var(--av-primary);
+        border-radius: 50%;
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        z-index: 2;
+    }
+}
+
+/* Rule Icon (Large, Glassy) */
+.advajra-rule-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7); /* Default Green-ish */
+    color: #166534;
+    border-radius: var(--av-radius-xl); /* ROUNDED */
+    font-size: 24px;
+    flex-shrink: 0;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+
+    &.type-device { background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; } /* Blue */
+    &.type-user_role { background: linear-gradient(135deg, #fdf4ff, #fae8ff); color: #86198f; } /* Purple */
+    &.type-category { background: linear-gradient(135deg, #fff7ed, #ffedd5); color: #9a3412; } /* Orange */
+}
+
+/* Rule Content Layout */
+.advajra-rule-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  RULE GROUP (Container for multiple rules)
+/* -------------------------------------------------------------------------- */
+.advajra-rule-group {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--av-radius-xl);
+    padding: 24px;
+    margin-bottom: 16px;
+    position: relative;
+    animation: slideUpFade 0.4s ease-out;
+
+    .group-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .group-relation-toggle {
+        position: relative;
+        display: flex;
+        background: #e2e8f0;
+        border-radius: var(--av-radius-pill);
+        padding: 4px;
+        cursor: pointer;
+        transition: all 0.3s;
+
+        .rel-option {
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            border-radius: var(--av-radius-pill);
+            transition: all 0.3s;
+            position: relative;
+            z-index: 2;
+
+            &.active {
+                color: white;
+            }
+        }
+
+        /* Animated slider background */
+        .toggle-slider {
+            position: absolute;
+            top: 4px;
+            width: calc(50% - 4px);
+            height: calc(100% - 8px);
+            border-radius: var(--av-radius-pill);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 1;
+
+            &.left {
+                left: 4px;
+                background: var(--av-primary);
+                box-shadow: 0 2px 8px rgba(79, 70, 229, 0.4);
+            }
+            &.right {
+                left: calc(50%);
+                background: #ec4899;
+                box-shadow: 0 2px 8px rgba(236, 72, 153, 0.4);
+            }
+        }
+    }
+
+    .group-label {
+        font-size: 12px;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .group-delete-btn {
+        margin-left: auto;
+        opacity: 0.5;
+        transition: opacity 0.2s;
+        &:hover { opacity: 1; }
+    }
+
+    .group-rules {
+        position: relative;
+        padding-left: 24px;
+
+        /* Internal vertical line */
+        &::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 10px;
+            bottom: 60px;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--av-primary), #ec4899);
+            opacity: 0.2;
+            border-radius: 1px;
+        }
+    }
+
+    .advajra-rule-card {
+        margin-bottom: 12px;
+
+        &::before {
+            left: -20px;
+            width: 10px;
+            height: 10px;
+        }
+    }
+
+    .group-add-rule {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 16px;
+        margin-top: 8px;
+        color: #64748b;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        border: 1px dashed #cbd5e1;
+        border-radius: var(--av-radius-lg);
+        transition: all 0.2s;
+
+        &:hover {
+            color: var(--av-primary);
+            border-color: var(--av-primary);
+            background: rgba(79, 70, 229, 0.05);
+        }
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+/*  GROUP OPERATOR (AND/OR toggle between groups)
+/* -------------------------------------------------------------------------- */
+.advajra-group-operator {
+    display: flex;
+    justify-content: center;
+    margin: 24px 0;
+    position: relative;
+
+    /* Connecting lines */
+    &::before, &::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        width: 2px;
+        background: linear-gradient(to bottom, var(--av-primary), #ec4899);
+        opacity: 0.3;
+    }
+    &::before {
+        top: -24px;
+        height: 24px;
+    }
+    &::after {
+        bottom: -24px;
+        height: 24px;
+    }
+
+    .operator-track {
+        position: relative;
+        display: flex;
+        background: #f1f5f9;
+        border-radius: var(--av-radius-pill);
+        padding: 4px;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        z-index: 5;
+
+        .option {
+            padding: 8px 16px;
+            font-size: 11px;
+            font-weight: 800;
+            color: #94a3b8;
+            border-radius: var(--av-radius-pill);
+            transition: all 0.3s;
+            position: relative;
+            z-index: 2;
+
+            &.active {
+                color: white;
+            }
+        }
+
+        .slider {
+            position: absolute;
+            top: 4px;
+            width: calc(50% - 4px);
+            height: calc(100% - 8px);
+            border-radius: var(--av-radius-pill);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 1;
+
+            &.left {
+                left: 4px;
+                background: var(--av-primary);
+                box-shadow: 0 2px 8px rgba(79, 70, 229, 0.4);
+            }
+            &.right {
+                left: calc(50%);
+                background: #ec4899;
+                box-shadow: 0 2px 8px rgba(236, 72, 153, 0.4);
+            }
+        }
+    }
+
+    &:hover .operator-track {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+/*  ADD GROUP BUTTON
+/* -------------------------------------------------------------------------- */
+.advajra-add-group-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 24px;
+    margin-top: 24px;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 2px dashed #cbd5e1;
+    border-radius: var(--av-radius-xl);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    background: transparent;
+    position: relative;
+    overflow: hidden;
+
+    /* Ripple effect on hover */
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at center, rgba(79, 70, 229, 0.15) 0%, transparent 70%);
+        opacity: 0;
+        transform: scale(0);
+        transition: all 0.5s;
+    }
+
+    &:hover {
+        color: var(--av-primary);
+        border-color: var(--av-primary);
+        transform: scale(1.02);
+
+        &::before {
+            opacity: 1;
+            transform: scale(2);
+        }
+    }
+
+    &:active {
+        transform: scale(0.98);
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+/*  PROFESSIONAL ANIMATIONS (Clean & Subtle)
+/* -------------------------------------------------------------------------- */
+
+/* Smooth Fade Scale - Clean entry without shake */
+@keyframes smoothEntry {
+    0% {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Gentle Glow - Subtle hover effect */
+@keyframes gentleGlow {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+    }
+    50% {
+        box-shadow: 0 0 8px 2px rgba(79, 70, 229, 0.25);
+    }
+}
+
+/* Soft Bounce - Subtle spring for groups */
+@keyframes softBounce {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    60% {
+        opacity: 1;
+        transform: translateY(4px);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+
+/* Smooth Slide In - For group operator */
+@keyframes slideIn {
+    0% {
+        opacity: 0;
+        transform: scaleY(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: scaleY(1);
+    }
+}
+
+/* Apply animations - ONE per element, clean and professional */
+.advajra-rule-group {
+    animation: softBounce 0.4s ease-out;
+    position: relative;
+
+    &.deleting {
+        animation: shatterMain 0.5s ease-out forwards;
+        pointer-events: none;
+
+        /* Glass shards flying out */
+        &::before, &::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            background: inherit;
+            border-radius: inherit;
+            animation: shatterShard1 0.5s ease-out forwards;
+        }
+        &::after {
+            animation: shatterShard2 0.5s ease-out forwards;
+        }
+    }
+}
+
+.advajra-rule-card {
+    animation: smoothEntry 0.3s ease-out forwards;
+    position: relative;
+    overflow: visible;
+
+    &.deleting {
+        animation: shatterMain 0.4s ease-out forwards;
+        pointer-events: none;
+
+        /* Create fragment illusion with shadow particles */
+        &::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg,
+                rgba(239, 68, 68, 0.3) 0%,
+                transparent 50%,
+                rgba(239, 68, 68, 0.3) 100%);
+            border-radius: inherit;
+            animation: shatterFlash 0.15s ease-out;
+        }
+    }
+}
+
+.advajra-group-operator {
+    animation: slideIn 0.25s ease-out;
+}
+
+/* Subtle glow on add buttons - reduced spread */
+.group-add-rule:hover,
+.advajra-add-rule-btn:hover {
+    animation: gentleGlow 1.2s ease-in-out infinite;
+}
+
+/* ============================================
+   GLASS SHATTER DELETE ANIMATIONS
+   ============================================ */
+
+/* Main element: red flash + scale down + fade */
+@keyframes shatterMain {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+        filter: brightness(1);
+    }
+    10% {
+        transform: scale(1.02);
+        filter: brightness(1.3);
+        box-shadow:
+            0 0 20px rgba(239, 68, 68, 0.6),
+            inset 0 0 20px rgba(239, 68, 68, 0.3);
+    }
+    30% {
+        opacity: 0.9;
+        transform: scale(0.98);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.3) rotate(10deg);
+        filter: brightness(0.5) blur(8px);
+    }
+}
+
+/* Flash effect on destroy */
+@keyframes shatterFlash {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1.5);
+    }
+}
+
+/* Shard 1: flies up-left */
+@keyframes shatterShard1 {
+    0% {
+        opacity: 0.7;
+        transform: translate(-50%, -50%) scale(0.4) rotate(0deg);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-150%, -150%) scale(0.1) rotate(-45deg);
+    }
+}
+
+/* Shard 2: flies down-right */
+@keyframes shatterShard2 {
+    0% {
+        opacity: 0.7;
+        transform: translate(-50%, -50%) scale(0.4) rotate(0deg);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(50%, 50%) scale(0.1) rotate(45deg);
+    }
+}
+
+/*
+ * Campaign Settings Card Styles
+ * Compact meta box with status, schedule, and actions
+ */
+.campaign-settings-card {
+    padding: 16px;
+
+    /* Main controls row */
+    .csc-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Status dropdown wrapper */
+    .csc-status-wrapper {
+        flex: 1;
+    }
+
+    /* Auto-computed status display */
+    .csc-auto-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        cursor: not-allowed;
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .status-label {
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .auto-tag {
+            margin-left: auto;
+            font-size: 9px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+        }
+    }
+
+    /* Icon buttons base style */
+    .csc-icon-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: all 0.15s ease;
+    }
+
+    /* Schedule button */
+    .csc-schedule-btn {
+        border: 1px solid #e2e8f0;
+        background-color: #fff;
+        color: #64748b;
+
+        &:hover {
+            border-color: #cbd5e1;
+            background-color: #f8fafc;
+        }
+
+        &.active {
+            border: 2px solid #6366f1;
+            background-color: #eef2ff;
+            color: #6366f1;
+        }
+    }
+
+    /* Duplicate button (Pro) */
+    .csc-duplicate-btn {
+        border: 1px solid #e2e8f0;
+        background-color: #f8fafc;
+        color: #94a3b8;
+        cursor: not-allowed;
+        position: relative;
+    }
+
+    /* Delete button */
+    .csc-delete-btn {
+        border: 1px solid #fecaca;
+        background-color: #fff;
+        color: #ef4444;
+
+        &:hover {
+            background-color: #fef2f2;
+            border-color: #f87171;
+        }
+    }
+
+    /* Schedule date fields container */
+    .csc-schedule-fields {
+        margin-top: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        .csc-date-field {
+            .advajra-label {
+                font-size: 10px;
+                margin-bottom: 4px;
+                display: block;
+            }
+
+            /* React-Datepicker Input */
+            .react-datepicker-wrapper {
+                width: 100%;
+            }
+
+            .csc-datepicker-input {
+                width: 100%;
+                font-size: 13px;
+                padding: 10px 12px;
+                border: 1px solid var(--av-border);
+                border-radius: var(--av-radius-md);
+                background: var(--av-bg-surface);
+                color: var(--av-text-body);
+                transition: all 0.15s ease;
+                cursor: pointer;
+
+                &:hover {
+                    border-color: var(--av-primary);
+                }
+
+                &:focus {
+                    outline: none;
+                    border-color: var(--av-primary);
+                    box-shadow: 0 0 0 3px rgba(var(--av-primary-rgb), 0.12);
+                }
+
+                &::placeholder {
+                    color: var(--av-text-muted);
+                }
+            }
+        }
+    }
+
+    /* Timezone Indicator (direct child of schedule-container) */
+    .csc-timezone-indicator {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 12px;
+        padding: 8px 12px;
+        background-color: #f8fafc;
+        border-radius: 8px;
+        border: 1px dashed #e2e8f0;
+
+        .timezone-icon {
+            font-size: 12px;
+        }
+
+        .timezone-text {
+            font-size: 11px;
+            color: #64748b;
+            font-weight: 500;
+        }
+    }
+}
+
+/* Delete Modal Styles */
+.csc-delete-modal {
+    .modal-message {
+        margin-bottom: 16px;
+
+        p {
+            margin: 0;
+            color: #475569;
+            font-size: 14px;
+        }
+
+        .warning-box {
+            margin: 12px 0 0;
+            padding: 12px;
+            background-color: #fef2f2;
+            border-radius: 8px;
+            color: #dc2626;
+            font-size: 13px;
+            font-weight: 500;
+        }
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+}
+
+
+/* ============================================
+   GLOBAL: React-Datepicker Theme
+   (Rendered via portal at #advajra-app root)
+   ============================================ */
+#advajra-app .advajra-datepicker-popper {
+    z-index: 999999 !important; /* Above WP admin bar (99999) */
+
+    .react-datepicker {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        border: none;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+    }
+
+    .react-datepicker__triangle {
+        display: none;
+    }
+
+    /* Header */
+    .react-datepicker__header {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        border: none;
+        padding: 16px;
+        border-radius: 0;
+    }
+
+    .react-datepicker__current-month {
+        color: #fff;
+        font-weight: 700;
+        font-size: 15px;
+        margin-bottom: 8px;
+    }
+
+    .react-datepicker__day-names {
+        margin-top: 8px;
+    }
+
+    .react-datepicker__day-name {
+        color: rgba(255, 255, 255, 0.85);
+        font-weight: 600;
+        font-size: 11px;
+        text-transform: uppercase;
+        width: 36px;
+        line-height: 36px;
+        margin: 0;
+    }
+
+    /* Navigation */
+    .react-datepicker__navigation {
+        top: 16px;
+
+        &--previous {
+            left: 16px;
+        }
+
+        &--next {
+            right: 16px;
+        }
+    }
+
+    .react-datepicker__navigation-icon::before {
+        border-color: #fff;
+        border-width: 2px 2px 0 0;
+        width: 8px;
+        height: 8px;
+    }
+
+    /* Calendar Days */
+    .react-datepicker__month {
+        margin: 12px;
+    }
+
+    .react-datepicker__day {
+        width: 36px;
+        line-height: 36px;
+        margin: 2px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #334155;
+        transition: all 0.15s ease;
+
+        &:hover {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+
+        &--today {
+            background: #e0e7ff;
+            color: #4f46e5;
+            font-weight: 700;
+        }
+
+        &--selected,
+        &--keyboard-selected {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+            color: #fff !important;
+            font-weight: 700;
+
+            &:hover {
+                background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
+            }
+        }
+
+        &--disabled {
+            color: #cbd5e1;
+        }
+
+        &--outside-month {
+            color: #94a3b8;
+        }
+    }
+
+    /* Time Input (Manual Entry) */
+    .react-datepicker__input-time-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 16px;
+        border-top: 1px solid #f1f5f9;
+        background: #f8fafc;
+    }
+
+    .react-datepicker-time__caption {
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+    }
+
+    .react-datepicker-time__input-container {
+        flex: 1;
+    }
+
+    .react-datepicker-time__input {
+        input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #334155;
+            background: #fff;
+            transition: all 0.15s ease;
+
+            &:focus {
+                outline: none;
+                border-color: #6366f1;
+                box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+            }
+        }
+    }
+}

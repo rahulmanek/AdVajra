@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<ruleset name="AdVajra">
+    <description>Modern PHP Standards for AdVajra Plugin</description>
+
+    <!-- What to scan -->
+    <file>./inc</file>
+    <file>./advajra.php</file>
+
+    <!-- Exclude -->
+    <exclude-pattern>/vendor/*</exclude-pattern>
+    <exclude-pattern>/node_modules/*</exclude-pattern>
+
+    <!-- Use WordPress Core rules -->
+    <rule ref="WordPress-Core">
+        <!-- Allow short array syntax [] -->
+        <exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
+        <exclude name="Universal.Arrays.DisallowShortArraySyntax"/>
+        <!-- Allow PascalCase filenames (PSR-4) -->
+        <exclude name="WordPress.Files.FileName.InvalidClassFileName"/>
+        <exclude name="WordPress.Files.FileName.NotHyphenatedLowercase"/>
+        <!-- Allow short ternaries -->
+        <exclude name="Universal.Operators.DisallowShortTernary"/>
+        <!-- Skip Yoda conditions (preference) -->
+        <exclude name="WordPress.PHP.YodaConditions"/>
+    </rule>
+
+    <!-- Skip doc comment requirements for now -->
+    <!-- Can enable later when plugin is more mature -->
+
+    <!-- FORCE short array syntax -->
+    <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
+
+    <!-- Text domain -->
+    <rule ref="WordPress.WP.I18n">
+        <properties>
+            <property name="text_domain">
+                <element value="advajra"/>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- Minimum WordPress version -->
+    <config name="minimum_wp_version" value="5.8"/>
+</ruleset>

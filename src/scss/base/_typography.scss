@@ -1,0 +1,162 @@
+/**
+ * AdVajra Typography System
+ * Location: src/scss/base/_typography.scss
+ *
+ * Reusable title, subtitle, and text classes.
+ * Use these consistently across all pages.
+ *
+ * NOTE: Clash Display @font-face loaded via assets/css/fonts.css (enqueued by PHP)
+ */
+
+// CSS Variable for Clash Display (font loaded externally)
+:root {
+    --av-font-display: 'Clash Display', 'Inter', sans-serif;
+    --av-font-body: 'Inter', sans-serif;
+}
+
+// ==============================================
+// UTILITY CLASSES
+// ==============================================
+
+// Apply Clash Display to any element
+.font-display {
+    font-family: var(--av-font-display) !important;
+}
+
+// Weight variations
+.font-display-regular { font-family: var(--av-font-display) !important; font-weight: 400 !important; }
+.font-display-medium { font-family: var(--av-font-display) !important; font-weight: 500 !important; }
+.font-display-semibold { font-family: var(--av-font-display) !important; font-weight: 600 !important; }
+.font-display-bold { font-family: var(--av-font-display) !important; font-weight: 700 !important; }
+
+// ==============================================
+// PAGE TITLES
+// ==============================================
+
+// Main page title - Use for primary headings
+// Example: "Create Placement", "Ad Editor"
+.av-title {
+    font-family: var(--av-font-display);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--av-text-heading);
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    margin: 0;
+}
+
+// Larger variant for hero sections
+.av-title-lg {
+    font-family: var(--av-font-display);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--av-text-heading);
+    letter-spacing: -0.75px;
+    line-height: 1.15;
+    margin: 0;
+}
+
+// Smaller variant for cards/sections
+.av-title-sm {
+    font-family: var(--av-font-display);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--av-text-heading);
+    letter-spacing: -0.25px;
+    line-height: 1.3;
+    margin: 0;
+}
+
+
+// ==============================================
+// SECTION HEADINGS
+// ==============================================
+
+// Section heading - Use for wizard steps, card titles
+// Example: "Choose Placement Type"
+.av-heading {
+    font-family: var(--av-font-display);
+    font-size: 22px;
+    font-weight: 600;
+    color: #0f172a;
+    letter-spacing: -0.4px;
+    line-height: 1.25;
+    margin: 0 0 8px 0;
+}
+
+
+// ==============================================
+// SUBTITLES / DESCRIPTIONS
+// ==============================================
+
+// Subtitle under a title
+// Example: "Where do you want to display your ad?"
+.av-subtitle {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--av-text-muted);
+    letter-spacing: 0;
+    line-height: 1.5;
+    margin: 0;
+}
+
+// Smaller helper text
+.av-helper {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--av-text-muted);
+    line-height: 1.5;
+    margin: 0;
+}
+
+
+// ==============================================
+// META LABELS (Small caps style)
+// ==============================================
+
+// Small uppercase label -> meta style
+// Example: field labels, category tags
+.av-meta {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    line-height: 1;
+}
+
+// Slightly larger meta
+.av-meta-lg {
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    line-height: 1;
+}
+
+
+// ==============================================
+// BODY TEXT
+// ==============================================
+
+.av-text {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--av-text-body);
+    line-height: 1.6;
+}
+
+.av-text-sm {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--av-text-body);
+    line-height: 1.5;
+}
+
+.av-text-bold {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--av-text-heading);
+    line-height: 1.5;
+}
