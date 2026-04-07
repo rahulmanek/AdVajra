@@ -62,6 +62,7 @@ class PostTypes {
 				'exclude_from_search'       => false,
 				'show_in_admin_all_list'    => true,
 				'show_in_admin_status_list' => true,
+				/* translators: %s: number of paused ads. */
 				'label_count'               => _n_noop( 'Paused <span class="count">(%s)</span>', 'Paused <span class="count">(%s)</span>', 'advajra' ),
 			]
 		);
@@ -74,6 +75,7 @@ class PostTypes {
 				'exclude_from_search'       => false,
 				'show_in_admin_all_list'    => true,
 				'show_in_admin_status_list' => true,
+				/* translators: %s: number of expired ads. */
 				'label_count'               => _n_noop( 'Expired <span class="count">(%s)</span>', 'Expired <span class="count">(%s)</span>', 'advajra' ),
 			]
 		);
@@ -86,6 +88,7 @@ class PostTypes {
 				'exclude_from_search'       => true,
 				'show_in_admin_all_list'    => false,
 				'show_in_admin_status_list' => true,
+				/* translators: %s: number of archived ads. */
 				'label_count'               => _n_noop( 'Archived <span class="count">(%s)</span>', 'Archived <span class="count">(%s)</span>', 'advajra' ),
 			]
 		);

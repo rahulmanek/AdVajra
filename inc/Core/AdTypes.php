@@ -36,7 +36,7 @@ class AdTypes {
 				'desc'             => __( 'Design using visual editor.', 'advajra' ),
 				'supports_preview' => true,
 			],
-			'plain'  => [
+			'plain' => [
 				'label'            => __( 'Plain', 'advajra' ),
 				'icon'             => 'code',
 				'desc'             => __( 'Text, HTML, JS, PHP or Shortcodes.', 'advajra' ),
@@ -52,10 +52,6 @@ class AdTypes {
 		 * @param array $types Associative array of ad types.
 		 */
 		$types = apply_filters( 'advajra_ad_types', $types );
-
-		if ( ! is_array( $types ) ) {
-			$types = [];
-		}
 
 		wp_cache_set( 'advajra_ad_types', $types, 'advajra', HOUR_IN_SECONDS );
 
@@ -118,22 +114,28 @@ class AdTypes {
 	 * @return bool True on success.
 	 */
 	public static function register_type( string $key, array $args ): bool {
-		if ( empty( $key ) || ! is_string( $key ) ) {
+		if ( '' === $key ) {
 			return false;
 		}
 
-		add_filter( 'advajra_ad_types', function( $types ) use ( $key, $args ) {
-			if ( ! is_array( $types ) ) {
-				$types = [];
+		add_filter(
+			'advajra_ad_types',
+			function ( $types ) use ( $key, $args ) {
+				if ( ! is_array( $types ) ) {
+					$types = [];
+				}
+				$types[ $key ] = wp_parse_args(
+					$args,
+					[
+						'label'            => ucfirst( str_replace( '-', ' ', $key ) ),
+						'icon'             => 'admin-site',
+						'desc'             => '',
+						'supports_preview' => false,
+					]
+				);
+				return $types;
 			}
-			$types[ $key ] = wp_parse_args( $args, [
-				'label' => ucfirst( str_replace( '-', ' ', $key ) ),
-				'icon' => 'admin-site',
-				'desc' => '',
-				'supports_preview' => false,
-			] );
-			return $types;
-		} );
+		);
 
 		self::clear_cache();
 
@@ -155,19 +157,22 @@ class AdTypes {
 	 * @return bool True if removed (or not present).
 	 */
 	public static function unregister_type( string $key ): bool {
-		if ( empty( $key ) || ! is_string( $key ) ) {
+		if ( '' === $key ) {
 			return false;
 		}
 
-		add_filter( 'advajra_ad_types', function( $types ) use ( $key ) {
-			if ( ! is_array( $types ) ) {
-				return [];
+		add_filter(
+			'advajra_ad_types',
+			function ( $types ) use ( $key ) {
+				if ( ! is_array( $types ) ) {
+					return [];
+				}
+				if ( isset( $types[ $key ] ) ) {
+					unset( $types[ $key ] );
+				}
+				return $types;
 			}
-			if ( isset( $types[ $key ] ) ) {
-				unset( $types[ $key ] );
-			}
-			return $types;
-		} );
+		);
 
 		self::clear_cache();
 

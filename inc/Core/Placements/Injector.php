@@ -3,7 +3,6 @@ namespace AdVajra\Core\Placements;
 
 use AdVajra\Display\Renderer;
 use AdVajra\Model\Group;
-use AdVajra\Core\Targeting\TargetingEvaluator;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -34,19 +33,10 @@ class Injector {
 	private $registry;
 
 	/**
-	 * Targeting Evaluator.
-	 *
-	 * @var TargetingEvaluator
-	 */
-	private $targeting_evaluator;
-
-	/**
 	 * Constructor.
 	 */
 	private function __construct() {
 		$this->registry = PlacementRegistry::get_instance();
-		// Assuming TargetingEvaluator is also a singleton or we instantiate/inject it
-		$this->targeting_evaluator = new TargetingEvaluator();
 	}
 
 	/**
@@ -109,8 +99,8 @@ class Injector {
 				echo sprintf(
 					'<div class="advajra-ad-wrapper advajra-%s" data-ad-id="%d">%s</div>',
 					esc_attr( $type ),
-					$ad_id,
-					$html
+					absint( $ad_id ),
+					wp_kses_post( $html )
 				);
 			}
 		}

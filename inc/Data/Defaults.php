@@ -36,17 +36,17 @@ class Defaults {
 	 */
 	private static function get_base_defaults() {
 		return [
-			'active_preset'          => 'balanced',
-			'default_layout'         => 'default',
-			'default_target'         => '_blank',
-			'default_nofollow'       => false,
-			'default_sponsored'      => false,
-			'default_tracking'       => 'both',
-			'adblock_detection'        => false,
-			'disable_all_ads'          => false,
-			'hidden_roles'             => [],
-			'blocked_ips'              => [],
-			'erase_data_on_uninstall'  => false,
+			'active_preset'           => 'balanced',
+			'default_layout'          => 'default',
+			'default_target'          => '_blank',
+			'default_nofollow'        => false,
+			'default_sponsored'       => false,
+			'default_tracking'        => 'both',
+			'adblock_detection'       => false,
+			'disable_all_ads'         => false,
+			'hidden_roles'            => [],
+			'blocked_ips'             => [],
+			'erase_data_on_uninstall' => false,
 		];
 	}
 
@@ -59,17 +59,17 @@ class Defaults {
 		$defaults = array_merge(
 			self::get_base_defaults(),
 			[
-				'hidden_roles'           => [],
-				'disable_homepage'       => false,
-				'disable_posts'          => false,
-				'disable_pages'          => false,
-				'disable_archives'       => false,
-				'disable_search'         => true,
-				'disable_404'            => true,
-				'disable_rss'            => true,
-				'hide_from_bots'         => true,
-				'adblock_detection'      => false,
-				'analytics_enabled'      => true,
+				'hidden_roles'      => [],
+				'disable_homepage'  => false,
+				'disable_posts'     => false,
+				'disable_pages'     => false,
+				'disable_archives'  => false,
+				'disable_search'    => true,
+				'disable_404'       => true,
+				'disable_rss'       => true,
+				'hide_from_bots'    => true,
+				'adblock_detection' => false,
+				'analytics_enabled' => true,
 			]
 		);
 
@@ -85,17 +85,17 @@ class Defaults {
 		$defaults = array_merge(
 			self::get_base_defaults(),
 			[
-				'hidden_roles'           => [],
-				'disable_homepage'       => false,
-				'disable_posts'          => false,
-				'disable_pages'          => false,
-				'disable_archives'       => false,
-				'disable_search'         => false,
-				'disable_404'            => false,
-				'disable_rss'            => false,
-				'hide_from_bots'         => true,
-				'adblock_detection'      => false,
-				'analytics_enabled'      => true,
+				'hidden_roles'      => [],
+				'disable_homepage'  => false,
+				'disable_posts'     => false,
+				'disable_pages'     => false,
+				'disable_archives'  => false,
+				'disable_search'    => false,
+				'disable_404'       => false,
+				'disable_rss'       => false,
+				'hide_from_bots'    => true,
+				'adblock_detection' => false,
+				'analytics_enabled' => true,
 			]
 		);
 
@@ -111,17 +111,17 @@ class Defaults {
 		$defaults = array_merge(
 			self::get_base_defaults(),
 			[
-				'hidden_roles'           => [ 'administrator', 'editor' ],
-				'disable_homepage'       => true,
-				'disable_posts'          => false,
-				'disable_pages'          => true,
-				'disable_archives'       => true,
-				'disable_search'         => true,
-				'disable_404'            => true,
-				'disable_rss'            => true,
-				'hide_from_bots'         => true,
-				'adblock_detection'      => false,
-				'analytics_enabled'      => true,
+				'hidden_roles'      => [ 'administrator', 'editor' ],
+				'disable_homepage'  => true,
+				'disable_posts'     => false,
+				'disable_pages'     => true,
+				'disable_archives'  => true,
+				'disable_search'    => true,
+				'disable_404'       => true,
+				'disable_rss'       => true,
+				'hide_from_bots'    => true,
+				'adblock_detection' => false,
+				'analytics_enabled' => true,
 			]
 		);
 

@@ -36,6 +36,10 @@ class PreviewController {
 			return;
 		}
 
+		if ( ! isset( $_GET['advajra_preview_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['advajra_preview_nonce'] ) ), 'advajra_preview' ) ) {
+			wp_die( 'Invalid preview link.', 'Invalid Request', [ 'response' => 403 ] );
+		}
+
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( 'You do not have permission to preview placements.', 'Permission Denied', [ 'response' => 403 ] );
 		}
@@ -49,36 +53,56 @@ class PreviewController {
 
 		$is_content_type = in_array( $placement->type, [ 'before_content', 'after_content', 'after_paragraph' ], true );
 		if ( $is_content_type && ! is_single() && ! isset( $_GET['advajra_rp'] ) ) {
-			$latest = get_posts( [ 'numberposts' => 1, 'post_type' => 'post' ] );
+			$latest = get_posts(
+				[
+					'numberposts' => 1,
+					'post_type'   => 'post',
+				]
+			);
 			if ( ! empty( $latest ) ) {
 				$url = get_permalink( $latest[0]->ID );
-				$url = add_query_arg( [ 'advajra_preview' => $placement_id, 'advajra_rp' => 1 ], $url );
+				$url = add_query_arg(
+					[
+						'advajra_preview'       => $placement_id,
+						'advajra_preview_nonce' => wp_create_nonce( 'advajra_preview' ),
+						'advajra_rp'            => 1,
+					],
+					$url
+				);
 				wp_safe_redirect( $url );
 				exit;
 			}
 		}
 
-		add_filter( 'advajra_active_placements', function( $placements ) use ( $placement, $is_content_type ) {
-			$injector_type = $is_content_type ? 'content' : $placement->type;
+		add_filter(
+			'advajra_active_placements',
+			function ( $placements ) use ( $placement, $is_content_type ) {
+				$injector_type = $is_content_type ? 'content' : $placement->type;
 
-			$preview_placement = [
-				'id'        => (int) $placement->id,
-				'name'      => $placement->name,
-				'type'      => $injector_type,
-				'item_type' => $placement->item_type,
-				'item_id'   => (int) $placement->item_id,
-				'args'      => [
-					'point'     => ( 'before_content' === $placement->type ) ? 'before' : 'after',
-					'paragraph' => $placement->paragraph_num ?? 0,
-				],
-			];
+				$preview_placement = [
+					'id'        => (int) $placement->id,
+					'name'      => $placement->name,
+					'type'      => $injector_type,
+					'item_type' => $placement->item_type,
+					'item_id'   => (int) $placement->item_id,
+					'args'      => [
+						'point'     => ( 'before_content' === $placement->type ) ? 'before' : 'after',
+						'paragraph' => $placement->paragraph_num ?? 0,
+					],
+				];
 
-			return [ $preview_placement ];
-		}, 99 );
+				return [ $preview_placement ];
+			},
+			99
+		);
 
-		add_action( 'wp_footer', function() use ( $placement, $placement_id ) {
-			self::render_preview_ui( $placement, $placement_id );
-		}, 999 );
+		add_action(
+			'wp_footer',
+			function () use ( $placement, $placement_id ) {
+				self::render_preview_ui( $placement, $placement_id );
+			},
+			999
+		);
 	}
 
 	/**

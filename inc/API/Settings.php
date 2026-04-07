@@ -82,31 +82,31 @@ class Settings extends Controller {
 		$settings = [];
 
 		$whitelist = [
-			'active_preset'          => 'sanitize_text_field',
-			'default_layout'         => 'sanitize_text_field',
-			'default_target'         => 'sanitize_text_field',
-			'default_nofollow'       => 'rest_sanitize_boolean',
-			'default_sponsored'      => 'rest_sanitize_boolean',
-			'default_tracking'       => 'sanitize_text_field',
-			'analytics_enabled'      => 'rest_sanitize_boolean',
-			'sync_interval'          => 'absint',
-			'disable_all_ads'        => 'rest_sanitize_boolean',
-			'disable_homepage'       => 'rest_sanitize_boolean',
-			'disable_posts'          => 'rest_sanitize_boolean',
-			'disable_pages'          => 'rest_sanitize_boolean',
-			'disable_rss'            => 'rest_sanitize_boolean',
-			'disable_404'            => 'rest_sanitize_boolean',
-			'disable_search'         => 'rest_sanitize_boolean',
-			'disable_archives'       => 'rest_sanitize_boolean',
-			'hidden_roles'           => 'array',
-			'blocked_ips'            => 'array',
-			'hide_from_bots'         => 'rest_sanitize_boolean',
-			'adblock_detection'      => 'rest_sanitize_boolean',
-			'adblock_message'        => 'wp_kses_post',
-			'gdpr_consent_mode'      => 'rest_sanitize_boolean',
-			'privacy_safe_mode'      => 'rest_sanitize_boolean',
-			'consent_cookie_name'    => 'sanitize_text_field',
-			'consent_cookie_value'   => 'sanitize_text_field',
+			'active_preset'              => 'sanitize_text_field',
+			'default_layout'             => 'sanitize_text_field',
+			'default_target'             => 'sanitize_text_field',
+			'default_nofollow'           => 'rest_sanitize_boolean',
+			'default_sponsored'          => 'rest_sanitize_boolean',
+			'default_tracking'           => 'sanitize_text_field',
+			'analytics_enabled'          => 'rest_sanitize_boolean',
+			'sync_interval'              => 'absint',
+			'disable_all_ads'            => 'rest_sanitize_boolean',
+			'disable_homepage'           => 'rest_sanitize_boolean',
+			'disable_posts'              => 'rest_sanitize_boolean',
+			'disable_pages'              => 'rest_sanitize_boolean',
+			'disable_rss'                => 'rest_sanitize_boolean',
+			'disable_404'                => 'rest_sanitize_boolean',
+			'disable_search'             => 'rest_sanitize_boolean',
+			'disable_archives'           => 'rest_sanitize_boolean',
+			'hidden_roles'               => 'array',
+			'blocked_ips'                => 'array',
+			'hide_from_bots'             => 'rest_sanitize_boolean',
+			'adblock_detection'          => 'rest_sanitize_boolean',
+			'adblock_message'            => 'wp_kses_post',
+			'gdpr_consent_mode'          => 'rest_sanitize_boolean',
+			'privacy_safe_mode'          => 'rest_sanitize_boolean',
+			'consent_cookie_name'        => 'sanitize_text_field',
+			'consent_cookie_value'       => 'sanitize_text_field',
 			'custom_code_header_enabled' => 'rest_sanitize_boolean',
 			'custom_code_body_enabled'   => 'rest_sanitize_boolean',
 			'custom_code_footer_enabled' => 'rest_sanitize_boolean',
@@ -218,9 +218,9 @@ class Settings extends Controller {
 	 * @return \WP_REST_Response
 	 */
 	public function get_sync_status() {
-		$settings      = get_option( 'advajra_settings', [] );
-		$interval      = isset( $settings['sync_interval'] ) ? absint( $settings['sync_interval'] ) : 5;
-		$next_run      = wp_next_scheduled( 'advajra_sync_tracking' );
+		$settings = get_option( 'advajra_settings', [] );
+		$interval = isset( $settings['sync_interval'] ) ? absint( $settings['sync_interval'] ) : 5;
+		$next_run = wp_next_scheduled( 'advajra_sync_tracking' );
 
 		// Format next run in site's local timezone.
 		$next_run_formatted = null;
@@ -236,5 +236,4 @@ class Settings extends Controller {
 			]
 		);
 	}
-
 }

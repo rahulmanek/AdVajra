@@ -91,7 +91,7 @@ class IpBlockerModule implements ModuleInterface {
 		}
 
 		$blocked_map = array_flip( array_map( 'trim', $blocked_ips ) );
-		$user_ip     = $_SERVER['REMOTE_ADDR'] ?? '';
+		$user_ip     = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
 
 		$headers_to_check = [
 			'HTTP_CLIENT_IP',
@@ -104,7 +104,7 @@ class IpBlockerModule implements ModuleInterface {
 
 		foreach ( $headers_to_check as $header ) {
 			if ( ! empty( $_SERVER[ $header ] ) ) {
-				$forwarded_ips = explode( ',', $_SERVER[ $header ] );
+				$forwarded_ips = explode( ',', sanitize_text_field( wp_unslash( $_SERVER[ $header ] ) ) );
 				$potential_ip  = trim( $forwarded_ips[0] );
 
 				if ( filter_var( $potential_ip, FILTER_VALIDATE_IP ) ) {

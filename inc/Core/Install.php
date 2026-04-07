@@ -20,7 +20,6 @@ class Install {
 	 */
 	public static function install() {
 		self::create_tables();
-		self::create_roles();
 		self::set_defaults();
 	}
 
@@ -93,13 +92,6 @@ class Install {
 		dbDelta( $sql );
 		dbDelta( $sql_placements );
 		dbDelta( $sql_activity );
-	}
-
-	/**
-	 * Create Roles/Caps.
-	 */
-	private static function create_roles() {
-		// intentionally empty
 	}
 
 	/**

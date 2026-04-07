@@ -19,7 +19,7 @@ final class Plugin {
 	/**
 	 * The single instance of the class.
 	 *
-	 * @var Plugin
+	 * @var Plugin|null
 	 */
 	private static $instance = null;
 
@@ -29,7 +29,7 @@ final class Plugin {
 	 * @return Plugin
 	 */
 	public static function instance() {
-		if ( is_null( self::$instance ) ) {
+		if ( null === self::$instance ) {
 			self::$instance = new self();
 		}
 		return self::$instance;
@@ -39,15 +39,8 @@ final class Plugin {
 	 * Constructor.
 	 */
 	private function __construct() {
-		$this->define_constants();
 		$this->includes();
 		$this->init_hooks();
-	}
-
-	/**
-	 * Define constants.
-	 */
-	private function define_constants() {
 	}
 
 	/**
@@ -67,18 +60,10 @@ final class Plugin {
 	 * Hook into WordPress.
 	 */
 	private function init_hooks() {
-		add_action( 'plugins_loaded', [ $this, 'on_plugins_loaded' ] );
 		add_action( 'init', [ $this, 'init' ] );
 		add_action( 'widgets_init', [ $this, 'register_widgets' ] );
 		register_activation_hook( ADVAJRA_FILE, [ $this, 'activation_hook' ] );
 		register_deactivation_hook( ADVAJRA_FILE, [ $this, 'deactivation_hook' ] );
-	}
-
-	/**
-	 * Plugins Loaded.
-	 */
-	public function on_plugins_loaded() {
-		load_plugin_textdomain( 'advajra', false, dirname( ADVAJRA_BASENAME ) . '/languages' );
 	}
 
 	/**

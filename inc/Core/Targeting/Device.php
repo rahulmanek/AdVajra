@@ -36,7 +36,7 @@ class Device implements TargetingInterface {
 
 		// Support both single string and array of values
 		if ( is_array( $value ) ) {
-			return in_array( $current_device, $value );
+			return in_array( $current_device, $value, true );
 		}
 
 		return $current_device === $value;

@@ -2,7 +2,7 @@
 Contributors: idevelop.pro
 Tags: ads, advertising, ad manager, analytics, targeting
 Requires at least: 6.0
-Tested up to: 6.9.2
+Tested up to: 6.9
 Requires PHP: 7.4
 Stable tag: 1.0.0
 License: GPLv2 or later

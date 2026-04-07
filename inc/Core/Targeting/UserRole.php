@@ -41,9 +41,9 @@ class UserRole implements TargetingInterface {
 		}
 
 		if ( $operator === '==' ) {
-			return in_array( $value, (array) $user->roles );
+			return in_array( $value, (array) $user->roles, true );
 		} else {
-			return ! in_array( $value, (array) $user->roles );
+			return ! in_array( $value, (array) $user->roles, true );
 		}
 	}
 }

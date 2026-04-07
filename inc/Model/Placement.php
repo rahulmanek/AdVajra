@@ -84,7 +84,7 @@ class Placement {
 	 */
 	public static function get_table() {
 		global $wpdb;
-		return $wpdb->prefix . self::TABLE;
+		return esc_sql( $wpdb->prefix . self::TABLE );
 	}
 
 	/**
@@ -174,22 +174,29 @@ class Placement {
 		$name   = sanitize_text_field( $data['name'] ?? '' );
 		$config = wp_json_encode( $data['config'] ?? $data['args'] ?? [] );
 
-		$table = self::get_table();
-
-		$item_id_sql       = $item_id ? $wpdb->prepare( '%d', $item_id ) : 'NULL';
-		$paragraph_num_sql = $paragraph_num ? $wpdb->prepare( '%d', $paragraph_num ) : 'NULL';
-
-		$sql = $wpdb->prepare(
-			"INSERT INTO $table (name, type, item_type, item_id, status, paragraph_num, config)
-			 VALUES (%s, %d, %d, $item_id_sql, %d, $paragraph_num_sql, %s)",
-			$name,
-			$type_id,
-			$item_type_id,
-			$status_id,
-			$config
+		$table  = self::get_table();
+		$sql    = null;
+		$result = $wpdb->insert(
+			$table,
+			[
+				'name'          => $name,
+				'type'          => $type_id,
+				'item_type'     => $item_type_id,
+				'item_id'       => $item_id,
+				'status'        => $status_id,
+				'paragraph_num' => $paragraph_num,
+				'config'        => $config,
+			],
+			[
+				'%s',
+				'%d',
+				'%d',
+				'%d',
+				'%d',
+				'%d',
+				'%s',
+			]
 		);
-
-		$result = $wpdb->query( $sql );
 
 		if ( $result ) {
 			wp_cache_delete( 'last_changed', self::CACHE_GROUP );
@@ -224,7 +231,13 @@ class Placement {
 
 		if ( false === $item ) {
 			$table = self::get_table();
-			$item  = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table WHERE id = %d", $id ) );
+			$item  = $wpdb->get_row(
+				$wpdb->prepare(
+					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Placement table name is internal and trusted.
+					"SELECT * FROM {$table} WHERE id = %d",
+					$id
+				)
+			);
 
 			if ( $item ) {
 				$item = self::transform_for_api( $item );
@@ -348,7 +361,12 @@ class Placement {
 
 		if ( false === $items ) {
 			$table = self::get_table();
-			$items = $wpdb->get_results( "SELECT * FROM $table ORDER BY id DESC" );
+			$items = $wpdb->get_results(
+				$wpdb->prepare(
+					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Placement table name is internal and trusted.
+					"SELECT * FROM {$table} ORDER BY id DESC"
+				)
+			);
 
 			foreach ( $items as &$item ) {
 				$item = self::transform_for_api( $item );
@@ -372,7 +390,8 @@ class Placement {
 
 		$items = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT * FROM $table WHERE type = %d AND status = %d ORDER BY id ASC",
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Placement table name is internal and trusted.
+				"SELECT * FROM {$table} WHERE type = %d AND status = %d ORDER BY id ASC",
 				$type_id,
 				self::STATUS_ACTIVE
 			)

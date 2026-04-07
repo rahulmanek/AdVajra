@@ -36,14 +36,14 @@ class Widget extends \WP_Widget {
 	public function widget( $args, $instance ) {
 		$type = ! empty( $instance['type'] ) ? sanitize_text_field( $instance['type'] ) : 'ad';
 		$id   = ! empty( $instance['id'] ) ? absint( $instance['id'] ) : 0;
-		
+
 		if ( ! $id ) {
 			return;
 		}
 
-		echo $args['before_widget'];
+		echo wp_kses_post( $args['before_widget'] );
 		if ( ! empty( $instance['title'] ) ) {
-			echo $args['before_title'] . apply_filters( 'widget_title', $instance['title'] ) . $args['after_title'];
+			echo wp_kses_post( $args['before_title'] . apply_filters( 'widget_title', $instance['title'] ) . $args['after_title'] );
 		}
 
 		if ( 'ad' === $type ) {
@@ -51,7 +51,7 @@ class Widget extends \WP_Widget {
 		} elseif ( 'placement' === $type ) {
 			$placement = \AdVajra\Model\Placement::get( $id );
 			if ( $placement ) {
-				$ad_id = 0;
+				$ad_id     = 0;
 				$item_type = \AdVajra\Model\Placement::id_to_item_type( $placement->item_type );
 
 				if ( 'ad' === $item_type ) {
@@ -66,7 +66,7 @@ class Widget extends \WP_Widget {
 			}
 		}
 
-		echo $args['after_widget'];
+		echo wp_kses_post( $args['after_widget'] );
 	}
 
 	/**
@@ -132,7 +132,7 @@ class Widget extends \WP_Widget {
 		$instance          = [];
 		$instance['title'] = ( ! empty( $new_instance['title'] ) ) ? sanitize_text_field( $new_instance['title'] ) : '';
 		$instance['type']  = ( ! empty( $new_instance['type'] ) ) ? sanitize_text_field( $new_instance['type'] ) : 'ad';
-		
+
 		if ( 'ad' === $instance['type'] ) {
 			$instance['id'] = ( ! empty( $new_instance['id_ad'] ) ) ? absint( $new_instance['id_ad'] ) : 0;
 		} else {

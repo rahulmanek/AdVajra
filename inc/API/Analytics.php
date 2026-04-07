@@ -101,11 +101,7 @@ class Analytics extends Controller {
 		// Pre-release unification:
 		// use one canonical Overview payload on the original route.
 		return $this->get_overview_v2( $request );
-
-		global $wpdb;
-
-		$placements_table = $wpdb->prefix . 'advajra_placements';
-		$stats_table      = $wpdb->prefix . 'advajra_stats';
+		// @phpstan-ignore-next-line Legacy overview block kept temporarily during route consolidation.
 		$access           = $this->get_access_context();
 
 		$ads = get_posts(
@@ -118,7 +114,7 @@ class Analytics extends Controller {
 			]
 		);
 
-		$placements = $wpdb->get_results( "SELECT * FROM {$placements_table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		$placements = $wpdb->get_results( "SELECT * FROM {$placements_table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Placements table name is internal and trusted.
 		$settings   = get_option( 'advajra_settings', [] );
 
 		$total_ads   = count( $ads );
@@ -189,8 +185,9 @@ class Analytics extends Controller {
 		if ( ! $access['is_locked'] ) {
 			$days        = 7;
 			$end_date    = current_time( 'Y-m-d' );
-			$start_date  = date( 'Y-m-d', strtotime( "-{$days} days" ) );
+			$start_date  = ( new \DateTimeImmutable( $end_date, wp_timezone() ) )->modify( "-{$days} days" )->format( 'Y-m-d' );
 			$pulse_query = $wpdb->get_results(
+				// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Stats table name is built from the trusted WordPress prefix.
 				$wpdb->prepare(
 					"SELECT date, SUM(impressions) as impressions, SUM(clicks) as clicks
 					FROM $stats_table
@@ -200,8 +197,9 @@ class Analytics extends Controller {
 					$start_date,
 					$end_date
 				)
+				// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			);
-			$pulse       = $this->fill_dates( $pulse_query, $start_date, $end_date );
+			$pulse = $this->fill_dates( $pulse_query, $start_date, $end_date );
 
 			foreach ( $pulse as $point ) {
 				$total_impressions += (int) $point['impressions'];
@@ -366,11 +364,11 @@ class Analytics extends Controller {
 		];
 
 		$overview_data = [
-			'health'       => $health_checks,
-			'priorities'   => $priorities,
-			'quickActions' => $quick_actions,
-			'opportunities'=> $opportunities,
-			'pulse'        => [
+			'health'        => $health_checks,
+			'priorities'    => $priorities,
+			'quickActions'  => $quick_actions,
+			'opportunities' => $opportunities,
+			'pulse'         => [
 				'impressions' => $total_impressions,
 				'clicks'      => $total_clicks,
 				'ctr'         => number_format( $pulse_ctr, 2 ),
@@ -378,16 +376,16 @@ class Analytics extends Controller {
 				'locked'      => $access['is_locked'],
 				'upgrade_url' => 'https://advajra.com/pricing',
 			],
-			'meta'         => [
-				'totalAds'          => $total_ads,
-				'activeAds'         => $active_ads,
-				'totalPlacements'   => $total_place,
-				'assignedPlacements'=> $assigned_count,
-				'latestPlacementId' => $latest_placement ? (int) $latest_placement->id : 0,
+			'meta'          => [
+				'totalAds'           => $total_ads,
+				'activeAds'          => $active_ads,
+				'totalPlacements'    => $total_place,
+				'assignedPlacements' => $assigned_count,
+				'latestPlacementId'  => $latest_placement ? (int) $latest_placement->id : 0,
 			],
-			'retention'    => $access['retention'],
-			'trial'        => $access['trial'],
-			'locked'       => $access['is_locked'],
+			'retention'     => $access['retention'],
+			'trial'         => $access['trial'],
+			'locked'        => $access['is_locked'],
 		];
 
 		return rest_ensure_response( apply_filters( 'advajra_dashboard_overview_payload', $overview_data ) );
@@ -402,16 +400,17 @@ class Analytics extends Controller {
 	public function get_overview_v2( $request ) {
 		global $wpdb;
 
-		$stats_table  = $wpdb->prefix . 'advajra_stats';
-		$settings     = get_option( 'advajra_settings', [] );
-		$access       = $this->get_access_context();
-		$placements   = \AdVajra\Model\Placement::get_all();
+		$stats_table    = $wpdb->prefix . 'advajra_stats';
+		$settings       = get_option( 'advajra_settings', [] );
+		$access         = $this->get_access_context();
+		$placements     = \AdVajra\Model\Placement::get_all();
 		$active_modules = get_option( 'advajra_active_modules', [] );
 
 		$end_date   = current_time( 'Y-m-d' );
-		$start_date = date( 'Y-m-d', strtotime( '-6 days', strtotime( $end_date ) ) );
+		$start_date = ( new \DateTimeImmutable( $end_date, wp_timezone() ) )->modify( '-6 days' )->format( 'Y-m-d' );
 
 		$totals = $wpdb->get_row(
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Stats table name is built from the trusted WordPress prefix.
 			$wpdb->prepare(
 				"SELECT
 					COALESCE(SUM(ad_requests),0) AS ad_requests,
@@ -429,6 +428,7 @@ class Analytics extends Controller {
 				$start_date,
 				$end_date
 			),
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			ARRAY_A
 		);
 
@@ -477,10 +477,10 @@ class Analytics extends Controller {
 			];
 		}
 
-		$total_placements           = 0;
-		$total_assigned             = 0;
-		$shortcode_total            = 0;
-		$shortcode_assigned         = 0;
+		$total_placements             = 0;
+		$total_assigned               = 0;
+		$shortcode_total              = 0;
+		$shortcode_assigned           = 0;
 		$suppressed_premium_inventory = 0;
 
 		foreach ( $placements as $placement ) {
@@ -513,15 +513,15 @@ class Analytics extends Controller {
 			$inventory_rows[ $type ]['coverage'] = $row['total'] > 0 ? round( ( $row['assigned'] / $row['total'] ) * 100, 1 ) : 0;
 		}
 
-		$unassigned_placements      = max( 0, $total_placements - $total_assigned );
-		$module_needs_attention     = [];
-		$tracking_enabled           = ! isset( $settings['analytics_enabled'] ) || false !== $settings['analytics_enabled'];
-		$ad_system_enabled          = empty( $settings['disable_all_ads'] );
-		$bot_protection_enabled     = ! empty( $settings['hide_from_bots'] );
-		$ip_blocker_module_enabled  = in_array( 'ip_blocker', $active_modules, true );
-		$blocked_ips                = isset( $settings['blocked_ips'] ) && is_array( $settings['blocked_ips'] ) ? $settings['blocked_ips'] : [];
-		$blocked_ip_count           = count( $blocked_ips );
-		$ad_groups_enabled          = in_array( 'ad_groups', $active_modules, true );
+		$unassigned_placements     = max( 0, $total_placements - $total_assigned );
+		$module_needs_attention    = [];
+		$tracking_enabled          = ! isset( $settings['analytics_enabled'] ) || false !== $settings['analytics_enabled'];
+		$ad_system_enabled         = empty( $settings['disable_all_ads'] );
+		$bot_protection_enabled    = ! empty( $settings['hide_from_bots'] );
+		$ip_blocker_module_enabled = in_array( 'ip_blocker', $active_modules, true );
+		$blocked_ips               = isset( $settings['blocked_ips'] ) && is_array( $settings['blocked_ips'] ) ? $settings['blocked_ips'] : [];
+		$blocked_ip_count          = count( $blocked_ips );
+		$ad_groups_enabled         = in_array( 'ad_groups', $active_modules, true );
 
 		if ( ! $ad_system_enabled ) {
 			$module_needs_attention[] = __( 'Ad System is OFF', 'advajra' );
@@ -633,8 +633,8 @@ class Analytics extends Controller {
 					'medium'   => 2,
 					'low'      => 3,
 				];
-				$a_rank = $severity_rank[ $a['severity'] ] ?? 9;
-				$b_rank = $severity_rank[ $b['severity'] ] ?? 9;
+				$a_rank        = $severity_rank[ $a['severity'] ] ?? 9;
+				$b_rank        = $severity_rank[ $b['severity'] ] ?? 9;
 
 				if ( $a_rank === $b_rank ) {
 					return (int) $b['impact_score'] <=> (int) $a['impact_score'];
@@ -648,6 +648,7 @@ class Analytics extends Controller {
 
 		$optimization_queue = [];
 		$daily_rows         = $wpdb->get_results(
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Stats table name is built from the trusted WordPress prefix.
 			$wpdb->prepare(
 				"SELECT date, SUM(impressions) AS impressions
 				FROM {$stats_table}
@@ -658,6 +659,7 @@ class Analytics extends Controller {
 				$start_date,
 				$end_date
 			),
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			ARRAY_A
 		);
 
@@ -666,7 +668,7 @@ class Analytics extends Controller {
 			$prior  = (int) $daily_rows[1]['impressions'];
 
 			if ( $prior > 0 && $latest < $prior ) {
-				$drop_pct = round( ( ( $prior - $latest ) / $prior ) * 100, 1 );
+				$drop_pct             = round( ( ( $prior - $latest ) / $prior ) * 100, 1 );
 				$optimization_queue[] = [
 					'id'            => 'top_movers_downtrend',
 					'entity_key'    => 'performance:impressions',
@@ -680,6 +682,7 @@ class Analytics extends Controller {
 		}
 
 		$low_ctr_ads = $wpdb->get_results(
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Stats and posts table names are internal and trusted.
 			$wpdb->prepare(
 				"SELECT s.ad_id, COALESCE(p.post_title, '') AS title, SUM(s.impressions) AS impressions, SUM(s.clicks) AS clicks
 				FROM {$stats_table} s
@@ -692,6 +695,7 @@ class Analytics extends Controller {
 				$start_date,
 				$end_date
 			),
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			ARRAY_A
 		);
 
@@ -717,6 +721,7 @@ class Analytics extends Controller {
 		}
 
 		$ad_latency_rows = $wpdb->get_results(
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Stats table name is built from the trusted WordPress prefix.
 			$wpdb->prepare(
 				"SELECT ad_id, SUM(load_time_ms_sum) AS load_sum, SUM(load_samples) AS samples
 				FROM {$stats_table}
@@ -725,6 +730,7 @@ class Analytics extends Controller {
 				$start_date,
 				$end_date
 			),
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			ARRAY_A
 		);
 
@@ -847,19 +853,19 @@ class Analytics extends Controller {
 			],
 		];
 
-		$activity_rows = \AdVajra\Utils\AuditLog::get_recent(8);
+		$activity_rows = \AdVajra\Utils\AuditLog::get_recent( 8 );
 		$activity_feed = [];
 
 		foreach ( $activity_rows as $activity_row ) {
-			$next_step  = $this->resolve_activity_next_step( $activity_row['action'] ?? '' );
-			$created_ts = ! empty( $activity_row['created_at'] ) ? strtotime( (string) $activity_row['created_at'] ) : 0;
+			$next_step       = $this->resolve_activity_next_step( $activity_row['action'] ?? '' );
+			$created_ts      = ! empty( $activity_row['created_at'] ) ? strtotime( (string) $activity_row['created_at'] ) : 0;
 			$activity_feed[] = [
-				'id'          => (int) ( $activity_row['id'] ?? 0 ),
-				'actor'       => $activity_row['actor_name'] ?? __( 'System', 'advajra' ),
-				'summary'     => $activity_row['summary'] ?? '',
-				'created_at'  => $activity_row['created_at'] ?? '',
-				'time_ago'    => $created_ts > 0 ? human_time_diff( $created_ts, current_time( 'timestamp' ) ) . ' ago' : '',
-				'next_step'   => $next_step,
+				'id'         => (int) ( $activity_row['id'] ?? 0 ),
+				'actor'      => $activity_row['actor_name'] ?? __( 'System', 'advajra' ),
+				'summary'    => $activity_row['summary'] ?? '',
+				'created_at' => $activity_row['created_at'] ?? '',
+				'time_ago'   => $created_ts > 0 ? human_time_diff( $created_ts, current_datetime()->getTimestamp() ) . ' ago' : '',
+				'next_step'  => $next_step,
 			];
 		}
 
@@ -877,20 +883,20 @@ class Analytics extends Controller {
 			];
 		}
 
-		$sync_interval     = isset( $settings['sync_interval'] ) ? max( 1, absint( $settings['sync_interval'] ) ) : 5;
-		$last_sync_raw     = get_option( 'advajra_last_tracking_sync', '' );
-		$last_sync_ts      = ! empty( $last_sync_raw ) ? (int) mysql2date( 'U', $last_sync_raw, false ) : 0;
-		$sync_age_seconds  = $last_sync_ts > 0 ? max( 0, current_time( 'timestamp' ) - $last_sync_ts ) : null;
-		$tracking_status   = ! $tracking_enabled
+		$sync_interval    = isset( $settings['sync_interval'] ) ? max( 1, absint( $settings['sync_interval'] ) ) : 5;
+		$last_sync_raw    = get_option( 'advajra_last_tracking_sync', '' );
+		$last_sync_ts     = ! empty( $last_sync_raw ) ? (int) mysql2date( 'U', $last_sync_raw, false ) : 0;
+		$sync_age_seconds = $last_sync_ts > 0 ? max( 0, current_datetime()->getTimestamp() - $last_sync_ts ) : null;
+		$tracking_status  = ! $tracking_enabled
 			? 'disabled'
 			: ( null === $sync_age_seconds ? 'pending' : ( $sync_age_seconds <= ( $sync_interval * 120 ) ? 'healthy' : 'degraded' ) );
-		$api_status        = $tracking_status === 'degraded' ? 'degraded' : 'healthy';
+		$api_status       = $tracking_status === 'degraded' ? 'degraded' : 'healthy';
 
 		$state = [
-			'last_sync' => [
+			'last_sync'         => [
 				'at'          => $last_sync_raw ?: null,
 				'age_seconds' => $sync_age_seconds,
-				'label'       => null === $sync_age_seconds ? 'Never synced' : human_time_diff( $last_sync_ts, current_time( 'timestamp' ) ) . ' ago',
+				'label'       => null === $sync_age_seconds ? 'Never synced' : human_time_diff( $last_sync_ts, current_datetime()->getTimestamp() ) . ' ago',
 				'help'        => 'How long ago tracking data was saved to database.',
 			],
 			'tracking_pipeline' => [
@@ -900,20 +906,20 @@ class Analytics extends Controller {
 					: ( $tracking_status === 'disabled' ? 'Tracking is off from settings' : 'Tracking sync is delayed' ),
 				'help'    => 'Collects impression/click events and syncs them on the selected interval.',
 			],
-			'license' => [
+			'license'           => [
 				'tier'                 => $access['is_pro'] ? 'pro' : ( $access['trial']['expired'] ? 'free_locked' : 'trial' ),
 				'locked'               => (bool) $access['is_locked'],
 				'trial_days_remaining' => (int) $access['trial']['days_remaining'],
 				'help'                 => 'Plan status used for analytics and advanced features.',
 			],
-			'api_degradation' => [
+			'api_degradation'   => [
 				'status'  => $api_status,
 				'message' => 'healthy' === $api_status ? 'API status normal' : 'API delayed due to tracking sync lag',
 				'help'    => 'Backend health signal for dashboard data freshness.',
 			],
 		];
 
-		$advanced_context = ! empty( $risk_queue ) ? $risk_queue[0]['title'] : ( ! empty( $optimization_queue ) ? $optimization_queue[0]['title'] : 'No critical blockers' );
+		$advanced_context      = ! empty( $risk_queue ) ? $risk_queue[0]['title'] : ( ! empty( $optimization_queue ) ? $optimization_queue[0]['title'] : 'No critical blockers' );
 		$advanced_optimization = [
 			'status'      => $access['is_pro'] ? 'available' : 'locked',
 			'title'       => 'Advanced Optimization',
@@ -938,33 +944,33 @@ class Analytics extends Controller {
 		];
 
 		$payload = [
-			'state'              => $state,
-			'kpis'               => [
-				'ad_requests' => [
+			'state'                 => $state,
+			'kpis'                  => [
+				'ad_requests'       => [
 					'label'   => 'Ad Requests',
 					'value'   => $ad_requests,
 					'display' => number_format_i18n( $ad_requests ),
 					'help'    => 'Total times ad slots asked for an ad.',
 				],
-				'coverage' => [
+				'coverage'          => [
 					'label'   => 'Coverage',
 					'value'   => round( $coverage * 100, 2 ),
 					'display' => number_format_i18n( $coverage * 100, 2 ) . '%',
 					'help'    => 'Matched requests divided by total ad requests.',
 				],
-				'impressions' => [
+				'impressions'       => [
 					'label'   => 'Impressions',
 					'value'   => $impressions,
 					'display' => number_format_i18n( $impressions ),
 					'help'    => 'Total tracked ad impressions.',
 				],
-				'ctr' => [
+				'ctr'               => [
 					'label'   => 'CTR',
 					'value'   => round( $ctr * 100, 2 ),
 					'display' => number_format_i18n( $ctr * 100, 2 ) . '%',
 					'help'    => 'Clicks divided by impressions.',
 				],
-				'impression_rpm' => [
+				'impression_rpm'    => [
 					'label'     => 'Impression RPM',
 					'value'     => $impression_rpm,
 					'display'   => null === $impression_rpm ? 'Not connected' : '$' . number_format_i18n( $impression_rpm, 2 ),
@@ -978,14 +984,14 @@ class Analytics extends Controller {
 					'display' => number_format_i18n( $avg_viewable_time_s, 2 ) . 's',
 					'help'    => 'Average time an ad stays viewable on screen.',
 				],
-				'avg_load_time' => [
+				'avg_load_time'     => [
 					'label'   => 'Avg Load Time',
 					'value'   => $avg_load_time_ms,
 					'display' => number_format_i18n( $avg_load_time_ms, 1 ) . 'ms',
 				],
 			],
-			'risk_queue'         => $risk_queue,
-			'inventory_health'   => [
+			'risk_queue'            => $risk_queue,
+			'inventory_health'      => [
 				'summary' => [
 					'total'    => $total_placements,
 					'assigned' => $total_assigned,
@@ -993,9 +999,9 @@ class Analytics extends Controller {
 				],
 				'rows'    => array_values( $inventory_rows ),
 			],
-			'switchboard'        => $switchboard,
-			'optimization_queue' => $optimization_queue,
-			'activity_feed'      => $activity_feed,
+			'switchboard'           => $switchboard,
+			'optimization_queue'    => $optimization_queue,
+			'activity_feed'         => $activity_feed,
 			'advanced_optimization' => $advanced_optimization,
 		];
 
@@ -1060,19 +1066,34 @@ class Analytics extends Controller {
 	 */
 	private function resolve_activity_next_step( $action ) {
 		if ( false !== strpos( $action, 'placement_' ) ) {
-			return [ 'label' => 'Open Placements', 'target' => '/placements' ];
+			return [
+				'label'  => 'Open Placements',
+				'target' => '/placements',
+			];
 		}
 		if ( false !== strpos( $action, 'ad_' ) ) {
-			return [ 'label' => 'Open Ads', 'target' => '/ads' ];
+			return [
+				'label'  => 'Open Ads',
+				'target' => '/ads',
+			];
 		}
 		if ( false !== strpos( $action, 'group_' ) ) {
-			return [ 'label' => 'Open Groups', 'target' => '/groups' ];
+			return [
+				'label'  => 'Open Groups',
+				'target' => '/groups',
+			];
 		}
 		if ( false !== strpos( $action, 'module_' ) || false !== strpos( $action, 'settings_' ) ) {
-			return [ 'label' => 'Open Settings', 'target' => '/settings' ];
+			return [
+				'label'  => 'Open Settings',
+				'target' => '/settings',
+			];
 		}
 
-		return [ 'label' => 'Open Overview', 'target' => '/dashboard' ];
+		return [
+			'label'  => 'Open Overview',
+			'target' => '/dashboard',
+		];
 	}
 
 	/**
@@ -1092,10 +1113,6 @@ class Analytics extends Controller {
 			'activity_feed',
 			'advanced_optimization',
 		];
-
-		if ( ! is_array( $payload ) ) {
-			return new \WP_Error( 'invalid_type', 'overview-v2 payload must be an object.' );
-		}
 
 		foreach ( $required_sections as $section ) {
 			if ( ! array_key_exists( $section, $payload ) ) {
@@ -1149,9 +1166,10 @@ class Analytics extends Controller {
 		$table_name = $wpdb->prefix . 'advajra_stats';
 
 		$end_date   = current_time( 'Y-m-d' );
-		$start_date = date( 'Y-m-d', strtotime( '-6 days', strtotime( $end_date ) ) );
+		$start_date = ( new \DateTimeImmutable( $end_date, wp_timezone() ) )->modify( '-6 days' )->format( 'Y-m-d' );
 
 		$results = $wpdb->get_results(
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Stats table name is built from the trusted WordPress prefix.
 			$wpdb->prepare(
 				"SELECT date, SUM(impressions) as impressions, SUM(clicks) as clicks
              FROM $table_name
@@ -1161,6 +1179,7 @@ class Analytics extends Controller {
 				$start_date,
 				$end_date
 			)
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		);
 
 		$daily_data = $this->fill_dates( $results, $start_date, $end_date );
@@ -1211,13 +1230,14 @@ class Analytics extends Controller {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'advajra_stats';
 
-		$start_date = date( 'Y-m-d', strtotime( '-6 days', strtotime( current_time( 'Y-m-d' ) ) ) );
 		$end_date   = current_time( 'Y-m-d' );
+		$start_date = ( new \DateTimeImmutable( $end_date, wp_timezone() ) )->modify( '-6 days' )->format( 'Y-m-d' );
 
 		$placeholders = implode( ',', array_fill( 0, count( $ad_ids ), '%d' ) );
 		$args         = array_merge( [ $start_date, $end_date ], $ad_ids );
 
 		$results = $wpdb->get_results(
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare,WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Stats table name is built from the trusted WordPress prefix; ad ID placeholders remain prepared.
 			$wpdb->prepare(
 				"SELECT ad_id, date, SUM(impressions) as impressions
 				 FROM $table_name
@@ -1227,6 +1247,7 @@ class Analytics extends Controller {
 				 ORDER BY date ASC",
 				...$args
 			)
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare,WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
 		);
 
 		$grouped = [];
@@ -1244,7 +1265,7 @@ class Analytics extends Controller {
 			$current  = strtotime( $start_date );
 			$end_ts   = strtotime( $end_date );
 			while ( $current <= $end_ts ) {
-				$d          = date( 'Y-m-d', $current );
+				$d          = gmdate( 'Y-m-d', $current );
 				$ad_trend[] = isset( $dates_data[ $d ] ) ? $dates_data[ $d ] : 0;
 				$current    = strtotime( '+1 day', $current );
 			}
@@ -1269,12 +1290,12 @@ class Analytics extends Controller {
 		if ( $access['is_locked'] ) {
 			return new WP_REST_Response(
 				[
-					'locked'            => true,
-					'upgrade_url'       => 'https://advajra.com/pricing',
-					'selected_preset'   => $resolved_preset['key'],
-					'presets'           => $allowed_presets,
+					'locked'             => true,
+					'upgrade_url'        => 'https://advajra.com/pricing',
+					'selected_preset'    => $resolved_preset['key'],
+					'presets'            => $allowed_presets,
 					'comparison_enabled' => false,
-					'summary'           => [
+					'summary'            => [
 						'impressions' => 0,
 						'clicks'      => 0,
 						'ctr'         => 0,
@@ -1285,9 +1306,9 @@ class Analytics extends Controller {
 							'ctr_unit'    => 'points',
 						],
 					],
-					'timeline'          => [],
-					'top_ads'           => [],
-					'breakdowns'        => [
+					'timeline'           => [],
+					'top_ads'            => [],
+					'breakdowns'         => [
 						'by_ad'        => [],
 						'by_placement' => [],
 						'top_movers'   => [
@@ -1295,9 +1316,9 @@ class Analytics extends Controller {
 							'by_placement' => [],
 						],
 					],
-					'comparison'        => null,
-					'retention'         => $access['retention'],
-					'trial'             => $access['trial'],
+					'comparison'         => null,
+					'retention'          => $access['retention'],
+					'trial'              => $access['trial'],
 				],
 				200
 			);
@@ -1312,6 +1333,7 @@ class Analytics extends Controller {
 		$dimension  = sanitize_text_field( $request->get_param( 'dimension' ) ?: '' );
 
 		$timeline_results = $wpdb->get_results(
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Stats table name is built from the trusted WordPress prefix.
 			$wpdb->prepare(
 				"SELECT date, SUM(impressions) as impressions, SUM(clicks) as clicks
 				FROM {$table_name}
@@ -1321,6 +1343,7 @@ class Analytics extends Controller {
 				$start_date,
 				$end_date
 			)
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		);
 
 		$timeline = $this->fill_dates( $timeline_results, $start_date, $end_date );
@@ -1334,6 +1357,7 @@ class Analytics extends Controller {
 		$ctr = $total_imps > 0 ? round( ( $total_clicks / $total_imps ) * 100, 2 ) : 0;
 
 		$top_ads = $wpdb->get_results(
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Stats and posts table names are internal and trusted.
 			$wpdb->prepare(
 				"SELECT s.ad_id, p.post_title as title, SUM(s.impressions) as impressions, SUM(s.clicks) as clicks
 				FROM {$table_name} s
@@ -1345,6 +1369,7 @@ class Analytics extends Controller {
 				$start_date,
 				$end_date
 			)
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		);
 
 		$formatted_top_ads = array_map(
@@ -1373,15 +1398,15 @@ class Analytics extends Controller {
 			$breakdowns['by_placement'] = $this->get_placement_breakdown( $start_date, $end_date );
 		}
 
-		$start_ts  = strtotime( $start_date );
-		$end_ts    = strtotime( $end_date );
-		$span_days = max( 1, (int) floor( ( $end_ts - $start_ts ) / DAY_IN_SECONDS ) + 1 );
-		$prev_end  = ! empty( $resolved_preset['prev_end'] )
+		$start_ts   = strtotime( $start_date );
+		$end_ts     = strtotime( $end_date );
+		$span_days  = max( 1, (int) floor( ( $end_ts - $start_ts ) / DAY_IN_SECONDS ) + 1 );
+		$prev_end   = ! empty( $resolved_preset['prev_end'] )
 			? $resolved_preset['prev_end']
-			: date( 'Y-m-d', strtotime( '-1 day', $start_ts ) );
+			: gmdate( 'Y-m-d', strtotime( '-1 day', $start_ts ) );
 		$prev_start = ! empty( $resolved_preset['prev_start'] )
 			? $resolved_preset['prev_start']
-			: date( 'Y-m-d', strtotime( '-' . ( $span_days - 1 ) . ' days', strtotime( $prev_end ) ) );
+			: gmdate( 'Y-m-d', strtotime( '-' . ( $span_days - 1 ) . ' days', strtotime( $prev_end ) ) );
 
 		if ( $compare ) {
 			$breakdowns['top_movers'] = $this->get_top_movers(
@@ -1405,6 +1430,7 @@ class Analytics extends Controller {
 
 		if ( $compare ) {
 			$period_row = $wpdb->get_results(
+				// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Stats table name is built from the trusted WordPress prefix.
 				$wpdb->prepare(
 					"SELECT 'current' as period, COALESCE(SUM(impressions),0) as impressions, COALESCE(SUM(clicks),0) as clicks
 					FROM {$table_name} WHERE date >= %s AND date <= %s
@@ -1416,6 +1442,7 @@ class Analytics extends Controller {
 					$prev_start,
 					$prev_end
 				),
+				// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				ARRAY_A
 			);
 
@@ -1439,6 +1466,7 @@ class Analytics extends Controller {
 			$curr_ctr    = $curr_imps > 0 ? round( ( $curr_clicks / $curr_imps ) * 100, 2 ) : 0;
 
 			$prev_timeline_raw = $wpdb->get_results(
+				// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Stats table name is built from the trusted WordPress prefix.
 				$wpdb->prepare(
 					"SELECT date, SUM(impressions) as impressions, SUM(clicks) as clicks
 					FROM {$table_name}
@@ -1448,6 +1476,7 @@ class Analytics extends Controller {
 					$prev_start,
 					$prev_end
 				)
+				// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			);
 
 			$comparison_panel = [
@@ -1505,6 +1534,7 @@ class Analytics extends Controller {
 		$table_name = $wpdb->prefix . 'advajra_stats';
 
 		$results = $wpdb->get_results(
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Stats and posts table names are internal and trusted.
 			$wpdb->prepare(
 				"SELECT s.ad_id, p.post_title as title, SUM(s.impressions) as impressions, SUM(s.clicks) as clicks
 				FROM $table_name s
@@ -1516,6 +1546,7 @@ class Analytics extends Controller {
 				$start_date,
 				$end_date
 			)
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		);
 
 		return array_map(
@@ -1540,10 +1571,10 @@ class Analytics extends Controller {
 	 */
 	private function get_placement_breakdown( $start_date, $end_date ) {
 		global $wpdb;
-		$table_name      = $wpdb->prefix . 'advajra_stats';
+		$table_name       = $wpdb->prefix . 'advajra_stats';
 		$placements_table = $wpdb->prefix . 'advajra_placements';
 
-		$placement_rows = $wpdb->get_results( "SELECT id, name, item_type, item_id, status FROM {$placements_table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		$placement_rows = $wpdb->get_results( "SELECT id, name, item_type, item_id, status FROM {$placements_table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Placements table name is internal and trusted.
 		$placement_data = [];
 
 		foreach ( $placement_rows as $row ) {
@@ -1578,6 +1609,7 @@ class Analytics extends Controller {
 		$args         = array_merge( [ $start_date, $end_date ], $ad_ids );
 
 		$stats_rows = $wpdb->get_results(
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare,WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Stats table name is built from the trusted WordPress prefix; ad ID placeholders remain prepared.
 			$wpdb->prepare(
 				"SELECT ad_id, SUM(impressions) as impressions, SUM(clicks) as clicks
 				FROM {$table_name}
@@ -1585,6 +1617,7 @@ class Analytics extends Controller {
 				GROUP BY ad_id",
 				...$args
 			)
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare,WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
 		);
 
 		$ad_stats_map = [];
@@ -1617,7 +1650,7 @@ class Analytics extends Controller {
 			}
 		);
 
-		return array_values( $placement_data );
+		return $placement_data;
 	}
 
 	/**
@@ -1644,6 +1677,7 @@ class Analytics extends Controller {
 		$table_name = $wpdb->prefix . 'advajra_stats';
 
 		$rows = $wpdb->get_results(
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Stats and posts table names are internal and trusted.
 			$wpdb->prepare(
 				"SELECT
 					s.ad_id,
@@ -1668,6 +1702,7 @@ class Analytics extends Controller {
 				$prev_start,
 				$end_date
 			),
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			ARRAY_A
 		);
 
@@ -1675,14 +1710,14 @@ class Analytics extends Controller {
 		foreach ( $rows as $row ) {
 			$mover = $this->build_mover_payload(
 				[
-					'id'                  => 'ad-' . (int) $row['ad_id'],
-					'entity_type'         => 'ad',
-					'entity_id'           => (int) $row['ad_id'],
-					'title'               => $row['title'] ?: '(Deleted Ad #' . (int) $row['ad_id'] . ')',
-					'current_impressions' => (int) $row['current_impressions'],
-					'current_clicks'      => (int) $row['current_clicks'],
-					'previous_impressions'=> (int) $row['previous_impressions'],
-					'previous_clicks'     => (int) $row['previous_clicks'],
+					'id'                   => 'ad-' . (int) $row['ad_id'],
+					'entity_type'          => 'ad',
+					'entity_id'            => (int) $row['ad_id'],
+					'title'                => $row['title'] ?: '(Deleted Ad #' . (int) $row['ad_id'] . ')',
+					'current_impressions'  => (int) $row['current_impressions'],
+					'current_clicks'       => (int) $row['current_clicks'],
+					'previous_impressions' => (int) $row['previous_impressions'],
+					'previous_clicks'      => (int) $row['previous_clicks'],
 				]
 			);
 
@@ -1727,7 +1762,7 @@ class Analytics extends Controller {
 		$placements_table = $wpdb->prefix . 'advajra_placements';
 
 		$placement_rows = $wpdb->get_results(
-			"SELECT id, name, item_type, item_id, status FROM {$placements_table}", // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			"SELECT id, name, item_type, item_id, status FROM {$placements_table}", // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Placements table name is internal and trusted.
 			ARRAY_A
 		);
 
@@ -1765,6 +1800,7 @@ class Analytics extends Controller {
 		);
 
 		$stats_rows = $wpdb->get_results(
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare,WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Stats table name is built from the trusted WordPress prefix; ad ID placeholders remain prepared.
 			$wpdb->prepare(
 				"SELECT
 					ad_id,
@@ -1778,6 +1814,7 @@ class Analytics extends Controller {
 				GROUP BY ad_id",
 				...$args
 			),
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare,WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
 			ARRAY_A
 		);
 
@@ -1855,11 +1892,11 @@ class Analytics extends Controller {
 			return null;
 		}
 
-		$delta      = $current_impressions - $previous_impressions;
-		$change     = $previous_impressions > 0
+		$delta        = $current_impressions - $previous_impressions;
+		$change       = $previous_impressions > 0
 			? round( ( $delta / $previous_impressions ) * 100, 1 )
 			: null;
-		$current_ctr = $current_impressions > 0 ? round( ( $current_clicks / $current_impressions ) * 100, 2 ) : 0;
+		$current_ctr  = $current_impressions > 0 ? round( ( $current_clicks / $current_impressions ) * 100, 2 ) : 0;
 		$previous_ctr = $previous_impressions > 0 ? round( ( $previous_clicks / $previous_impressions ) * 100, 2 ) : 0;
 		$ctr_delta    = round( $current_ctr - $previous_ctr, 2 );
 		$direction    = $delta > 0 ? 'up' : ( $delta < 0 ? 'down' : 'flat' );
@@ -1888,67 +1925,6 @@ class Analytics extends Controller {
 	}
 
 	/**
-	 * Build previous-period comparison.
-	 */
-	private function get_period_comparison( $start_date, $end_date ) {
-		global $wpdb;
-		$table_name = $wpdb->prefix . 'advajra_stats';
-
-		$start_ts = strtotime( $start_date );
-		$end_ts   = strtotime( $end_date );
-		$span     = max( 1, (int) floor( ( $end_ts - $start_ts ) / DAY_IN_SECONDS ) + 1 );
-
-		$prev_end   = date( 'Y-m-d', strtotime( '-1 day', $start_ts ) );
-		$prev_start = date( 'Y-m-d', strtotime( '-' . ( $span - 1 ) . ' days', strtotime( $prev_end ) ) );
-
-		$current = $wpdb->get_row(
-			$wpdb->prepare(
-				"SELECT COALESCE(SUM(impressions), 0) as impressions, COALESCE(SUM(clicks), 0) as clicks
-				FROM {$table_name}
-				WHERE date >= %s AND date <= %s",
-				$start_date,
-				$end_date
-			),
-			ARRAY_A
-		);
-		$previous = $wpdb->get_row(
-			$wpdb->prepare(
-				"SELECT COALESCE(SUM(impressions), 0) as impressions, COALESCE(SUM(clicks), 0) as clicks
-				FROM {$table_name}
-				WHERE date >= %s AND date <= %s",
-				$prev_start,
-				$prev_end
-			),
-			ARRAY_A
-		);
-
-		$current_impressions = (int) ( $current['impressions'] ?? 0 );
-		$current_clicks      = (int) ( $current['clicks'] ?? 0 );
-		$current_ctr         = $current_impressions > 0 ? round( ( $current_clicks / $current_impressions ) * 100, 2 ) : 0;
-
-		$previous_impressions = (int) ( $previous['impressions'] ?? 0 );
-		$previous_clicks      = (int) ( $previous['clicks'] ?? 0 );
-		$previous_ctr         = $previous_impressions > 0 ? round( ( $previous_clicks / $previous_impressions ) * 100, 2 ) : 0;
-
-		return [
-			'current'  => [
-				'start'       => $start_date,
-				'end'         => $end_date,
-				'impressions' => $current_impressions,
-				'clicks'      => $current_clicks,
-				'ctr'         => $current_ctr,
-			],
-			'previous' => [
-				'start'       => $prev_start,
-				'end'         => $prev_end,
-				'impressions' => $previous_impressions,
-				'clicks'      => $previous_clicks,
-				'ctr'         => $previous_ctr,
-			],
-		];
-	}
-
-	/**
 	 * Helper: Fill missing dates.
 	 */
 	private function fill_dates( $results, $start, $end ) {
@@ -1962,7 +1938,7 @@ class Analytics extends Controller {
 		$end_ts  = strtotime( $end );
 
 		while ( $current <= $end_ts ) {
-			$date = date( 'Y-m-d', $current );
+			$date = gmdate( 'Y-m-d', $current );
 			if ( isset( $map[ $date ] ) ) {
 				$filled[] = [
 					'date'        => $date,

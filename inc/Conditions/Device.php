@@ -60,7 +60,7 @@ class Device extends Condition {
 		// Fallback to WordPress detection (less accurate for tablets)
 		if ( wp_is_mobile() ) {
 			// Try basic tablet detection via user agent
-			$user_agent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : '';
+			$user_agent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
 			if ( preg_match( '/(tablet|ipad|playbook|silk)|(android(?!.*mobile))/i', $user_agent ) ) {
 				return 'tablet';
 			}

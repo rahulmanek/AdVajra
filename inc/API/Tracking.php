@@ -158,7 +158,13 @@ class Tracking extends Controller {
 
 		$settings = get_option( 'advajra_settings', [] );
 		if ( isset( $settings['analytics_enabled'] ) && false === $settings['analytics_enabled'] ) {
-			return new WP_REST_Response( [ 'success' => true, 'skipped' => 'analytics_disabled' ], 200 );
+			return new WP_REST_Response(
+				[
+					'success' => true,
+					'skipped' => 'analytics_disabled',
+				],
+				200
+			);
 		}
 
 		$aggregates = [];
@@ -253,9 +259,15 @@ class Tracking extends Controller {
 			case 'viewable':
 				return [ 'viewable_impressions' => 1 ];
 			case 'load_time':
-				return $normalized_value > 0 ? [ 'load_time_ms_sum' => $normalized_value, 'load_samples' => 1 ] : [];
+				return $normalized_value > 0 ? [
+					'load_time_ms_sum' => $normalized_value,
+					'load_samples'     => 1,
+				] : [];
 			case 'viewable_time':
-				return $normalized_value > 0 ? [ 'viewable_time_ms_sum' => $normalized_value, 'viewable_samples' => 1 ] : [];
+				return $normalized_value > 0 ? [
+					'viewable_time_ms_sum' => $normalized_value,
+					'viewable_samples'     => 1,
+				] : [];
 			case 'revenue':
 				return $normalized_value !== 0 ? [ 'revenue_micros' => $normalized_value ] : [];
 			case 'impressions':
@@ -347,9 +359,9 @@ class Tracking extends Controller {
 			wp_mkdir_p( $dir );
 		}
 
-		$lines     = '';
+		$lines = '';
 		// Use UTC epoch; Cron converts to site timezone when bucketing by date/hour.
-		$timestamp = current_time( 'timestamp', true );
+		$timestamp = time();
 
 		foreach ( $aggregates as $ad_id => $metrics ) {
 			foreach ( $metrics as $metric => $delta ) {

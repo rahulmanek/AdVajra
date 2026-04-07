@@ -133,10 +133,6 @@ class Groups extends Controller {
 			]
 		);
 
-		if ( is_wp_error( $post_id ) ) {
-			return $post_id;
-		}
-
 		$this->save_group_meta( $post_id, $data );
 		\AdVajra\Utils\AuditLog::log(
 			'group_created',

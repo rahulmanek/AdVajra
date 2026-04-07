@@ -9,7 +9,7 @@ class TargetingRegistry {
 	/**
 	 * Instance
 	 *
-	 * @var TargetingRegistry
+	 * @var TargetingRegistry|null
 	 */
 	private static $instance = null;
 
@@ -26,7 +26,7 @@ class TargetingRegistry {
 	 * @return TargetingRegistry
 	 */
 	public static function instance() {
-		if ( is_null( self::$instance ) ) {
+		if ( null === self::$instance ) {
 			self::$instance = new self();
 		}
 		return self::$instance;

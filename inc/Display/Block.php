@@ -82,7 +82,7 @@ class Block {
 				return '';
 			}
 
-			$ad_id = 0;
+			$ad_id     = 0;
 			$item_type = \AdVajra\Model\Placement::id_to_item_type( $placement->item_type );
 
 			if ( 'ad' === $item_type ) {

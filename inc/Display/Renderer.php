@@ -73,7 +73,7 @@ class Renderer {
 			$tracking_mode = 'disabled';
 		}
 
-		$track_server  = self::should_track_server_metrics( $settings, $tracking_mode );
+		$track_server = self::should_track_server_metrics( $settings, $tracking_mode );
 
 		if ( $track_server ) {
 			self::queue_server_metric( $ad_id, 'ad_requests', 1 );
@@ -126,9 +126,9 @@ class Renderer {
 			case 'html':
 			case 'rich':
 			default:
-				$content  = $post->post_content;
-				$output   = do_shortcode( $content );
-				$output   = self::wrap_with_link( $output, $ad_id, $settings );
+				$content = $post->post_content;
+				$output  = do_shortcode( $content );
+				$output  = self::wrap_with_link( $output, $ad_id, $settings );
 				break;
 		}
 
@@ -221,7 +221,7 @@ class Renderer {
 			"%d|%s|%d|%d\n",
 			$ad_id,
 			sanitize_key( $metric ),
-			(int) current_time( 'timestamp' ),
+			time(),
 			$value
 		);
 

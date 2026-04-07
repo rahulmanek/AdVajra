@@ -36,7 +36,7 @@ class AuditLog {
 	 */
 	private static function get_table_name() {
 		global $wpdb;
-		return $wpdb->prefix . self::TABLE;
+		return esc_sql( $wpdb->prefix . self::TABLE );
 	}
 
 	/**
@@ -50,8 +50,8 @@ class AuditLog {
 		}
 
 		global $wpdb;
-		$table = self::get_table_name();
-		$found = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) );
+		$table              = self::get_table_name();
+		$found              = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) );
 		self::$table_exists = ! empty( $found );
 
 		return self::$table_exists;
@@ -99,13 +99,13 @@ class AuditLog {
 		$wpdb->insert(
 			self::get_table_name(),
 			[
-				'actor'      => $actor,
-				'action'     => $action,
-				'entity_type'=> $entity_type,
-				'entity_id'  => $entity_id,
-				'summary'    => $summary,
-				'context'    => $encoded_context,
-				'created_at' => current_time( 'mysql' ),
+				'actor'       => $actor,
+				'action'      => $action,
+				'entity_type' => $entity_type,
+				'entity_id'   => $entity_id,
+				'summary'     => $summary,
+				'context'     => $encoded_context,
+				'created_at'  => current_time( 'mysql' ),
 			],
 			[ '%d', '%s', '%s', '%d', '%s', '%s', '%s' ]
 		);
@@ -125,16 +125,18 @@ class AuditLog {
 		}
 
 		$limit = max( 1, min( 100, absint( $limit ) ) );
-		$rows  = $wpdb->get_results(
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Audit log table name is internal and trusted; limit remains prepared.
+		$rows = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT id, actor, action, entity_type, entity_id, summary, context, created_at
-				FROM " . self::get_table_name() . "
+				'SELECT id, actor, action, entity_type, entity_id, summary, context, created_at
+				FROM ' . self::get_table_name() . '
 				ORDER BY created_at DESC
-				LIMIT %d",
+				LIMIT %d',
 				$limit
 			),
 			ARRAY_A
 		);
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		if ( empty( $rows ) ) {
 			return [];

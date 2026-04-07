@@ -144,11 +144,11 @@ class Cron {
 
 		$interval_seconds = $interval * 60;
 
-		$schedules['advajra_every_1min'] = [
+		$schedules['advajra_every_1min']  = [
 			'interval' => 60,
 			'display'  => __( 'Every 1 Minute', 'advajra' ),
 		];
-		$schedules['advajra_every_5min'] = [
+		$schedules['advajra_every_5min']  = [
 			'interval' => 300,
 			'display'  => __( 'Every 5 Minutes', 'advajra' ),
 		];
@@ -185,6 +185,7 @@ class Cron {
 
 		$rows_to_delete = $wpdb->get_var(
 			$wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Stats table name is built from the trusted WordPress prefix.
 				"SELECT COUNT(*) FROM $table_name WHERE date < %s",
 				$cutoff_date
 			)
@@ -196,15 +197,16 @@ class Cron {
 				'date' => current_time( 'Y-m-d' ),
 				'rows' => (int) $rows_to_delete,
 			];
-			$deleted_stats = array_slice( $deleted_stats, -30 );
+			$deleted_stats   = array_slice( $deleted_stats, -30 );
 			update_option( 'advajra_deleted_stats', $deleted_stats );
 
-			$wpdb->query(
-				$wpdb->prepare(
-					"DELETE FROM $table_name WHERE date < %s",
-					$cutoff_date
-				)
-			);
+				$wpdb->query(
+					$wpdb->prepare(
+						// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Stats table name is built from the trusted WordPress prefix.
+						"DELETE FROM $table_name WHERE date < %s",
+						$cutoff_date
+					)
+				);
 		}
 	}
 
@@ -256,9 +258,15 @@ class Cron {
 			case 'viewable':
 				return [ 'viewable_impressions' => 1 ];
 			case 'load_time':
-				return $normalized_value > 0 ? [ 'load_time_ms_sum' => $normalized_value, 'load_samples' => 1 ] : [];
+				return $normalized_value > 0 ? [
+					'load_time_ms_sum' => $normalized_value,
+					'load_samples'     => 1,
+				] : [];
 			case 'viewable_time':
-				return $normalized_value > 0 ? [ 'viewable_time_ms_sum' => $normalized_value, 'viewable_samples' => 1 ] : [];
+				return $normalized_value > 0 ? [
+					'viewable_time_ms_sum' => $normalized_value,
+					'viewable_samples'     => 1,
+				] : [];
 			case 'revenue':
 				return $normalized_value !== 0 ? [ 'revenue_micros' => $normalized_value ] : [];
 			case 'impressions':
@@ -415,14 +423,21 @@ class Cron {
 			return;
 		}
 
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		global $wp_filesystem;
+
+		if ( ! $wp_filesystem && ! \WP_Filesystem() ) {
+			return;
+		}
+
 		$processing_file = $this->log_file . '.processing';
-		if ( ! rename( $this->log_file, $processing_file ) ) {
+		if ( ! $wp_filesystem->move( $this->log_file, $processing_file, true ) ) {
 			return;
 		}
 
 		$lines = file( $processing_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
 		if ( empty( $lines ) ) {
-			unlink( $processing_file );
+			wp_delete_file( $processing_file );
 			return;
 		}
 
@@ -461,7 +476,7 @@ class Cron {
 		}
 
 		$this->flush_stats_to_db( $stats );
-		unlink( $processing_file );
+		wp_delete_file( $processing_file );
 	}
 
 	/**
@@ -503,6 +518,7 @@ class Cron {
 
 					$wpdb->query(
 						$wpdb->prepare(
+							// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Stats table name is built from the trusted WordPress prefix.
 							"INSERT INTO $table_name (
 								ad_id,
 								date,

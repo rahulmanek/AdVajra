@@ -27,11 +27,11 @@ class Privacy {
 	 * Initialize.
 	 */
 	public static function init() {
-		add_filter( 'advajra_should_track', array( __CLASS__, 'check_consent' ), 10, 2 );
-		add_filter( 'advajra_tracking_config', array( __CLASS__, 'add_consent_config' ) );
-		add_action( 'wp_footer', array( __CLASS__, 'inject_consent_listener' ), 5 );
-		add_filter( 'advajra_tracking_data', array( __CLASS__, 'filter_tracking_data' ), 10, 2 );
-		add_action( 'rest_api_init', array( __CLASS__, 'register_rest_routes' ) );
+		add_filter( 'advajra_should_track', [ __CLASS__, 'check_consent' ], 10, 2 );
+		add_filter( 'advajra_tracking_config', [ __CLASS__, 'add_consent_config' ] );
+		add_action( 'wp_footer', [ __CLASS__, 'inject_consent_listener' ], 5 );
+		add_filter( 'advajra_tracking_data', [ __CLASS__, 'filter_tracking_data' ], 10, 2 );
+		add_action( 'rest_api_init', [ __CLASS__, 'register_rest_routes' ] );
 	}
 
 	/**
@@ -41,7 +41,7 @@ class Privacy {
 	 */
 	private static function get_settings() {
 		if ( null === self::$settings ) {
-			self::$settings = get_option( 'advajra_settings', array() );
+			self::$settings = get_option( 'advajra_settings', [] );
 		}
 		return self::$settings;
 	}
@@ -74,8 +74,8 @@ class Privacy {
 			return false;
 		}
 
-		$settings    = self::get_settings();
-		$cookie_name = isset( $settings['consent_cookie_name'] ) ? $settings['consent_cookie_name'] : '';
+		$settings     = self::get_settings();
+		$cookie_name  = isset( $settings['consent_cookie_name'] ) ? $settings['consent_cookie_name'] : '';
 		$cookie_value = isset( $settings['consent_cookie_value'] ) ? $settings['consent_cookie_value'] : '';
 
 		if ( empty( $cookie_name ) ) {
@@ -130,11 +130,11 @@ class Privacy {
 	 */
 	public static function filter_tracking_data( $data, $ad_id ) {
 		if ( self::is_enabled( 'privacy_safe_mode' ) ) {
-			return array(
+			return [
 				'ad_id' => $ad_id,
 				'type'  => isset( $data['type'] ) ? $data['type'] : 'impression',
 				'date'  => current_time( 'Y-m-d' ),
-			);
+			];
 		}
 
 		return $data;
@@ -150,12 +150,17 @@ class Privacy {
 		}
 
 		$settings     = self::get_settings();
-		$cookie_name  = isset( $settings['consent_cookie_name'] ) ? esc_js( $settings['consent_cookie_name'] ) : '';
-		$cookie_value = isset( $settings['consent_cookie_value'] ) ? esc_js( $settings['consent_cookie_value'] ) : '';
+		$cookie_name  = isset( $settings['consent_cookie_name'] ) ? (string) $settings['consent_cookie_name'] : '';
+		$cookie_value = isset( $settings['consent_cookie_value'] ) ? (string) $settings['consent_cookie_value'] : '';
+		$cookie_regex = ! empty( $cookie_name ) ? preg_quote( $cookie_name, '/' ) : '';
 		?>
 		<script id="advajra-consent-listener">
 		(function() {
 			'use strict';
+
+			var cookieName = <?php echo wp_json_encode( $cookie_name ); ?>;
+			var cookieValue = <?php echo wp_json_encode( $cookie_value ); ?>;
+			var cookieRegex = <?php echo wp_json_encode( $cookie_regex ); ?>;
 
 			window.advajraConsent = {
 				hasConsent: false,
@@ -182,16 +187,16 @@ class Privacy {
 					}
 
 					<?php if ( ! empty( $cookie_name ) ) : ?>
-					self.watchCookie('<?php echo $cookie_name; ?>', '<?php echo $cookie_value; ?>');
+					self.watchCookie(cookieName, cookieValue);
 					<?php endif; ?>
 				},
 
 				checkExistingConsent: function() {
 					<?php if ( ! empty( $cookie_name ) ) : ?>
-					var cookie = document.cookie.match(/<?php echo preg_quote( $cookie_name, '/' ); ?>=([^;]+)/);
+					var cookie = document.cookie.match(new RegExp(cookieRegex + '=([^;]+)'));
 					if (cookie) {
 						<?php if ( ! empty( $cookie_value ) ) : ?>
-						return cookie[1].indexOf('<?php echo $cookie_value; ?>') !== -1;
+						return cookie[1].indexOf(cookieValue) !== -1;
 						<?php else : ?>
 						return true;
 						<?php endif; ?>
@@ -264,13 +269,13 @@ class Privacy {
 		register_rest_route(
 			'advajra/v1',
 			'/privacy-status',
-			array(
+			[
 				'methods'             => 'GET',
-				'callback'            => array( __CLASS__, 'get_privacy_status' ),
-				'permission_callback' => function() {
+				'callback'            => [ __CLASS__, 'get_privacy_status' ],
+				'permission_callback' => function () {
 					return current_user_can( 'manage_options' );
 				},
-			)
+			]
 		);
 	}
 
@@ -282,16 +287,16 @@ class Privacy {
 	public static function get_privacy_status() {
 		$settings = self::get_settings();
 
-		$response = array(
+		$response = [
 			'consent_mode_enabled' => self::is_enabled( 'gdpr_consent_mode' ),
 			'privacy_safe_enabled' => self::is_enabled( 'privacy_safe_mode' ),
-			'manual_config'        => array(
+			'manual_config'        => [
 				'cookie_name'  => isset( $settings['consent_cookie_name'] ) ? $settings['consent_cookie_name'] : '',
 				'cookie_value' => isset( $settings['consent_cookie_value'] ) ? $settings['consent_cookie_value'] : '',
-			),
+			],
 			'detected_cmp'         => null,
 			'is_pro'               => false,
-		);
+		];
 
 		$response = apply_filters( 'advajra_privacy_status', $response );
 

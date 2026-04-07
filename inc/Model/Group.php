@@ -54,10 +54,6 @@ class Group {
 			]
 		);
 
-		if ( is_wp_error( $post_id ) ) {
-			return $post_id;
-		}
-
 		self::update_meta( $post_id, $data );
 
 		return $post_id;

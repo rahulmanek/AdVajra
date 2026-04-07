@@ -119,6 +119,7 @@ class Admin {
 		$settings_data = [
 			'root'            => esc_url_raw( rest_url( 'advajra/v1/' ) ),
 			'nonce'           => wp_create_nonce( 'wp_rest' ),
+			'previewNonce'    => wp_create_nonce( 'advajra_preview' ),
 			'pluginUrl'       => ADVAJRA_URL,
 			'timezone'        => wp_timezone_string(),
 			'timezone_offset' => 'UTC' . $offset_string,

@@ -56,7 +56,7 @@ class ModuleManager {
 	 * Load active module states from database.
 	 */
 	private function load_active_module_ids() {
-		$saved = get_option( self::OPTION_KEY, [] );
+		$saved                   = get_option( self::OPTION_KEY, [] );
 		$this->active_module_ids = is_array( $saved ) ? $saved : [];
 	}
 
@@ -128,14 +128,14 @@ class ModuleManager {
 		$data = [];
 		foreach ( $this->modules as $id => $module ) {
 			$data[] = [
-				'id'          => $module->get_id(),
-				'name'        => $module->get_name(),
-				'description' => $module->get_description(),
-				'icon'        => $module->get_icon(),
-				'active'      => $this->is_active( $id ),
-				'hasSettings' => $module->has_settings(),
-				'isPro'       => $module->is_pro(),
-				'alwaysActive'=> $module->is_always_active(),
+				'id'           => $module->get_id(),
+				'name'         => $module->get_name(),
+				'description'  => $module->get_description(),
+				'icon'         => $module->get_icon(),
+				'active'       => $this->is_active( $id ),
+				'hasSettings'  => $module->has_settings(),
+				'isPro'        => $module->is_pro(),
+				'alwaysActive' => $module->is_always_active(),
 			];
 		}
 		return $data;

@@ -90,7 +90,8 @@ class Ads extends Controller {
 		$data  = [];
 
 		foreach ( $query->posts as $post ) {
-			$data[] = $this->prepare_item_for_response( $post, $request );
+			$response = $this->prepare_item_for_response( $post, $request );
+			$data[]   = $this->prepare_response_for_collection( $response );
 		}
 
 		return rest_ensure_response( $data );
@@ -118,7 +119,7 @@ class Ads extends Controller {
 	 *
 	 * @param \WP_Post         $item    Post object.
 	 * @param \WP_REST_Request $request Request object.
-	 * @return array
+	 * @return \WP_REST_Response
 	 */
 	public function prepare_item_for_response( $item, $request ) {
 		$type = get_post_meta( $item->ID, '_advajra_type', true );
@@ -220,7 +221,7 @@ class Ads extends Controller {
 			'modified'     => $item->post_modified,
 		];
 
-		return apply_filters( 'advajra_ad_response_data', $data, $item );
+		return rest_ensure_response( apply_filters( 'advajra_ad_response_data', $data, $item ) );
 	}
 
 	/**
@@ -233,16 +234,18 @@ class Ads extends Controller {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'advajra_stats';
 
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Stats table name is built from the trusted WordPress prefix.
 		$result = $wpdb->get_row(
 			$wpdb->prepare(
 				"SELECT
 					COALESCE(SUM(impressions), 0) as impressions,
 					COALESCE(SUM(clicks), 0) as clicks
-				FROM $table_name
+				FROM {$table_name}
 				WHERE ad_id = %d",
 				$ad_id
 			)
 		);
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		$impressions = (int) ( $result->impressions ?? 0 );
 		$clicks      = (int) ( $result->clicks ?? 0 );
@@ -306,10 +309,6 @@ class Ads extends Controller {
 				'post_date'    => $start_date ? $start_date : current_time( 'mysql' ),
 			]
 		);
-
-		if ( is_wp_error( $id ) ) {
-			return new \WP_Error( 'cant-create', __( 'Cannot create ad', 'advajra' ), [ 'status' => 500 ] );
-		}
 
 		if ( $type ) {
 			update_post_meta( $id, '_advajra_type', sanitize_text_field( $type ) );
@@ -527,7 +526,7 @@ class Ads extends Controller {
 
 		if ( ! $tz_string ) {
 			$offset    = get_option( 'gmt_offset' );
-			$tz_string = timezone_name_from_abbr( '', $offset * 3600, false );
+			$tz_string = timezone_name_from_abbr( '', (int) ( $offset * 3600 ), 0 );
 		}
 
 		if ( ! $tz_string ) {

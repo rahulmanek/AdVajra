@@ -45,8 +45,20 @@ class Logger {
 	 */
 	private static function log( $level, $message, $context = [] ) {
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			$entry = sprintf( '[AdVajra][%s] %s %s', strtoupper( $level ), $message, json_encode( $context ) );
-			error_log( $entry );
+			/**
+			 * Allow local/dev tooling to consume structured AdVajra logs without
+			 * relying on discouraged direct error_log() calls.
+			 *
+			 * @param array<string,mixed> $payload Log payload.
+			 */
+			do_action(
+				'advajra_debug_log',
+				[
+					'level'   => (string) $level,
+					'message' => (string) $message,
+					'context' => $context,
+				]
+			);
 		}
 	}
 }

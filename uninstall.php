@@ -10,8 +10,8 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 
 global $wpdb;
 
-$settings           = get_option( 'advajra_settings', [] );
-$erase_on_uninstall = ! empty( $settings['erase_data_on_uninstall'] );
+$advajra_settings           = get_option( 'advajra_settings', [] );
+$advajra_erase_on_uninstall = ! empty( $advajra_settings['erase_data_on_uninstall'] );
 
 
 // 1. CRON EVENTS
@@ -23,7 +23,7 @@ wp_clear_scheduled_hook( 'advajra_cleanup_stats' );
  * wp_clear_scheduled_hook() without args only clears future events with
  * no args — we must iterate every ad ID to clear its specific event.
  */
-$ad_ids = get_posts(
+$advajra_ad_ids = get_posts(
 	[
 		'post_type'      => 'advajra_ad',
 		'post_status'    => 'any',
@@ -32,41 +32,41 @@ $ad_ids = get_posts(
 	]
 );
 
-foreach ( $ad_ids as $ad_id ) {
-	wp_clear_scheduled_hook( 'advajra_expire_single_ad', [ (int) $ad_id ] );
+foreach ( $advajra_ad_ids as $advajra_ad_id ) {
+	wp_clear_scheduled_hook( 'advajra_expire_single_ad', [ (int) $advajra_ad_id ] );
 }
 
 // 2. HOUSEKEEPING OPTIONS
 
-$housekeeping_options = [
+$advajra_housekeeping_options = [
 	'advajra_version',
 	'advajra_active_modules',
 	'advajra_deleted_stats',
 	'advajra_last_tracking_sync',
 ];
 
-foreach ( $housekeeping_options as $option ) {
-	delete_option( $option );
-	delete_site_option( $option );
+foreach ( $advajra_housekeeping_options as $advajra_option ) {
+	delete_option( $advajra_option );
+	delete_site_option( $advajra_option );
 }
 
-if ( ! $erase_on_uninstall ) {
+if ( ! $advajra_erase_on_uninstall ) {
 	return;
 }
 
 // 3. OPTIONS
-$user_options = [
+$advajra_user_options = [
 	'advajra_settings',
 	'advajra_trial_started',
 ];
 
-foreach ( $user_options as $option ) {
-	delete_option( $option );
-	delete_site_option( $option );
+foreach ( $advajra_user_options as $advajra_option ) {
+	delete_option( $advajra_option );
+	delete_site_option( $advajra_option );
 }
 
 // 4. POSTS & POST META
-$post_ids = get_posts(
+$advajra_post_ids = get_posts(
 	[
 		'post_type'      => [ 'advajra_ad', 'advajra_group' ],
 		'post_status'    => 'any',
@@ -75,8 +75,8 @@ $post_ids = get_posts(
 	]
 );
 
-foreach ( $post_ids as $post_id ) {
-	wp_delete_post( (int) $post_id, true );
+foreach ( $advajra_post_ids as $advajra_post_id ) {
+	wp_delete_post( (int) $advajra_post_id, true );
 }
 
 // 5. DATABASE TABLES
@@ -88,8 +88,8 @@ $wpdb->query( 'DROP TABLE IF EXISTS ' . $wpdb->prefix . 'advajra_activity_log' )
 // phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
 
 // 6. UPLOAD DIRECTORY
-$upload_dir  = wp_upload_dir();
-$advajra_dir = trailingslashit( $upload_dir['basedir'] ) . 'advajra';
+$advajra_upload_dir = wp_upload_dir();
+$advajra_dir        = trailingslashit( $advajra_upload_dir['basedir'] ) . 'advajra';
 
 advajra_delete_directory( $advajra_dir );
 
@@ -106,17 +106,13 @@ function advajra_delete_directory( $path ) {
 		return;
 	}
 
-	$entries = array_diff( scandir( $path ), [ '.', '..' ] );
+	require_once ABSPATH . 'wp-admin/includes/file.php';
 
-	foreach ( $entries as $entry ) {
-		$full_path = $path . DIRECTORY_SEPARATOR . $entry;
+	global $wp_filesystem;
 
-		if ( is_dir( $full_path ) ) {
-			advajra_delete_directory( $full_path );
-		} else {
-			wp_delete_file( $full_path );
-		}
+	if ( ! $wp_filesystem && ! \WP_Filesystem() ) {
+		return;
 	}
 
-	rmdir( $path );
+	$wp_filesystem->rmdir( $path, true );
 }

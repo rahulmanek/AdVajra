@@ -35,6 +35,23 @@ class AdsTxt extends Controller {
 	}
 
 	/**
+	 * Get a filesystem instance.
+	 *
+	 * @return \WP_Filesystem_Base|null
+	 */
+	private function get_filesystem() {
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+
+		global $wp_filesystem;
+
+		if ( ! $wp_filesystem && ! \WP_Filesystem() ) {
+			return null;
+		}
+
+		return $wp_filesystem;
+	}
+
+	/**
 	 * Register routes.
 	 */
 	public function register_routes() {
@@ -64,23 +81,26 @@ class AdsTxt extends Controller {
 	 */
 	public function get_item( $request ) {
 		$file_path = $this->get_file_path();
-		$exists    = file_exists( $file_path );
+		$fs        = $this->get_filesystem();
+		$exists    = $fs ? $fs->exists( $file_path ) : file_exists( $file_path );
 		$content   = '';
-		$writable  = is_writable( ABSPATH ) || ( $exists && is_writable( $file_path ) );
+		$writable  = $fs ? $fs->is_writable( ABSPATH ) || ( $exists && $fs->is_writable( $file_path ) ) : false;
 
 		if ( $exists ) {
-			$file_content = file_get_contents( $file_path );
+			$file_content = $fs ? $fs->get_contents( $file_path ) : false;
 			if ( false !== $file_content ) {
 				$content = $file_content;
 			}
 		}
 
-		return rest_ensure_response( [
-			'exists'   => $exists,
-			'content'  => $content,
-			'writable' => $writable,
-			'path'     => $file_path,
-		] );
+		return rest_ensure_response(
+			[
+				'exists'   => $exists,
+				'content'  => $content,
+				'writable' => $writable,
+				'path'     => $file_path,
+			]
+		);
 	}
 
 	/**
@@ -96,39 +116,49 @@ class AdsTxt extends Controller {
 		$sanitized_content = preg_replace( '/<\?php|<script/i', '', $sanitized_content );
 
 		$file_path = $this->get_file_path();
-		$writable  = true;
-		if ( file_exists( $file_path ) ) {
-			if ( ! is_writable( $file_path ) ) {
-				$writable = false;
-			}
-		} else {
-			if ( ! is_writable( ABSPATH ) ) {
-				$writable = false;
-			}
+		$fs        = $this->get_filesystem();
+
+		if ( ! $fs ) {
+			return new \WP_Error(
+				'advajra_fs_unavailable',
+				__( 'WordPress filesystem could not be initialized.', 'advajra' ),
+				[ 'status' => 500 ]
+			);
 		}
+
+		$exists   = $fs->exists( $file_path );
+		$writable = $exists ? $fs->is_writable( $file_path ) : $fs->is_writable( ABSPATH );
 
 		if ( ! $writable ) {
 			return new \WP_Error(
 				'advajra_fs_error',
 				__( 'The root directory or ads.txt file is not writable. Please check server permissions.', 'advajra' ),
-				[ 'status' => 403, 'path' => $file_path ]
+				[
+					'status' => 403,
+					'path'   => $file_path,
+				]
 			);
 		}
 
-		$result = file_put_contents( $file_path, $sanitized_content );
+		$result = $fs->put_contents( $file_path, $sanitized_content, FS_CHMOD_FILE );
 
 		if ( false === $result ) {
 			return new \WP_Error(
 				'advajra_write_error',
 				__( 'Failed to write to ads.txt.', 'advajra' ),
-				[ 'status' => 500, 'path' => $file_path ]
+				[
+					'status' => 500,
+					'path'   => $file_path,
+				]
 			);
 		}
 
-		return rest_ensure_response( [
-			'success' => true,
-			'message' => __( 'File saved successfully.', 'advajra' ),
-			'content' => $sanitized_content,
-		] );
+		return rest_ensure_response(
+			[
+				'success' => true,
+				'message' => __( 'File saved successfully.', 'advajra' ),
+				'content' => $sanitized_content,
+			]
+		);
 	}
 }

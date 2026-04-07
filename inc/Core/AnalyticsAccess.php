@@ -140,7 +140,7 @@ class AnalyticsAccess {
 		$days_since_start = max( 0, (int) floor( ( $now - $trial_started ) / DAY_IN_SECONDS ) );
 		$days_remaining   = max( 0, self::TRIAL_DAYS - $days_since_start );
 		$trial_expired    = $days_remaining <= 0;
-		$trial_ends_at    = date( 'Y-m-d H:i:s', $trial_started + ( self::TRIAL_DAYS * DAY_IN_SECONDS ) );
+		$trial_ends_at    = wp_date( 'Y-m-d H:i:s', $trial_started + ( self::TRIAL_DAYS * DAY_IN_SECONDS ) );
 		$is_locked        = ! $is_pro && $trial_expired;
 
 		return [
@@ -264,11 +264,11 @@ class AnalyticsAccess {
 			$resolved    = self::resolve_default_preset( $preset_key );
 		}
 
-		$resolved['key']     = $preset_key;
-		$resolved['label']   = $preset_meta['label'];
-		$resolved['compare'] = ! empty( $preset_meta['compare'] ) && ! empty( $resolved['compare'] );
-		$resolved['prev_start'] = ! empty( $resolved['prev_start'] ) ? date( 'Y-m-d', strtotime( $resolved['prev_start'] ) ) : null;
-		$resolved['prev_end']   = ! empty( $resolved['prev_end'] ) ? date( 'Y-m-d', strtotime( $resolved['prev_end'] ) ) : null;
+		$resolved['key']        = $preset_key;
+		$resolved['label']      = $preset_meta['label'];
+		$resolved['compare']    = ! empty( $preset_meta['compare'] ) && ! empty( $resolved['compare'] );
+		$resolved['prev_start'] = ! empty( $resolved['prev_start'] ) ? gmdate( 'Y-m-d', strtotime( $resolved['prev_start'] ) ) : null;
+		$resolved['prev_end']   = ! empty( $resolved['prev_end'] ) ? gmdate( 'Y-m-d', strtotime( $resolved['prev_end'] ) ) : null;
 
 		return $resolved;
 	}
@@ -366,6 +366,6 @@ class AnalyticsAccess {
 	 * @return DateTimeImmutable
 	 */
 	private static function now() {
-		return ( new DateTimeImmutable( '@' . current_time( 'timestamp' ) ) )->setTimezone( wp_timezone() );
+		return new DateTimeImmutable( 'now', wp_timezone() );
 	}
 }

@@ -44,7 +44,7 @@ class Buffer {
 	 * @param string $type  Event Type (impression|click).
 	 */
 	public function log( $ad_id, $type ) {
-		$timestamp = current_time( 'timestamp' ); // Local timestamp
+		$timestamp = time(); // UTC epoch for consistent downstream parsing.
 		$line      = sprintf( "%d|%s|%d\n", $ad_id, $type, $timestamp );
 
 		// Atomic Append

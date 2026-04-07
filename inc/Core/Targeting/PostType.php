@@ -41,14 +41,14 @@ class PostType implements TargetingInterface {
 
 		// Support both single string and array of values
 		if ( is_array( $value ) ) {
-			$match = in_array( $current_type, $value );
+			$match = in_array( $current_type, $value, true );
 			return $operator === '==' ? $match : ! $match;
 		}
 
 		if ( $operator === '==' ) {
-			return $current_type == $value;
+			return $current_type === $value;
 		} else {
-			return $current_type != $value;
+			return $current_type !== $value;
 		}
 	}
 }

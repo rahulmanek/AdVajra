@@ -286,7 +286,7 @@ const PlacementCard = ({ placement, ads, groups = [], onDuplicate, onToggle, onD
                     <span>Edit</span>
                 </Link>
                 <a
-                    href={`${window.location.origin}/?advajra_preview=${placement.id}`}
+                    href={`${window.location.origin}/?advajra_preview=${placement.id}&advajra_preview_nonce=${window.advajraSettings.previewNonce}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="av-action-btn av-action-preview"
