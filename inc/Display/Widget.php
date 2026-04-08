@@ -49,21 +49,7 @@ class Widget extends \WP_Widget {
 		if ( 'ad' === $type ) {
 			echo wp_kses_post( \AdVajra\Display\Renderer::render( $id ) );
 		} elseif ( 'placement' === $type ) {
-			$placement = \AdVajra\Model\Placement::get( $id );
-			if ( $placement ) {
-				$ad_id     = 0;
-				$item_type = \AdVajra\Model\Placement::id_to_item_type( $placement->item_type );
-
-				if ( 'ad' === $item_type ) {
-					$ad_id = intval( $placement->item_id );
-				} elseif ( 'group' === $item_type ) {
-					$ads   = \AdVajra\Model\Group::get_ads_for_display( $placement->item_id );
-					$ad_id = ! empty( $ads ) ? $ads[0] : 0;
-				}
-				if ( $ad_id ) {
-					echo wp_kses_post( \AdVajra\Display\Renderer::render( $ad_id ) );
-				}
-			}
+			echo wp_kses_post( \AdVajra\Display\Renderer::render_placement( $id ) );
 		}
 
 		echo wp_kses_post( $args['after_widget'] );
@@ -80,7 +66,7 @@ class Widget extends \WP_Widget {
 		$id    = ! empty( $instance['id'] ) ? absint( $instance['id'] ) : 0;
 
 		$ads        = \AdVajra\Model\Ad::get_all( [ 'post_status' => 'publish' ] );
-		$placements = \AdVajra\Model\Placement::get_all();
+		$placements = \AdVajra\Model\Placement::get_embed_eligible();
 		?>
 		<p>
 			<label for="<?php echo esc_attr( $this->get_field_id( 'title' ) ); ?>"><?php esc_html_e( 'Widget Title (Optional):', 'advajra' ); ?></label>
@@ -91,7 +77,7 @@ class Widget extends \WP_Widget {
 			<label for="<?php echo esc_attr( $this->get_field_id( 'type' ) ); ?>"><?php esc_html_e( 'Display Type:', 'advajra' ); ?></label>
 			<select class="widefat advajra-widget-type-selector" id="<?php echo esc_attr( $this->get_field_id( 'type' ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( 'type' ) ); ?>" onchange="document.getElementById('<?php echo esc_attr( $this->get_field_id( 'id_ad' ) ); ?>').style.display = this.value === 'ad' ? 'block' : 'none'; document.getElementById('<?php echo esc_attr( $this->get_field_id( 'id_placement' ) ); ?>').style.display = this.value === 'placement' ? 'block' : 'none';">
 				<option value="ad" <?php selected( $type, 'ad' ); ?>><?php esc_html_e( 'Specific Ad', 'advajra' ); ?></option>
-				<option value="placement" <?php selected( $type, 'placement' ); ?>><?php esc_html_e( 'Specific Placement', 'advajra' ); ?></option>
+				<option value="placement" <?php selected( $type, 'placement' ); ?>><?php esc_html_e( 'Manual Placement', 'advajra' ); ?></option>
 			</select>
 		</p>
 
@@ -108,9 +94,9 @@ class Widget extends \WP_Widget {
 		</p>
 
 		<p id="<?php echo esc_attr( $this->get_field_id( 'id_placement' ) ); ?>" style="display: <?php echo 'placement' === $type ? 'block' : 'none'; ?>;">
-			<label for="<?php echo esc_attr( $this->get_field_id( 'id' ) ); ?>_placement"><?php esc_html_e( 'Select Placement:', 'advajra' ); ?></label>
+			<label for="<?php echo esc_attr( $this->get_field_id( 'id' ) ); ?>_placement"><?php esc_html_e( 'Select Manual Placement:', 'advajra' ); ?></label>
 			<select class="widefat" id="<?php echo esc_attr( $this->get_field_id( 'id' ) ); ?>_placement" name="<?php echo esc_attr( $this->get_field_name( 'id' ) ); ?>_placement">
-				<option value="0"><?php esc_html_e( '-- Select a Placement --', 'advajra' ); ?></option>
+				<option value="0"><?php esc_html_e( '-- Select a Manual Placement --', 'advajra' ); ?></option>
 				<?php foreach ( $placements as $plc ) : ?>
 					<option value="<?php echo esc_attr( $plc['id'] ); ?>" <?php selected( 'placement' === $type && $id === (int) $plc['id'] ); ?>>
 						<?php echo esc_html( $plc['name'] ); ?>

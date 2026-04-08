@@ -59,7 +59,7 @@ export default function Edit({ attributes, setAttributes, isSelected }) {
         ]).then(([adsData, placementsData]) => {
             if (!isMounted) return;
             setAds(adsData || []);
-            setPlacements(placementsData || []);
+            setPlacements((placementsData || []).filter((placement) => placement?.type === 'shortcode'));
             setIsLoading(false);
         });
 
@@ -75,7 +75,7 @@ export default function Edit({ attributes, setAttributes, isSelected }) {
     ];
 
     const placementOptions = [
-        { label: __('Select a Placement...', 'advajra'), value: '' },
+        { label: __('Select a Manual Placement...', 'advajra'), value: '' },
         ...placements.map(plc => ({
             label: plc.name || 'Untitled',
             value: plc.id.toString()
@@ -99,7 +99,7 @@ export default function Edit({ attributes, setAttributes, isSelected }) {
                                     selected={type}
                                     options={[
                                         { label: 'Specific Ad', value: 'ad' },
-                                        { label: 'Dynamic Placement', value: 'placement' },
+                                        { label: 'Manual Placement', value: 'placement' },
                                     ]}
                                     onChange={(val) => setAttributes({ type: val, id: '' })}
                                 />
@@ -107,7 +107,7 @@ export default function Edit({ attributes, setAttributes, isSelected }) {
 
                             <div style={{ marginTop: '16px' }}>
                                 <SelectControl
-                                    label={type === 'ad' ? __('Available Ads', 'advajra') : __('Available Placements', 'advajra')}
+                                    label={type === 'ad' ? __('Available Ads', 'advajra') : __('Available Manual Placements', 'advajra')}
                                     value={id}
                                     options={type === 'ad' ? adOptions : placementOptions}
                                     onChange={(val) => setAttributes({ id: val })}
@@ -151,7 +151,7 @@ export default function Edit({ attributes, setAttributes, isSelected }) {
                                         selected={type}
                                         options={[
                                             { label: 'Specific Ad', value: 'ad' },
-                                            { label: 'Dynamic Placement', value: 'placement' },
+                                            { label: 'Manual Placement', value: 'placement' },
                                         ]}
                                         onChange={(val) => setAttributes({ type: val, id: '' })}
                                     />
@@ -159,7 +159,7 @@ export default function Edit({ attributes, setAttributes, isSelected }) {
 
                                 <div style={{ marginTop: '16px' }}>
                                     <SelectControl
-                                        label={type === 'ad' ? __('Available Ads', 'advajra') : __('Available Placements', 'advajra')}
+                                        label={type === 'ad' ? __('Available Ads', 'advajra') : __('Available Manual Placements', 'advajra')}
                                         value={id}
                                         options={type === 'ad' ? adOptions : placementOptions}
                                         onChange={(val) => setAttributes({ id: val })}

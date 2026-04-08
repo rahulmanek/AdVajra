@@ -66,6 +66,42 @@ class Placement {
 	];
 
 	/**
+	 * Placement types that are valid in manual embed contexts.
+	 *
+	 * @return string[]
+	 */
+	public static function get_embed_type_slugs() {
+		return [ 'shortcode' ];
+	}
+
+	/**
+	 * Whether a placement type is valid for manual embeds.
+	 *
+	 * @param int|string $type Type ID or slug.
+	 * @return bool
+	 */
+	public static function is_embed_type( $type ) {
+		$type_slug = is_numeric( $type ) ? self::id_to_type( (int) $type ) : sanitize_key( (string) $type );
+		return in_array( $type_slug, self::get_embed_type_slugs(), true );
+	}
+
+	/**
+	 * Get placements that are allowed in manual embed contexts.
+	 *
+	 * @return array
+	 */
+	public static function get_embed_eligible() {
+		return array_values(
+			array_filter(
+				self::get_all(),
+				function ( $placement ) {
+					return ! empty( $placement['type'] ) && self::is_embed_type( $placement['type'] );
+				}
+			)
+		);
+	}
+
+	/**
 	 * Debug logger (WP_DEBUG only).
 	 *
 	 * @param string $message Message.

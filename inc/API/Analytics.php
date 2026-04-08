@@ -102,7 +102,7 @@ class Analytics extends Controller {
 		// use one canonical Overview payload on the original route.
 		return $this->get_overview_v2( $request );
 		// @phpstan-ignore-next-line Legacy overview block kept temporarily during route consolidation.
-		$access           = $this->get_access_context();
+		$access = $this->get_access_context();
 
 		$ads = get_posts(
 			[

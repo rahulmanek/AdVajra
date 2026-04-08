@@ -179,6 +179,41 @@ class Renderer {
 	}
 
 	/**
+	 * Render a placement that is safe for manual embed channels.
+	 *
+	 * @param int   $placement_id Placement ID.
+	 * @param array $args         Optional render arguments.
+	 * @return string
+	 */
+	public static function render_placement( $placement_id, $args = [] ) {
+		$placement_id = absint( $placement_id );
+		if ( ! $placement_id ) {
+			return '';
+		}
+
+		$placement = \AdVajra\Model\Placement::get( $placement_id );
+		if ( ! $placement || empty( $placement->type ) || ! \AdVajra\Model\Placement::is_embed_type( $placement->type ) ) {
+			return '';
+		}
+
+		$ad_id     = 0;
+		$item_type = \AdVajra\Model\Placement::id_to_item_type( $placement->item_type );
+
+		if ( 'ad' === $item_type ) {
+			$ad_id = (int) $placement->item_id;
+		} elseif ( 'group' === $item_type ) {
+			$ads   = \AdVajra\Model\Group::get_ads_for_display( $placement->item_id );
+			$ad_id = ! empty( $ads ) ? (int) $ads[0] : 0;
+		}
+
+		if ( ! $ad_id ) {
+			return '';
+		}
+
+		return self::render( $ad_id, $args );
+	}
+
+	/**
 	 * Whether server-side render metrics should be tracked for this ad.
 	 *
 	 * @param array  $settings      Plugin settings.

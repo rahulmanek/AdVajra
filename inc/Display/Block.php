@@ -77,26 +77,7 @@ class Block {
 		}
 
 		if ( 'placement' === $type ) {
-			$placement = \AdVajra\Model\Placement::get( $id );
-			if ( ! $placement ) {
-				return '';
-			}
-
-			$ad_id     = 0;
-			$item_type = \AdVajra\Model\Placement::id_to_item_type( $placement->item_type );
-
-			if ( 'ad' === $item_type ) {
-				$ad_id = intval( $placement->item_id );
-			} elseif ( 'group' === $item_type ) {
-				$ads   = \AdVajra\Model\Group::get_ads_for_display( $placement->item_id );
-				$ad_id = ! empty( $ads ) ? $ads[0] : 0;
-			}
-
-			if ( ! $ad_id ) {
-				return '';
-			}
-
-			return \AdVajra\Display\Renderer::render( $ad_id );
+			return \AdVajra\Display\Renderer::render_placement( $id );
 		}
 
 		return '';

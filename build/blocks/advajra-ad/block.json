@@ -3,9 +3,9 @@
   "apiVersion": 3,
   "name": "advajra/ad",
   "version": "1.0.0",
-  "title": "AdVajra Ad / Placement",
+  "title": "AdVajra Ad / Manual Placement",
   "category": "widgets",
-  "description": "Insert a specific AdVajra Ad or Placement directly into your content.",
+  "description": "Insert a specific AdVajra ad or a manual placement directly into your content.",
   "attributes": {
     "type": {
       "type": "string",
