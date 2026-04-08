@@ -1,11 +1,13 @@
 <?php
 /**
  * Plugin Name:       AdVajra
- * Description:       A modern, comprehensive ads management solution for WordPress.
+ * Description:       Control. Optimize. Monetize.
  * Version:           1.0.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
+ * Plugin URI:        https://advajra.com
  * Author:            Rahul Manek (idevelop.pro)
+ * Author URI:        https://idevelop.pro
  * License:           GPL-2.0+
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       advajra
