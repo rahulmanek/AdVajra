@@ -201,7 +201,7 @@ class Defaults {
 
 		$defaults['blocked_ips']                = [];
 		$defaults['adblock_message']            = '';
-		$defaults['debug_mode']                 = false;
+		// NOTE: 'debug_mode' reset value is provided by PRO via the advajra_reset_defaults filter.
 		$defaults['custom_code_header_enabled'] = false;
 		$defaults['custom_code_body_enabled']   = false;
 		$defaults['custom_code_footer_enabled'] = false;

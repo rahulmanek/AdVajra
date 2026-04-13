@@ -71,35 +71,12 @@ final class Plugin {
 	 */
 	public function init() {
 		( new \AdVajra\Model\PostTypes() )->init();
-
-		add_action(
-			'rest_api_init',
-			function () {
-				( new \AdVajra\API\Ads() )->register_routes();
-				( new \AdVajra\API\Placements() )->register_routes();
-				( new \AdVajra\API\Settings() )->register_routes();
-				( new \AdVajra\API\Targeting() )->register_routes();
-				( new \AdVajra\API\Tracking() )->register_routes();
-				( new \AdVajra\API\Analytics() )->register_routes();
-				( new \AdVajra\API\Modules() )->register_routes();
-				( new \AdVajra\API\AdsTxt() )->register_routes();
-			}
-		);
-
-		( new \AdVajra\Display\Shortcode() )->init();
-		( new \AdVajra\Display\Block() )->init();
-
-		\AdVajra\Core\Placements\Injector::get_instance()->init();
-
-		( new \AdVajra\Core\Cron() )->init();
-
-		( new \AdVajra\Display\Scripts() )->init();
+		( new \AdVajra\Core\Runtime\ApiRuntime() )->init();
+		( new \AdVajra\Core\Runtime\FrontendRuntime() )->init();
+		( new \AdVajra\Core\Runtime\CronRuntime() )->init();
 
 		\AdVajra\Core\PreviewController::init();
-
-		if ( is_admin() ) {
-			( new \AdVajra\Core\Admin() )->init();
-		}
+		( new \AdVajra\Core\Runtime\AdminRuntime() )->init();
 
 		\AdVajra\Features\Privacy::init();
 

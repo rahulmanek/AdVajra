@@ -1,8 +1,10 @@
 <?php
 namespace AdVajra\Core\Placements;
 
-use AdVajra\Display\Renderer;
-use AdVajra\Model\Group;
+use AdVajra\Delivery\PlacementRenderer;
+use AdVajra\Delivery\RenderContext;
+use AdVajra\Delivery\PlacementRepository;
+use AdVajra\Delivery\AdSnapshotRepository;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -26,17 +28,38 @@ class Injector {
 	private static $instance = null;
 
 	/**
-	 * Registry Instance.
+	 * Placement repository.
 	 *
-	 * @var PlacementRegistry
+	 * @var PlacementRepository
 	 */
-	private $registry;
+	private $placements;
+
+	/**
+	 * Cached plugin settings (loaded once per request).
+	 *
+	 * @var array|null
+	 */
+	private $settings = null;
 
 	/**
 	 * Constructor.
 	 */
 	private function __construct() {
-		$this->registry = PlacementRegistry::get_instance();
+		$this->placements = new PlacementRepository();
+	}
+
+	/**
+	 * Get cached settings.
+	 *
+	 * @return array
+	 */
+	private function get_settings() {
+		if ( null === $this->settings ) {
+			$settings       = get_option( 'advajra_settings', [] );
+			$this->settings = is_array( $settings ) ? $settings : [];
+		}
+
+		return $this->settings;
 	}
 
 	/**
@@ -82,24 +105,22 @@ class Injector {
 			return;
 		}
 
-		$placements = $this->registry->get_placements();
+		$context = $this->map_hook_type_to_context( $type );
+		if ( empty( $context ) ) {
+			return;
+		}
+
+		$placements = $this->placements->get_active_for_context( $context );
+
+		// Batch-load all ad meta in one DB query before the render loop.
+		$this->prime_ad_snapshot_cache( $placements );
 
 		foreach ( $placements as $placement ) {
-			if ( $type !== $placement['type'] ) {
-				continue;
-			}
-
-			$ad_id = $this->resolve_ad_id( $placement );
-			if ( ! $ad_id ) {
-				continue;
-			}
-
-			$html = Renderer::render( $ad_id );
+			$html = PlacementRenderer::render( $placement->id, $context );
 			if ( ! empty( $html ) ) {
 				echo sprintf(
-					'<div class="advajra-ad-wrapper advajra-%s" data-ad-id="%d">%s</div>',
+					'<div class="advajra-ad-wrapper advajra-%s">%s</div>',
 					esc_attr( $type ),
-					absint( $ad_id ),
 					wp_kses_post( $html )
 				);
 			}
@@ -110,7 +131,7 @@ class Injector {
 	 * @return bool
 	 */
 	private function is_user_allowed() {
-		$settings = get_option( 'advajra_settings', [] );
+		$settings = $this->get_settings();
 
 		if ( ! empty( $settings['hidden_roles'] ) && is_array( $settings['hidden_roles'] ) && is_user_logged_in() ) {
 			$user = wp_get_current_user();
@@ -132,7 +153,7 @@ class Injector {
 	 * @return bool
 	 */
 	private function is_page_allowed() {
-		$settings = get_option( 'advajra_settings', [] );
+		$settings = $this->get_settings();
 
 		if ( ! empty( $settings['disable_homepage'] ) && ( is_front_page() || is_home() ) ) {
 			return false;
@@ -170,61 +191,105 @@ class Injector {
 			return $content;
 		}
 
-		$placements = $this->registry->get_placements();
+		$before_content  = $this->placements->get_active_for_context( RenderContext::AUTO_BEFORE_CONTENT );
+		$after_content   = $this->placements->get_active_for_context( RenderContext::AUTO_AFTER_CONTENT );
+		$after_paragraph = $this->placements->get_active_for_context( RenderContext::AUTO_AFTER_PARAGRAPH );
 
-		foreach ( $placements as $placement ) {
-			if ( 'content' !== $placement['type'] ) {
-				continue;
-			}
+		// Batch-load all ad meta in one DB query before any render loop.
+		$this->prime_ad_snapshot_cache(
+			array_merge(
+				(array) $before_content,
+				(array) $after_content,
+				(array) $after_paragraph
+			)
+		);
 
-			$ad_id = $this->resolve_ad_id( $placement );
-			if ( ! $ad_id ) {
-				continue;
-			}
-
-			$html = Renderer::render( $ad_id );
+		foreach ( $before_content as $placement ) {
+			$html = PlacementRenderer::render( $placement->id, RenderContext::AUTO_BEFORE_CONTENT );
 			if ( empty( $html ) ) {
 				continue;
 			}
 
-			$html = sprintf(
-				'<div class="advajra-ad-wrapper" data-ad-id="%d">%s</div>',
-				$ad_id,
-				$html
-			);
+			$content = sprintf( '<div class="advajra-ad-wrapper">%s</div>', $html ) . $content;
+		}
 
-			$args      = isset( $placement['args'] ) ? $placement['args'] : [];
-			$point     = isset( $args['point'] ) ? $args['point'] : 'after';
-			$paragraph = isset( $args['paragraph'] ) ? intval( $args['paragraph'] ) : 0;
-
-			if ( $paragraph > 0 ) {
-				$content = $this->inject_at_paragraph( $content, $html, $paragraph, $point );
-			} else {
-				if ( 'before' === $point ) {
-					$content = $html . $content;
-				} else {
-					$content = $content . $html;
-				}
+		foreach ( $after_content as $placement ) {
+			$html = PlacementRenderer::render( $placement->id, RenderContext::AUTO_AFTER_CONTENT );
+			if ( empty( $html ) ) {
+				continue;
 			}
+
+			$content .= sprintf( '<div class="advajra-ad-wrapper">%s</div>', $html );
+		}
+
+		foreach ( $after_paragraph as $placement ) {
+			$html = PlacementRenderer::render( $placement->id, RenderContext::AUTO_AFTER_PARAGRAPH );
+			if ( empty( $html ) ) {
+				continue;
+			}
+
+			$paragraph = ! empty( $placement->paragraph_num ) ? intval( $placement->paragraph_num ) : 0;
+			$content   = $this->inject_at_paragraph(
+				$content,
+				sprintf( '<div class="advajra-ad-wrapper">%s</div>', $html ),
+				$paragraph > 0 ? $paragraph : 1,
+				'after'
+			);
 		}
 
 		return $content;
 	}
 
 	/**
-	 * Resolve Ad ID from Placement (Ad or Group).
+	 * Batch-prime the AdSnapshotRepository for a list of placements.
 	 *
-	 * @param array $placement
-	 * @return int|false
+	 * Resolves direct ad IDs from each placement and calls
+	 * AdSnapshotRepository::prime() once, collapsing N individual
+	 * get_post_meta() chains into a single update_meta_cache() call.
+	 *
+	 * Group placements are intentionally skipped here because
+	 * Group::get_ads_for_display() performs its own resolution at render
+	 * time; pre-priming groups would require duplicating that logic.
+	 *
+	 * @param array $placements Array of placement objects.
+	 * @return void
 	 */
-	private function resolve_ad_id( $placement ) {
-		if ( 'ad' === $placement['item_type'] ) {
-			return intval( $placement['item_id'] );
-		} elseif ( 'group' === $placement['item_type'] ) {
-			$ads = Group::get_ads_for_display( $placement['item_id'] );
-			return ! empty( $ads ) ? $ads[0] : false;
+	private function prime_ad_snapshot_cache( array $placements ) {
+		if ( empty( $placements ) ) {
+			return;
 		}
-		return false;
+
+		$ad_ids = [];
+		foreach ( $placements as $placement ) {
+			if ( ! is_object( $placement ) ) {
+				continue;
+			}
+			// Only direct-ad placements — group resolution happens at render time.
+			if ( 'ad' === $placement->item_type && ! empty( $placement->item_id ) ) {
+				$ad_ids[] = (int) $placement->item_id;
+			}
+		}
+
+		if ( ! empty( $ad_ids ) ) {
+			( new AdSnapshotRepository() )->prime( $ad_ids );
+		}
+	}
+
+	/**
+	 * Map a hook type to a strict render context.
+	 *
+	 * @param string $type Hook type.
+	 * @return string
+	 */
+	private function map_hook_type_to_context( $type ) {
+		switch ( $type ) {
+			case 'header':
+				return RenderContext::AUTO_HEADER;
+			case 'footer':
+				return RenderContext::AUTO_FOOTER;
+			default:
+				return '';
+		}
 	}
 
 	/**

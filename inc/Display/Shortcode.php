@@ -45,27 +45,19 @@ class Shortcode {
 
 		// Placement takes priority when explicitly provided.
 		if ( $placement_id ) {
-			$placement = \AdVajra\Model\Placement::get( $placement_id );
-			if ( ! $placement ) {
-				return '';
-			}
-
-			$item_type = is_numeric( $placement->item_type )
-				? \AdVajra\Model\Placement::id_to_item_type( $placement->item_type )
-				: $placement->item_type;
-
-			if ( 'ad' === $item_type ) {
-				$ad_id = absint( $placement->item_id );
-			} elseif ( 'group' === $item_type ) {
-				$ads   = \AdVajra\Model\Group::get_ads_for_display( absint( $placement->item_id ) );
-				$ad_id = ! empty( $ads ) ? absint( $ads[0] ) : 0;
-			}
+			return \AdVajra\Delivery\PlacementRenderer::render(
+				$placement_id,
+				\AdVajra\Delivery\RenderContext::SHORTCODE
+			);
 		}
 
 		if ( ! $ad_id ) {
 			return '';
 		}
 
-		return ( new Renderer() )->render( $ad_id );
+		return \AdVajra\Delivery\AdRenderer::render(
+			$ad_id,
+			\AdVajra\Delivery\RenderContext::SHORTCODE
+		);
 	}
 }

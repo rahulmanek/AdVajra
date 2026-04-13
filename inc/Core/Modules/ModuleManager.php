@@ -14,6 +14,8 @@ use AdVajra\Core\Modules\BotProtectionModule;
 use AdVajra\Core\Modules\CustomCodeModule;
 use AdVajra\Core\Modules\AdBlockerProTeaserModule;
 use AdVajra\Core\Modules\ClickFraudProtectionProTeaserModule;
+use AdVajra\Core\Modules\AgniRuntimeProTeaserModule;
+use AdVajra\Core\Modules\AgniCwvGuardProTeaserModule;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -68,6 +70,8 @@ class ModuleManager {
 			new CustomCodeModule(),
 			new AdBlockerProTeaserModule(),
 			new ClickFraudProtectionProTeaserModule(),
+			new AgniRuntimeProTeaserModule(),
+			new AgniCwvGuardProTeaserModule(),
 		];
 
 		$all_modules = apply_filters( 'advajra_registered_modules', $core_modules );
@@ -96,6 +100,10 @@ class ModuleManager {
 
 	public function toggle_module( string $id, bool $status ): bool {
 		if ( ! isset( $this->modules[ $id ] ) ) {
+			return false;
+		}
+
+		if ( $this->modules[ $id ]->is_pro() && ( ! defined( 'ADVAJRA_PRO_ACTIVE' ) || ! ADVAJRA_PRO_ACTIVE ) ) {
 			return false;
 		}
 

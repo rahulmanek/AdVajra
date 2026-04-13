@@ -1076,9 +1076,147 @@ const AnalyticsPanel = ({ settings, updateSetting, onBack }) => {
 };
 
 // ===========================================
+// DEBUG LOG VIEWER
+// ===========================================
+const DebugLogViewer = () => {
+    const [lines, setLines]       = useState(null);   // null = loading, [] = empty
+    const [count, setCount]       = useState(0);
+    const [size, setSize]         = useState(0);
+    const [maxSize, setMaxSize]   = useState(0);
+    const [clearing, setClearing] = useState(false);
+    const [error, setError]       = useState('');
+
+    const fetchLog = useCallback(() => {
+        setError('');
+        apiFetch({ path: '/advajra/v1/debug-log' })
+            .then(data => {
+                setLines(data.lines || []);
+                setCount(data.count || 0);
+                setSize(data.size || 0);
+                setMaxSize(data.max_size || 0);
+            })
+            .catch(() => {
+                setError('Could not load log. Make sure debug mode is saved first.');
+                setLines([]);
+            });
+    }, []);
+
+    useEffect(() => { fetchLog(); }, [fetchLog]);
+
+    const handleClear = async () => {
+        if (!window.confirm('Clear the entire debug log?')) return;
+        setClearing(true);
+        try {
+            await apiFetch({ path: '/advajra/v1/debug-log', method: 'DELETE' });
+            setLines([]);
+            setCount(0);
+            setSize(0);
+        } catch {
+            setError('Clear failed.');
+        }
+        setClearing(false);
+    };
+
+    const formatBytes = (b) => {
+        if (b < 1024) return `${b} B`;
+        if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB`;
+        return `${(b / (1024 * 1024)).toFixed(2)} MB`;
+    };
+
+    const levelColor = (line) => {
+        if (line.includes('] [ERROR]')) return '#f87171';
+        if (line.includes('] [WARN]'))  return '#fbbf24';
+        if (line.includes('] [INFO]'))  return '#60a5fa';
+        return '#94a3b8';
+    };
+
+    return (
+        <div style={{marginTop: '16px', border: '1px solid var(--av-border, #e2e8f0)', borderRadius: '10px', overflow: 'hidden'}}>
+
+            {/* Header bar */}
+            <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '10px 14px',
+                background: '#0f172a',
+                borderBottom: '1px solid #1e293b',
+            }}>
+                <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                    <span style={{fontSize: '13px', color: '#94a3b8', fontFamily: 'monospace'}}>
+                        advajra-debug.log
+                    </span>
+                    {size > 0 && (
+                        <span style={{
+                            fontSize: '11px', padding: '2px 6px',
+                            background: '#1e293b', color: '#64748b',
+                            borderRadius: '4px', fontFamily: 'monospace',
+                        }}>
+                            {formatBytes(size)} / {formatBytes(maxSize)}
+                        </span>
+                    )}
+                    {count > 0 && (
+                        <span style={{fontSize: '11px', color: '#475569', fontFamily: 'monospace'}}>
+                            {count} line{count !== 1 ? 's' : ''}
+                        </span>
+                    )}
+                </div>
+                <div style={{display: 'flex', gap: '8px'}}>
+                    <button
+                        onClick={fetchLog}
+                        style={{
+                            padding: '4px 10px', fontSize: '12px', cursor: 'pointer',
+                            background: '#1e293b', color: '#94a3b8',
+                            border: '1px solid #334155', borderRadius: '5px',
+                        }}
+                    >↻ Refresh</button>
+                    <button
+                        onClick={handleClear}
+                        disabled={clearing || !count}
+                        style={{
+                            padding: '4px 10px', fontSize: '12px', cursor: 'pointer',
+                            background: count ? 'rgba(239,68,68,0.15)' : '#1e293b',
+                            color: count ? '#f87171' : '#475569',
+                            border: `1px solid ${count ? 'rgba(239,68,68,0.3)' : '#334155'}`,
+                            borderRadius: '5px', opacity: clearing ? 0.6 : 1,
+                        }}
+                    >{clearing ? 'Clearing…' : '🗑 Clear Log'}</button>
+                </div>
+            </div>
+
+            {/* Log content */}
+            <div style={{
+                background: '#0f172a',
+                maxHeight: '400px',
+                overflowY: 'auto',
+                padding: '12px 14px',
+                fontFamily: '"JetBrains Mono", "Fira Code", "Cascadia Code", Menlo, monospace',
+                fontSize: '12px',
+                lineHeight: '1.7',
+            }}>
+                {error && (
+                    <div style={{color: '#f87171', marginBottom: '8px'}}>⚠ {error}</div>
+                )}
+                {lines === null && (
+                    <span style={{color: '#475569'}}>Loading…</span>
+                )}
+                {lines !== null && lines.length === 0 && !error && (
+                    <span style={{color: '#475569'}}>No log entries yet. Log entries appear here when ad render errors or system events occur.</span>
+                )}
+                {lines !== null && lines.map((line, i) => (
+                    <div key={i} style={{color: levelColor(line), wordBreak: 'break-all'}}>
+                        {line}
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+// ===========================================
 // ADVANCED PANEL
 // ===========================================
 const AdvancedPanel = ({ settings, updateSetting, onBack, onReset }) => {
+    const isPro = window.advajraSettings?.isPro || false;
+
     return (
         <DrillDownPanel
             icon="⚙️"
@@ -1099,42 +1237,104 @@ const AdvancedPanel = ({ settings, updateSetting, onBack, onReset }) => {
             {/* Debug & Tools */}
             <div className="panel-section">
                 <div className="section-header">
-                    <h4>🔧 Debug & Tools</h4>
+                    <h4>
+                        🔧 Debug & Tools
+                        {!isPro && <span className="pro-header-badge">🔒 PRO</span>}
+                    </h4>
+                    <p className="section-desc">Logs are written to <code>wp-content/uploads/advajra-logs/advajra-debug.log</code></p>
                 </div>
 
-                <div className="coming-soon-banner" style={{background: 'rgba(99, 102, 241, 0.05)', border: '1px dashed rgba(99, 102, 241, 0.3)', padding: '16px', borderRadius: '12px', textAlign: 'center', marginBottom: '24px'}}>
-                    <span style={{fontSize: '24px', display: 'block', marginBottom: '8px'}}>🚀</span>
-                    <h5 style={{margin: '0 0 4px 0', color: '#4f46e5'}}>Coming Soon</h5>
-                    <p style={{margin: 0, fontSize: '13px', color: '#64748b'}}>Advanced debugging, export/import, and health checks are currently in development for a future update.</p>
+                <ToggleRow
+                    icon="🪲"
+                    title="Debug Mode"
+                    description="Record ad render errors and system events to a private plugin log file. Disable on production when not debugging."
+                    isEnabled={settings?.debug_mode}
+                    onClick={() => isPro && updateSetting('debug_mode', !settings?.debug_mode)}
+                    isLocked={!isPro}
+                />
+
+                {isPro && settings?.debug_mode && <DebugLogViewer />}
+
+                {!isPro && (
+                    <div className="upgrade-cta">
+                        <span className="upgrade-icon">🔧</span>
+                        <span className="upgrade-text">Upgrade to PRO to enable debug logging &amp; log viewer</span>
+                        <button className="upgrade-btn">Upgrade Now</button>
+                    </div>
+                )}
+            </div>
+
+            <div className="panel-section" style={{
+                border: '1px solid rgba(239,68,68,0.25)',
+                borderRadius: '12px',
+                padding: '20px',
+                background: 'rgba(239,68,68,0.02)',
+            }}>
+                <div className="section-header" style={{ marginBottom: '16px' }}>
+                    <h4 style={{ color: '#ef4444', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span>⚠️</span> Danger Zone
+                    </h4>
+                    <p className="section-desc">These actions are irreversible. Proceed with caution.</p>
                 </div>
 
-                {/* Keep Reset Button Functional */}
-                <div className="action-buttons">
+                {/* Reset Settings */}
+                <div style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    gap: '16px', flexWrap: 'wrap',
+                    padding: '14px 16px',
+                    background: 'var(--av-bg-main)',
+                    border: '1px solid var(--av-border)',
+                    borderRadius: '10px',
+                    marginBottom: '12px',
+                }}>
+                    <div>
+                        <div style={{ fontWeight: 600, fontSize: '15px', color: 'var(--av-text-heading)', lineHeight: 1.3 }}>
+                            Reset all settings to defaults
+                        </div>
+                        <div style={{ fontSize: '13px', color: 'var(--av-text-muted)', marginTop: '2px' }}>
+                            Restores every plugin setting to its factory default. Your ads and placements are not affected.
+                        </div>
+                    </div>
                     <button
-                        className="action-btn danger" style={{width: '100%', justifyContent: 'center'}}
+                        style={{
+                            flexShrink: 0,
+                            padding: '8px 18px',
+                            fontSize: '13px', fontWeight: 600, cursor: 'pointer',
+                            background: 'rgba(239,68,68,0.08)',
+                            color: '#ef4444',
+                            border: '1px solid rgba(239,68,68,0.3)',
+                            borderRadius: '8px',
+                            transition: 'all 0.15s ease',
+                            whiteSpace: 'nowrap',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.15)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; }}
                         onClick={() => {
-                            if (window.confirm("Are you sure you want to reset all settings to their default values? This action cannot be undone.")) {
+                            if (window.confirm('Reset all plugin settings to defaults?\n\nYour ads and placements will NOT be deleted. Only settings (display rules, tracking, privacy, etc.) will be restored to their factory values.\n\nThis cannot be undone.')) {
                                 onReset(window.advajraSettings?.defaults || {});
                             }
                         }}
                     >
-                        🔄 Reset Settings to Defaults
+                        🔄 Reset Settings
                     </button>
                 </div>
-            </div>
 
-            {/* Uninstall Behaviour */}
-            <div className="panel-section">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    {/* Trash Icon */}
+                <div style={{
+                    display: 'flex', alignItems: 'center', gap: '16px',
+                    padding: '14px 16px',
+                    background: 'var(--av-bg-main)',
+                    border: `1px solid ${settings?.erase_data_on_uninstall ? 'rgba(239,68,68,0.35)' : 'var(--av-border)'}`,
+                    borderRadius: '10px',
+                    transition: 'border-color 0.2s ease',
+                }}>
                     <div style={{
-                        width: '44px', height: '44px', borderRadius: '12px', flexShrink: 0,
-                        background: settings?.erase_data_on_uninstall ? 'rgba(239,68,68,0.1)' : 'var(--av-bg-main)',
+                        width: '40px', height: '40px', borderRadius: '10px', flexShrink: 0,
+                        background: settings?.erase_data_on_uninstall ? 'rgba(239,68,68,0.1)' : 'var(--av-bg-surface, #f8fafc)',
                         border: `1px solid ${settings?.erase_data_on_uninstall ? 'rgba(239,68,68,0.25)' : 'var(--av-border)'}`,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         transition: 'all 0.2s ease',
                     }}>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
                             stroke={settings?.erase_data_on_uninstall ? '#ef4444' : 'var(--av-text-muted)'}
                             strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                             style={{ transition: 'stroke 0.2s ease' }}>
@@ -1145,17 +1345,15 @@ const AdvancedPanel = ({ settings, updateSetting, onBack, onReset }) => {
                         </svg>
                     </div>
 
-                    {/* Text */}
                     <div style={{ flex: 1 }}>
                         <div style={{ fontWeight: 600, fontSize: '15px', color: 'var(--av-text-heading)', lineHeight: 1.3 }}>
                             Delete all plugin data on uninstall
                         </div>
                         <div style={{ fontSize: '13px', color: 'var(--av-text-muted)', marginTop: '2px' }}>
-                            Permanently removes ads, placements, settings, and logs.
+                            Permanently removes ads, placements, settings, and logs when the plugin is deleted.
                         </div>
                     </div>
 
-                    {/* Toggle */}
                     <Switch
                         checked={!!settings?.erase_data_on_uninstall}
                         onChange={(val) => updateSetting('erase_data_on_uninstall', val)}
@@ -1168,9 +1366,6 @@ const AdvancedPanel = ({ settings, updateSetting, onBack, onReset }) => {
     );
 };
 
-// ===========================================
-// DEFAULTS PANEL
-// ===========================================
 const DefaultsPanel = ({ settings, updateSetting, onBack }) => {
     const trackingOptions = [
         { value: 'both', label: 'All', icon: '📊' },

@@ -1,4 +1,4 @@
-=== AdVajra - Modern Ad Manager & AdSense Plugin ===
+=== AdVajra ===
 Contributors: rahulmanek
 Tags: ads, advertising, ad manager, targeting, adsense
 Requires at least: 6.0

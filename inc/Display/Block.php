@@ -49,13 +49,22 @@ class Block {
 			true
 		);
 
-		register_block_type(
-			ADVAJRA_PATH . 'src/blocks/advajra-ad',
-			[
-				'editor_script'   => 'advajra-ad-block',
-				'render_callback' => [ $this, 'render_callback' ],
-			]
-		);
+		$args = [
+			'editor_script'   => 'advajra-ad-block',
+			'render_callback' => [ $this, 'render_callback' ],
+		];
+
+		/**
+		 * Filter block registration args.
+		 *
+		 * PRO plugins can hook here to add `view_script_module` or
+		 * other advanced block capabilities when ready.
+		 *
+		 * @param array $args Block registration arguments.
+		 */
+		$args = apply_filters( 'advajra_block_args', $args );
+
+		register_block_type( ADVAJRA_PATH . 'src/blocks/advajra-ad', $args );
 	}
 
 	/**
@@ -73,11 +82,11 @@ class Block {
 		}
 
 		if ( 'ad' === $type ) {
-			return \AdVajra\Display\Renderer::render( $id );
+			return \AdVajra\Delivery\AdRenderer::render( $id, \AdVajra\Delivery\RenderContext::BLOCK );
 		}
 
 		if ( 'placement' === $type ) {
-			return \AdVajra\Display\Renderer::render_placement( $id );
+			return \AdVajra\Delivery\PlacementRenderer::render( $id, \AdVajra\Delivery\RenderContext::BLOCK );
 		}
 
 		return '';

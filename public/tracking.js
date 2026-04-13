@@ -4,10 +4,14 @@
 	const CONFIG = window.advajra_config || {};
 	const API_URL = CONFIG.api_url || '/wp-json/advajra/v1/tracking';
 	const NONCE = CONFIG.nonce || '';
-	const BATCH_INTERVAL = 2000;
+	const FLUSH_DELAY_MS = Math.max(
+		250,
+		parseInt( CONFIG.flush_delay_ms, 10 ) || 1200
+	);
 	const VISIBILITY_THRESHOLD = 0.5;
 
 	let eventQueue = [];
+	let flushTimer = null;
 	const viewabilityState = new Map();
 
 	function recordEvent( id, type, value ) {
@@ -30,10 +34,40 @@
 		}
 
 		eventQueue.push( event );
+		scheduleFlush();
 	}
 
-	function flushQueue() {
-		commitVisibleDurations();
+	function clearScheduledFlush() {
+		if ( flushTimer !== null ) {
+			window.clearTimeout( flushTimer );
+			flushTimer = null;
+		}
+	}
+
+	function scheduleFlush() {
+		if ( flushTimer !== null ) {
+			return;
+		}
+
+		flushTimer = window.setTimeout( function () {
+			flushTimer = null;
+			flushQueue();
+		}, FLUSH_DELAY_MS );
+	}
+
+	function flushQueue( options ) {
+		const includeVisibleDurations = Boolean(
+			options && options.includeVisibleDurations
+		);
+		const forceFlush = Boolean( options && options.force );
+
+		if ( forceFlush ) {
+			clearScheduledFlush();
+		}
+
+		if ( includeVisibleDurations ) {
+			commitVisibleDurations();
+		}
 
 		if ( eventQueue.length === 0 ) {
 			return;
@@ -136,6 +170,10 @@
 	}
 
 	function sampleLoadTime( adEl ) {
+		if ( CONFIG.disable_load_time_sampling ) {
+			return;
+		}
+
 		if ( ! adEl || adEl.dataset.loadSampled === 'true' ) {
 			return;
 		}
@@ -153,6 +191,58 @@
 		}
 
 		adEl.dataset.loadSampled = 'true';
+	}
+
+	function getVisibleRatio( el ) {
+		if ( ! el || typeof el.getBoundingClientRect !== 'function' ) {
+			return 0;
+		}
+
+		const rect = el.getBoundingClientRect();
+		const width = rect.width || 0;
+		const height = rect.height || 0;
+
+		if ( width <= 0 || height <= 0 ) {
+			return 0;
+		}
+
+		const viewportWidth =
+			window.innerWidth || document.documentElement.clientWidth || 0;
+		const viewportHeight =
+			window.innerHeight || document.documentElement.clientHeight || 0;
+
+		const visibleWidth =
+			Math.min( rect.right, viewportWidth ) - Math.max( rect.left, 0 );
+		const visibleHeight =
+			Math.min( rect.bottom, viewportHeight ) - Math.max( rect.top, 0 );
+
+		if ( visibleWidth <= 0 || visibleHeight <= 0 ) {
+			return 0;
+		}
+
+		const visibleArea = visibleWidth * visibleHeight;
+		const totalArea = width * height;
+
+		return totalArea > 0 ? visibleArea / totalArea : 0;
+	}
+
+	function markVisibleIfEligible( ad ) {
+		const tracking = ad.dataset.tracking;
+
+		if ( tracking !== 'both' && tracking !== 'impressions' ) {
+			return;
+		}
+
+		if ( getVisibleRatio( ad ) < VISIBILITY_THRESHOLD ) {
+			return;
+		}
+
+		if ( ! ad.dataset.impressed ) {
+			ad.dataset.impressed = 'true';
+			recordEvent( ad.dataset.adId, 'impression' );
+		}
+
+		startVisibleSession( ad );
 	}
 
 	const impressionObserver =
@@ -278,20 +368,22 @@
 		const tracking = adWrapper.dataset.tracking;
 		if ( tracking === 'both' || tracking === 'clicks' ) {
 			recordEvent( adId, 'click' );
-			flushQueue();
+			flushQueue( { force: true } );
 		}
 	} );
-
-	setInterval( flushQueue, BATCH_INTERVAL );
 
 	document.addEventListener( 'visibilitychange', function () {
 		if ( document.visibilityState === 'hidden' ) {
-			flushQueue();
+			flushQueue( { includeVisibleDurations: true, force: true } );
 		}
 	} );
 
-	window.addEventListener( 'pagehide', flushQueue );
-	window.addEventListener( 'beforeunload', flushQueue );
+	window.addEventListener( 'pagehide', function () {
+		flushQueue( { includeVisibleDurations: true, force: true } );
+	} );
+	window.addEventListener( 'beforeunload', function () {
+		flushQueue( { includeVisibleDurations: true, force: true } );
+	} );
 
 	function init() {
 		const ads = document.querySelectorAll( '[data-ad-id]' );
@@ -336,6 +428,19 @@
 				impressionObserver.observe( ad );
 				ad.dataset.observing = 'true';
 			}
+		} );
+
+		// Defer initial visibility checks to avoid synchronous layout reflow
+		// blocking first paint. IntersectionObserver handles ongoing tracking.
+		var deferFn = typeof requestIdleCallback === 'function'
+			? requestIdleCallback
+			: function ( cb ) { setTimeout( cb, 50 ); };
+		deferFn( function () {
+			document.querySelectorAll( '[data-ad-id][data-tracking]' ).forEach( function ( ad ) {
+				if ( ad.dataset.impressed !== 'true' ) {
+					markVisibleIfEligible( ad );
+				}
+			} );
 		} );
 	}
 

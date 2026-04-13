@@ -55,6 +55,7 @@ class Settings extends Controller {
 				'permission_callback' => [ $this, 'permissions_check' ],
 			]
 		);
+
 		// NOTE: POST /sync-now is a PRO-only endpoint registered in advajra-pro.
 	}
 
@@ -112,7 +113,6 @@ class Settings extends Controller {
 			'custom_code_footer_enabled' => 'rest_sanitize_boolean',
 			'custom_code_body'           => 'raw',
 			'custom_code_footer'         => 'raw',
-			'debug_mode'                 => 'rest_sanitize_boolean',
 			'erase_data_on_uninstall'    => 'rest_sanitize_boolean',
 		];
 
@@ -236,4 +236,5 @@ class Settings extends Controller {
 			]
 		);
 	}
+
 }

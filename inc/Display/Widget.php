@@ -47,9 +47,9 @@ class Widget extends \WP_Widget {
 		}
 
 		if ( 'ad' === $type ) {
-			echo wp_kses_post( \AdVajra\Display\Renderer::render( $id ) );
+			echo wp_kses_post( \AdVajra\Delivery\AdRenderer::render( $id, \AdVajra\Delivery\RenderContext::WIDGET ) );
 		} elseif ( 'placement' === $type ) {
-			echo wp_kses_post( \AdVajra\Display\Renderer::render_placement( $id ) );
+			echo wp_kses_post( \AdVajra\Delivery\PlacementRenderer::render( $id, \AdVajra\Delivery\RenderContext::WIDGET ) );
 		}
 
 		echo wp_kses_post( $args['after_widget'] );

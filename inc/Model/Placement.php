@@ -397,12 +397,8 @@ class Placement {
 
 		if ( false === $items ) {
 			$table = self::get_table();
-			$items = $wpdb->get_results(
-				$wpdb->prepare(
-					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Placement table name is internal and trusted.
-					"SELECT * FROM {$table} ORDER BY id DESC"
-				)
-			);
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$items = $wpdb->get_results( "SELECT * FROM {$table} ORDER BY id DESC" );
 
 			foreach ( $items as &$item ) {
 				$item = self::transform_for_api( $item );
