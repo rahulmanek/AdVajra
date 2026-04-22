@@ -227,9 +227,7 @@ class AdRenderer {
 			return self::legacy_renderer()->render( $snapshot );
 		}
 
-		$content = wp_kses_post( $snapshot['content'] );
-
-		return self::wrap_with_link( $content, $snapshot );
+		return self::wrap_with_link( $snapshot['content'], $snapshot );
 	}
 
 	/**
@@ -315,6 +313,8 @@ class AdRenderer {
 		if ( empty( $snapshot['image_url'] ) ) {
 			return '';
 		}
+
+		RenderState::increment_image_render_count();
 
 		$attrs = [];
 		if ( ! empty( $snapshot['alt_text'] ) ) {

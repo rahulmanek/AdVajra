@@ -25,6 +25,7 @@ const ICON_MAP = {
     plugins: '🔌',    // Generic Plugins
     ip_blocker: <IpBlockIcon />, // IP Blocker
     click_fraud: '🚨', // Click Fraud Protection
+    smart_loading: '⚡', // Smart Loading
 };
 
 const ModuleCard = ({ module, onToggle, onConfigure }) => {
