@@ -34,8 +34,7 @@ const ModuleCard = ({ module, onToggle, onConfigure }) => {
 
     // Determine if this is a Pro feature and the user doesn't have a valid Pro license
     const isProLocked = isPro && !window.advajraSettings?.isPro;
-    const isComingSoon = id === 'ad_groups';
-    const isEffectivelyActive = active && !isProLocked && !isComingSoon;
+    const isEffectivelyActive = active && !isProLocked;
 
     const handleConfigure = (event) => {
         event.stopPropagation();
@@ -51,18 +50,17 @@ const ModuleCard = ({ module, onToggle, onConfigure }) => {
 
     const handleToggle = (newCheckedState, event) => {
         event?.stopPropagation();
-        if (isProLocked || isComingSoon) return;
+        if (isProLocked) return;
         onToggle(id, !active);
     };
 
     return (
         <div
-            className={`category-card module-card ${isEffectivelyActive ? 'active-module' : ''} ${isProLocked || isComingSoon ? 'locked' : ''}`}
+            className={`category-card module-card ${isEffectivelyActive ? 'active-module' : ''} ${isProLocked ? 'locked' : ''}`}
             role="group"
             aria-label={name}
         >
             {isProLocked && <span className="module-card__pro-badge">🔒 PRO</span>}
-            {isComingSoon && <span className="module-card__coming-soon-badge">⏳ COMING SOON</span>}
 
             <div className="module-card__body">
                 <span className="card-icon module-card__icon">
@@ -82,12 +80,6 @@ const ModuleCard = ({ module, onToggle, onConfigure }) => {
                     >
                         {__('Upgrade to PRO', 'advajra')}
                     </button>
-                </div>
-            ) : isComingSoon ? (
-                <div className="module-card__footer" style={{ justifyContent: 'center' }}>
-                    <span className="text-xs font-semibold text-slate-400">
-                        {__('In Development', 'advajra')}
-                    </span>
                 </div>
             ) : (
                 <div className="module-card__footer">

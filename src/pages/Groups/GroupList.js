@@ -100,9 +100,31 @@ const GroupList = () => {
     const getRotationIcon = (rotation) => {
         switch(rotation) {
             case 'random': return shuffle;
+            case 'weighted': return pages;
             case 'ordered': return pages;
             default: return shuffle;
         }
+    };
+
+    // Get rotation label
+    const getRotationLabel = (rotation) => {
+        switch(rotation) {
+            case 'random': return __('Random', 'advajra');
+            case 'weighted': return __('Weighted', 'advajra');
+            case 'ordered': return __('Ordered', 'advajra');
+            default: return __('Random', 'advajra');
+        }
+    };
+
+    // Get ad count (handles both flat and weighted formats)
+    const getAdCount = (group) => {
+        if (!group.ads) return 0;
+        return group.ads.length;
+    };
+
+    // Get ad ID from entry (handles both { id, weight } and plain number)
+    const getAdId = (entry) => {
+        return typeof entry === 'object' ? entry.id : entry;
     };
 
     // Loading state
@@ -156,6 +178,7 @@ const GroupList = () => {
                         options={[
                             { label: __('All Rotations', 'advajra'), value: '' },
                             { label: __('Random', 'advajra'), value: 'random' },
+                            { label: __('Weighted', 'advajra'), value: 'weighted' },
                             { label: __('Ordered', 'advajra'), value: 'ordered' },
                         ]}
                         className="w-44"
@@ -220,7 +243,8 @@ const GroupList = () => {
                             <div className="stack-preview">
                                 {group.ads && group.ads.length > 0 ? (
                                     <>
-                                        {group.ads.slice(0, 3).map((adId) => {
+                                        {group.ads.slice(0, 3).map((entry) => {
+                                            const adId = getAdId(entry);
                                             const ad = getAd(adId);
                                             return (
                                                 <div key={adId} className="stack-card">
@@ -254,11 +278,11 @@ const GroupList = () => {
                                 <div className="group-meta">
                                     <span className="meta-item">
                                         <Icon icon={pages} />
-                                        {group.ads?.length || 0} {__('ads', 'advajra')}
+                                        {getAdCount(group)} {__('ads', 'advajra')}
                                     </span>
                                     <span className={`rotation-badge ${group.rotation || 'random'}`}>
                                         <Icon icon={getRotationIcon(group.rotation)} />
-                                        {group.rotation === 'ordered' ? __('Ordered', 'advajra') : __('Random', 'advajra')}
+                                        {getRotationLabel(group.rotation)}
                                     </span>
                                 </div>
                             </div>

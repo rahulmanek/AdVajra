@@ -2,10 +2,15 @@
 /**
  * Groups REST Controller.
  *
+ * Handles CRUD operations for Ad Groups via the REST API.
+ * Uses the weighted pool data model: [ { id, weight }, ... ]
+ *
  * @package AdVajra\API
  */
 
 namespace AdVajra\API;
+
+use AdVajra\Model\Group;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -93,7 +98,7 @@ class Groups extends Controller {
 		$groups = [];
 
 		foreach ( $posts as $post ) {
-			$groups[] = $this->prepare_group( $post );
+			$groups[] = Group::prepare_for_response( $post );
 		}
 
 		return rest_ensure_response( $groups );
@@ -113,7 +118,7 @@ class Groups extends Controller {
 			return new \WP_Error( 'not_found', __( 'Group not found.', 'advajra' ), [ 'status' => 404 ] );
 		}
 
-		return rest_ensure_response( $this->prepare_group( $post ) );
+		return rest_ensure_response( Group::prepare_for_response( $post ) );
 	}
 
 	/**
@@ -125,15 +130,16 @@ class Groups extends Controller {
 	public function create_item( $request ) {
 		$data = $request->get_json_params();
 
-		$post_id = wp_insert_post(
-			[
-				'post_type'   => $this->post_type,
-				'post_title'  => sanitize_text_field( $data['title'] ?? 'Untitled Group' ),
-				'post_status' => 'publish',
-			]
-		);
+		$post_id = Group::create( [
+			'title'    => $data['title'] ?? 'Untitled Group',
+			'ads'      => $data['ads'] ?? [],
+			'rotation' => $data['rotation'] ?? 'random',
+		] );
 
-		$this->save_group_meta( $post_id, $data );
+		if ( is_wp_error( $post_id ) ) {
+			return $post_id;
+		}
+
 		\AdVajra\Utils\AuditLog::log(
 			'group_created',
 			'group',
@@ -145,7 +151,7 @@ class Groups extends Controller {
 			)
 		);
 
-		return rest_ensure_response( $this->prepare_group( get_post( $post_id ) ) );
+		return rest_ensure_response( Group::prepare_for_response( get_post( $post_id ) ) );
 	}
 
 	/**
@@ -156,22 +162,18 @@ class Groups extends Controller {
 	 */
 	public function update_item( $request ) {
 		$id   = (int) $request->get_param( 'id' );
-		$post = get_post( $id );
-
-		if ( ! $post || $this->post_type !== $post->post_type ) {
-			return new \WP_Error( 'not_found', __( 'Group not found.', 'advajra' ), [ 'status' => 404 ] );
-		}
-
 		$data = $request->get_json_params();
 
-		wp_update_post(
-			[
-				'ID'         => $id,
-				'post_title' => sanitize_text_field( $data['title'] ?? $post->post_title ),
-			]
-		);
+		$result = Group::update( $id, [
+			'title'    => $data['title'] ?? null,
+			'ads'      => $data['ads'] ?? null,
+			'rotation' => $data['rotation'] ?? null,
+		] );
 
-		$this->save_group_meta( $id, $data );
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
 		\AdVajra\Utils\AuditLog::log(
 			'group_updated',
 			'group',
@@ -183,7 +185,7 @@ class Groups extends Controller {
 			)
 		);
 
-		return rest_ensure_response( $this->prepare_group( get_post( $id ) ) );
+		return rest_ensure_response( Group::prepare_for_response( get_post( $id ) ) );
 	}
 
 	/**
@@ -200,7 +202,14 @@ class Groups extends Controller {
 			return new \WP_Error( 'not_found', __( 'Group not found.', 'advajra' ), [ 'status' => 404 ] );
 		}
 
-		wp_delete_post( $id, true );
+		$title = $post->post_title ? $post->post_title : '#' . absint( $id );
+
+		$result = Group::delete( $id );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
 		\AdVajra\Utils\AuditLog::log(
 			'group_deleted',
 			'group',
@@ -208,7 +217,7 @@ class Groups extends Controller {
 			sprintf(
 				/* translators: %s: group title */
 				__( 'Deleted group: %s', 'advajra' ),
-				$post->post_title ? $post->post_title : '#' . absint( $id )
+				$title
 			)
 		);
 
@@ -218,39 +227,5 @@ class Groups extends Controller {
 				'id'      => $id,
 			]
 		);
-	}
-
-	/**
-	 * Prepare group data for response.
-	 *
-	 * @param \WP_Post $post Post object.
-	 * @return array
-	 */
-	private function prepare_group( $post ) {
-		$ads      = get_post_meta( $post->ID, '_advajra_group_ads', true );
-		$rotation = get_post_meta( $post->ID, '_advajra_group_rotation', true );
-
-		return [
-			'id'       => $post->ID,
-			'title'    => $post->post_title,
-			'rotation' => $rotation ?: 'default',
-			'ads'      => is_array( $ads ) ? array_map( 'intval', $ads ) : [],
-		];
-	}
-
-	/**
-	 * Save group meta.
-	 *
-	 * @param int   $post_id Post ID.
-	 * @param array $data    Data from request.
-	 */
-	private function save_group_meta( $post_id, $data ) {
-		if ( isset( $data['rotation'] ) ) {
-			update_post_meta( $post_id, '_advajra_group_rotation', sanitize_text_field( $data['rotation'] ) );
-		}
-
-		if ( isset( $data['ads'] ) && is_array( $data['ads'] ) ) {
-			update_post_meta( $post_id, '_advajra_group_ads', array_map( 'intval', $data['ads'] ) );
-		}
 	}
 }

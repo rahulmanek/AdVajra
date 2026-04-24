@@ -93,7 +93,7 @@ class PlacementResolver {
 		}
 
 		$ad_id     = 0;
-		$item_type = Placement::id_to_item_type( $placement->item_type );
+		$item_type = $placement->item_type;
 
 		if ( 'ad' === $item_type ) {
 			$ad_id = absint( $placement->item_id );
