@@ -210,7 +210,7 @@ class Injector {
 				continue;
 			}
 
-			$content = sprintf( '<div class="advajra-ad-wrapper">%s</div>', $html ) . $content;
+			$content = sprintf( '<div class="advajra-ad-wrapper">%s</div>', wp_kses_post( $html ) ) . $content;
 		}
 
 		foreach ( $after_content as $placement ) {
@@ -219,7 +219,7 @@ class Injector {
 				continue;
 			}
 
-			$content .= sprintf( '<div class="advajra-ad-wrapper">%s</div>', $html );
+			$content .= sprintf( '<div class="advajra-ad-wrapper">%s</div>', wp_kses_post( $html ) );
 		}
 
 		foreach ( $after_paragraph as $placement ) {
@@ -231,7 +231,7 @@ class Injector {
 			$paragraph = ! empty( $placement->paragraph_num ) ? intval( $placement->paragraph_num ) : 0;
 			$content   = $this->inject_at_paragraph(
 				$content,
-				sprintf( '<div class="advajra-ad-wrapper">%s</div>', $html ),
+				sprintf( '<div class="advajra-ad-wrapper">%s</div>', wp_kses_post( $html ) ),
 				$paragraph > 0 ? $paragraph : 1,
 				'after'
 			);

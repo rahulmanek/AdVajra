@@ -75,16 +75,30 @@
     border-bottom: 1px solid rgba(0,0,0,0.04);
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    /* Brand anchored left, pills centred in the full navbar width */
+    justify-content: flex-start;
     padding: 0 40px;
     z-index: 999;
     animation: slideDownFade 0.6s var(--av-ease-spring);
     box-shadow: var(--av-shadow-sm);
 
+    .advajra-nav-links {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
     /* Mobile: full width */
     @media screen and (max-width: 782px) {
         left: 0;
         top: 46px; /* Mobile admin bar is taller */
+
+        .advajra-nav-links {
+            position: static;
+            transform: none;
+            flex: 1;
+            justify-content: center;
+        }
     }
 }
 

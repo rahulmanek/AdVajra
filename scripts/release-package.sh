@@ -9,7 +9,6 @@ RELEASE_DIR="${PLUGIN_DIR}/.release"
 STAGE_DIR="${RELEASE_DIR}/${PLUGIN_SLUG}"
 WPORG_DIR="${RELEASE_DIR}/wporg"
 WPORG_TRUNK_DIR="${WPORG_DIR}/trunk"
-WPORG_ASSETS_DIR="${WPORG_DIR}/assets"
 ARTIFACT_DIR="${RELEASE_DIR}/artifacts"
 ARTIFACT_ZIP="${ARTIFACT_DIR}/${PLUGIN_SLUG}.zip"
 
@@ -135,38 +134,15 @@ return true;
 PHP
 }
 
-copy_wporg_assets() {
-	local asset_file
-	local relative_path
-	local destination
-
-	if [[ ! -d "${PLUGIN_DIR}/wordpress-org-assets" ]]; then
-		return
-	fi
-
-	while IFS= read -r -d '' asset_file; do
-		relative_path="${asset_file#${PLUGIN_DIR}/wordpress-org-assets/}"
-
-		case "${relative_path}" in
-			README.md|README.txt|*.md|.DS_Store)
-				continue
-				;;
-		esac
-
-		destination="${WPORG_ASSETS_DIR}/${relative_path}"
-		mkdir -p "$(dirname "${destination}")"
-		cp "${asset_file}" "${destination}"
-	done < <(find "${PLUGIN_DIR}/wordpress-org-assets" -type f -print0)
-}
 
 clean_release_dirs() {
-	rm -rf "${STAGE_DIR}" "${WPORG_TRUNK_DIR}" "${WPORG_ASSETS_DIR}"
-	mkdir -p "${STAGE_DIR}" "${WPORG_TRUNK_DIR}" "${WPORG_ASSETS_DIR}" "${ARTIFACT_DIR}"
+	rm -rf "${STAGE_DIR}" "${WPORG_TRUNK_DIR}"
+	mkdir -p "${STAGE_DIR}" "${WPORG_TRUNK_DIR}" "${ARTIFACT_DIR}"
 	rm -f "${ARTIFACT_ZIP}"
 }
 
 remove_os_junk() {
-	find "${STAGE_DIR}" "${WPORG_TRUNK_DIR}" "${WPORG_ASSETS_DIR}" -name '.DS_Store' -delete 2>/dev/null || true
+	find "${STAGE_DIR}" "${WPORG_TRUNK_DIR}" -name '.DS_Store' -delete 2>/dev/null || true
 }
 
 package_zip() {
@@ -196,7 +172,6 @@ main() {
 	log "Staging WordPress.org trunk"
 	stage_runtime_paths "${WPORG_TRUNK_DIR}"
 	write_runtime_autoloader "${WPORG_TRUNK_DIR}"
-	copy_wporg_assets
 	remove_os_junk
 
 	package_zip

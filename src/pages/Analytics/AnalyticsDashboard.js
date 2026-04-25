@@ -609,6 +609,7 @@ const AnalyticsDashboard = () => {
 		const query = new URLSearchParams( {
 			preset,
 			dimension: TAB_TO_DIMENSION[ activeTab ] || '',
+			_t: Date.now(),
 		} );
 
 		apiFetch( { path: `/advajra/v1/analytics?${ query.toString() }` } )
@@ -648,11 +649,8 @@ const AnalyticsDashboard = () => {
 		};
 	}, [ activeTab, preset ] );
 
-	const isPro = !! data?.retention?.is_pro;
-	const analyticsLocked = !! data?.locked;
-	const trial = data?.trial || {};
-	const daysRemaining = trial.days_remaining ?? 7;
-	const trialExpired = !! trial.expired;
+	const isPro = !! data?.is_pro || !! data?.retention?.is_pro;
+	const analyticsLocked = !! data?.locked || !! data?.is_preview;
 	const upgradeUrl = data?.upgrade_url || 'https://advajra.com/pricing';
 	const availablePresets = useMemo( () => {
 		const apiPresets = ( data?.presets || [] ).map( ( option ) => ( {
@@ -734,12 +732,6 @@ const AnalyticsDashboard = () => {
 	}
 
 	const freshnessLabel = formatFreshness( lastUpdatedAt, nowTick );
-	let accessBadgeLabel = 'Trial';
-	if ( isPro ) {
-		accessBadgeLabel = 'PRO';
-	} else if ( trialExpired ) {
-		accessBadgeLabel = 'Trial Ended';
-	}
 
 
 
@@ -877,119 +869,11 @@ const AnalyticsDashboard = () => {
 		);
 	}
 
-	if ( analyticsLocked ) {
-		return (
-			<div className="advajra-analytics av-analytics-locked-layout">
-				<div className="av-analytics-shell av-analytics-shell--locked">
-					<div className="av-analytics-commandbar av-analytics-commandbar--locked">
-						<div className="av-analytics-commandbar__main">
 
-							<h1>Analytics</h1>
-							<p>
-								Track delivery trends, compare ranges, and
-								inspect which ads or placements are moving.
-							</p>
-						</div>
-						<div className="av-analytics-commandbar__actions">
-							<div className="av-skeleton-input" />
-						</div>
-					</div>
-
-					<div className="av-summary-grid av-summary-grid--skeleton">
-						{ [ 1, 2, 3 ].map( ( item ) => (
-							<div
-								key={ item }
-								className="av-summary-card av-skeleton-card"
-							>
-								<div className="av-skeleton-line av-skeleton-line--sm" />
-								<div className="av-skeleton-line av-skeleton-line--lg" />
-								<div className="av-skeleton-line av-skeleton-line--md" />
-							</div>
-						) ) }
-					</div>
-
-					<Card className="av-analytics-panel">
-						<CardBody>
-							<div className="av-panel-head">
-								<div>
-
-									<h3>Performance over time</h3>
-									<p>
-										Current range overlaid with the previous
-										period.
-									</p>
-								</div>
-							</div>
-							<div className="av-chart-skeleton" />
-						</CardBody>
-					</Card>
-				</div>
-
-				<div className="av-analytics-lock-overlay-full">
-					<Card className="av-analytics-lock-modal av-analytics-lock-modal--conversion">
-						<CardBody>
-							<div className="av-lock-icon-tile">
-								<AdvajraAnalyticsIcon size={ 28 } />
-							</div>
-							<h2>Analytics reporting is paused</h2>
-							<p>
-								Your { trial.total_days || 7 }-day trial ended
-								{ trial.ends_at
-									? ` on ${ formatDate(
-											trial.ends_at.split( ' ' )[ 0 ],
-											{
-												month: 'short',
-												day: 'numeric',
-												year: 'numeric',
-											}
-									  ) }.`
-									: '.' }{ ' ' }
-								Upgrade to restore comparison dashboards, mover
-								analysis, and historical trends.
-							</p>
-							<div className="av-lock-benefits-grid">
-								<div className="av-lock-benefit-card">
-									<strong>Historical comparisons</strong>
-									<span>
-										See current range vs previous periods.
-									</span>
-								</div>
-								<div className="av-lock-benefit-card">
-									<strong>Ad + placement movers</strong>
-									<span>
-										Spot which entities gained or lost
-										momentum.
-									</span>
-								</div>
-								<div className="av-lock-benefit-card">
-									<strong>PRO-only presets</strong>
-									<span>
-										Unlock today, weekly, monthly, 30-day,
-										and all-time views.
-									</span>
-								</div>
-							</div>
-							<div className="av-lock-actions">
-								<button
-									type="button"
-									className="av-upgrade-btn"
-									onClick={ () =>
-										window.open( upgradeUrl, '_blank' )
-									}
-								>
-									Upgrade to PRO
-								</button>
-							</div>
-						</CardBody>
-					</Card>
-				</div>
-			</div>
-		);
-	}
 
 	return (
 		<div className="advajra-analytics">
-			<div className="av-analytics-shell">
+			<div className={ `av-analytics-shell ${ analyticsLocked ? 'av-is-locked-blurred' : '' }` }>
 				<header className="av-analytics-commandbar">
 					<div className="av-analytics-commandbar__main">
 
@@ -1022,41 +906,6 @@ const AnalyticsDashboard = () => {
 									<span className="av-inline-spinner" />
 									Refreshing snapshot
 								</span>
-							) }
-						</div>
-					</div>
-
-					<div className="av-analytics-commandbar__actions">						<div
-							className={ `av-access-card ${
-								isPro ? 'is-pro' : 'is-free'
-							}` }
-						>
-							<div className="av-access-card__top">
-								<span className="av-access-card__badge">
-									{ accessBadgeLabel }
-								</span>
-								{ ! isPro && (
-									<Icon icon={ lock } size={ 16 } />
-								) }
-							</div>
-							<strong>
-								{ isPro
-									? 'PRO analytics unlocked'
-									: '7-day analytics trial' }
-							</strong>
-							{ isPro && <p>Unlocked presets, comparisons, movers, and full retained history.</p> }
-
-							{ ! isPro && (
-								<button
-									type="button"
-									className="av-upgrade-btn"
-									onClick={ () =>
-										window.open( upgradeUrl, '_blank' )
-									}
-								>
-									Upgrade to PRO
-									<Icon icon={ external } size={ 14 } />
-								</button>
 							) }
 						</div>
 					</div>
@@ -1527,6 +1376,82 @@ const AnalyticsDashboard = () => {
 					) }
 				</section>
 			</div>
+
+			{/* Render the lock overlay ON TOP of the real dashboard if locked */}
+			{ analyticsLocked && (
+				<div className="av-analytics-lock-overlay-full av-overlay-blur">
+					<div className="av-analytics-premium-teaser">
+						<div className="av-premium-teaser__content">
+								<div className="av-premium-teaser__badge">
+									<span className="av-pulse-dot" />
+									Analytics preview
+								</div>
+
+							<div className="av-premium-teaser__header">
+								<h2>Deep visibility into your ad performance</h2>
+									<p>
+										This is a live preview of the PRO analytics experience. Upgrade to PRO to unlock real-time ad performance data.
+									</p>
+							</div>
+
+							<ul className="av-premium-teaser__features">
+								<li>
+									<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+									Impression & click tracking
+								</li>
+								<li>
+									<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+									Revenue & eCPM calculations
+								</li>
+								<li>
+									<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+									Advanced trend comparisons
+								</li>
+								<li>
+									<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+									Top movers detection
+								</li>
+							</ul>
+
+							<div className="av-premium-teaser__actions">
+								<button
+									type="button"
+									className="av-btn-glow"
+									onClick={ () => window.open( upgradeUrl, '_blank' ) }
+								>
+									Unlock PRO Analytics
+									<Icon icon={ external } size={ 16 } style={{marginLeft: '4px'}} />
+								</button>
+								<a
+									href="https://advajra.com/features/analytics"
+									target="_blank"
+									rel="noreferrer"
+									className="av-btn-ghost"
+								>
+									View all features →
+								</a>
+							</div>
+						</div>
+
+						<div className="av-premium-teaser__visual">
+							<div className="av-visual-glow" />
+							<div className="av-mock-stats">
+								<div className="av-mock-stat">
+									<span>Impressions</span>
+									<strong>??</strong>
+								</div>
+								<div className="av-mock-stat">
+									<span>Clicks</span>
+									<strong>??</strong>
+								</div>
+							</div>
+							<div className="av-mock-chart">
+								<div className="av-mock-line" />
+							</div>
+						</div>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 };

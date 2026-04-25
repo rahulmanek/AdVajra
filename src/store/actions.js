@@ -164,9 +164,26 @@ export const duplicatePlacement = ( placement ) => async ( { dispatch } ) => {
 		return { success: false, reason: 'pro_required' };
 	}
 
-	const result = await handler( placement );
-	dispatch( receiveEntity( 'placements', result ) );
-	return { success: true, data: result };
+	try {
+		const result = await handler( placement );
+
+		if ( ! result || ! result.id ) {
+			return {
+				success: false,
+				reason: result?.message || result?.reason || 'duplicate_failed',
+				data: result,
+			};
+		}
+
+		dispatch( receiveEntity( 'placements', result ) );
+		return { success: true, data: result };
+	} catch ( error ) {
+		return {
+			success: false,
+			reason: error?.message || 'duplicate_failed',
+			error,
+		};
+	}
 };
 
 /**
@@ -218,9 +235,26 @@ export const duplicateGroup = ( group ) => async ( { dispatch } ) => {
 		return { success: false, reason: 'pro_required' };
 	}
 
-	const result = await handler( group );
-	dispatch( receiveEntity( 'groups', result ) );
-	return { success: true, data: result };
+	try {
+		const result = await handler( group );
+
+		if ( ! result || ! result.id ) {
+			return {
+				success: false,
+				reason: result?.message || result?.reason || 'duplicate_failed',
+				data: result,
+			};
+		}
+
+		dispatch( receiveEntity( 'groups', result ) );
+		return { success: true, data: result };
+	} catch ( error ) {
+		return {
+			success: false,
+			reason: error?.message || 'duplicate_failed',
+			error,
+		};
+	}
 };
 
 /**
@@ -286,8 +320,25 @@ export const duplicateAd = ( id ) => async ( { dispatch, select } ) => {
 		dispatch( setEntityRecords( 'ads', newAds ) );
 	};
 
-	const result = await handler( id, currentAds, setAds );
-	return result;
+	try {
+		const result = await handler( id, currentAds, setAds );
+
+		if ( ! result?.success ) {
+			return {
+				success: false,
+				reason: result?.message || result?.reason || 'duplicate_failed',
+				data: result,
+			};
+		}
+
+		return result;
+	} catch ( error ) {
+		return {
+			success: false,
+			reason: error?.message || 'duplicate_failed',
+			error,
+		};
+	}
 };
 
 /**

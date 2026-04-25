@@ -31,25 +31,7 @@ class Install {
 
 		$charset_collate = $wpdb->get_charset_collate();
 
-		$table_name = $wpdb->prefix . 'advajra_stats';
 
-		$sql = "CREATE TABLE $table_name (
-			ad_id bigint(20) UNSIGNED NOT NULL,
-			date date NOT NULL,
-			hour tinyint(2) UNSIGNED NOT NULL,
-			impressions mediumint(8) UNSIGNED DEFAULT 0 NOT NULL,
-			clicks mediumint(8) UNSIGNED DEFAULT 0 NOT NULL,
-			ad_requests mediumint(8) UNSIGNED DEFAULT 0 NOT NULL,
-			matched_requests mediumint(8) UNSIGNED DEFAULT 0 NOT NULL,
-			viewable_impressions mediumint(8) UNSIGNED DEFAULT 0 NOT NULL,
-			revenue_micros bigint(20) DEFAULT NULL,
-			load_time_ms_sum bigint(20) UNSIGNED DEFAULT 0 NOT NULL,
-			load_samples mediumint(8) UNSIGNED DEFAULT 0 NOT NULL,
-			viewable_time_ms_sum bigint(20) UNSIGNED DEFAULT 0 NOT NULL,
-			viewable_samples mediumint(8) UNSIGNED DEFAULT 0 NOT NULL,
-			PRIMARY KEY  (ad_id, date, hour),
-			KEY date_hour (date, hour)
-		) $charset_collate;";
 
 		$placements_table = $wpdb->prefix . 'advajra_placements';
 
@@ -89,7 +71,6 @@ class Install {
 		) ENGINE=InnoDB $charset_collate;";
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-		dbDelta( $sql );
 		dbDelta( $sql_placements );
 		dbDelta( $sql_activity );
 	}
@@ -101,8 +82,6 @@ class Install {
 		if ( ! get_option( 'advajra_version' ) ) {
 			update_option( 'advajra_version', ADVAJRA_VERSION );
 		}
-
-		\AdVajra\Core\AnalyticsAccess::bootstrap_trial_metadata();
 
 		if ( false === get_option( 'advajra_settings' ) ) {
 			$defaults = \AdVajra\Data\Defaults::get_balanced_defaults();

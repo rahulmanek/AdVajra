@@ -153,113 +153,116 @@ class Privacy {
 		$cookie_name  = isset( $settings['consent_cookie_name'] ) ? (string) $settings['consent_cookie_name'] : '';
 		$cookie_value = isset( $settings['consent_cookie_value'] ) ? (string) $settings['consent_cookie_value'] : '';
 		$cookie_regex = ! empty( $cookie_name ) ? preg_quote( $cookie_name, '/' ) : '';
-		?>
-		<script id="advajra-consent-listener">
-		(function() {
-			'use strict';
+		$script       = sprintf(
+			"(function() {
+				'use strict';
 
-			var cookieName = <?php echo wp_json_encode( $cookie_name ); ?>;
-			var cookieValue = <?php echo wp_json_encode( $cookie_value ); ?>;
-			var cookieRegex = <?php echo wp_json_encode( $cookie_regex ); ?>;
+				var cookieName = %s;
+				var cookieValue = %s;
+				var cookieRegex = %s;
 
-			window.advajraConsent = {
-				hasConsent: false,
-				pending: [],
+				window.advajraConsent = {
+					hasConsent: false,
+					pending: [],
 
-				init: function() {
-					var self = this;
+					init: function() {
+						var self = this;
 
-					if (self.checkExistingConsent()) {
-						self.hasConsent = true;
-						return;
-					}
+						if (self.checkExistingConsent()) {
+							self.hasConsent = true;
+							return;
+						}
 
-					if (window.__tcfapi) {
-						window.__tcfapi('addEventListener', 2, function(tcData, success) {
-							if (success && (tcData.eventStatus === 'useractioncomplete' || tcData.eventStatus === 'tcloaded')) {
-								if (tcData.purpose && tcData.purpose.consents) {
-									if (tcData.purpose.consents[1] || tcData.purpose.consents[3]) {
-										self.grantConsent();
+						if (window.__tcfapi) {
+							window.__tcfapi('addEventListener', 2, function(tcData, success) {
+								if (success && (tcData.eventStatus === 'useractioncomplete' || tcData.eventStatus === 'tcloaded')) {
+									if (tcData.purpose && tcData.purpose.consents) {
+										if (tcData.purpose.consents[1] || tcData.purpose.consents[3]) {
+											self.grantConsent();
+										}
 									}
 								}
-							}
-						});
-					}
+							});
+						}
 
-					<?php if ( ! empty( $cookie_name ) ) : ?>
-					self.watchCookie(cookieName, cookieValue);
-					<?php endif; ?>
-				},
+						if (cookieName) {
+							self.watchCookie(cookieName, cookieValue);
+						}
+					},
 
-				checkExistingConsent: function() {
-					<?php if ( ! empty( $cookie_name ) ) : ?>
-					var cookie = document.cookie.match(new RegExp(cookieRegex + '=([^;]+)'));
-					if (cookie) {
-						<?php if ( ! empty( $cookie_value ) ) : ?>
-						return cookie[1].indexOf(cookieValue) !== -1;
-						<?php else : ?>
-						return true;
-						<?php endif; ?>
-					}
-					<?php endif; ?>
-					return false;
-				},
+					checkExistingConsent: function() {
+						var cookie;
+						if (!cookieName) {
+							return false;
+						}
 
-				watchCookie: function(name, value) {
-					var self = this;
-					var check = function() {
-						var cookie = document.cookie.match(new RegExp(name + '=([^;]+)'));
+						cookie = document.cookie.match(new RegExp(cookieRegex + '=([^;]+)'));
 						if (cookie) {
-							if (!value || cookie[1].indexOf(value) !== -1) {
-								self.grantConsent();
-								return true;
-							}
+							return cookieValue ? cookie[1].indexOf(cookieValue) !== -1 : true;
 						}
+
 						return false;
-					};
+					},
 
-					var interval = setInterval(function() {
-						if (check() || self.hasConsent) {
-							clearInterval(interval);
+					watchCookie: function(name, value) {
+						var self = this;
+						var check = function() {
+							var cookie = document.cookie.match(new RegExp(name + '=([^;]+)'));
+							if (cookie) {
+								if (!value || cookie[1].indexOf(value) !== -1) {
+									self.grantConsent();
+									return true;
+								}
+							}
+							return false;
+						};
+
+						var interval = setInterval(function() {
+							if (check() || self.hasConsent) {
+								clearInterval(interval);
+							}
+						}, 500);
+
+						setTimeout(function() { clearInterval(interval); }, 30000);
+					},
+
+					grantConsent: function() {
+						if (this.hasConsent) return;
+						this.hasConsent = true;
+
+						if (this.pending.length && window.advajraTrack) {
+							this.pending.forEach(function(event) {
+								window.advajraTrack(event.adId, event.type);
+							});
+							this.pending = [];
 						}
-					}, 500);
 
-					setTimeout(function() { clearInterval(interval); }, 30000);
-				},
+						document.dispatchEvent(new CustomEvent('advajra_consent_granted'));
+					},
 
-				grantConsent: function() {
-					if (this.hasConsent) return;
-					this.hasConsent = true;
+					queue: function(adId, type) {
+						this.pending.push({ adId: adId, type: type });
+					},
 
-					if (this.pending.length && window.advajraTrack) {
-						this.pending.forEach(function(event) {
-							window.advajraTrack(event.adId, event.type);
-						});
-						this.pending = [];
+					check: function() {
+						return this.hasConsent;
 					}
+				};
 
-					document.dispatchEvent(new CustomEvent('advajra_consent_granted'));
-				},
-
-				queue: function(adId, type) {
-					this.pending.push({ adId: adId, type: type });
-				},
-
-				check: function() {
-					return this.hasConsent;
-				}
-			};
-
-			if (document.readyState === 'loading') {
-				document.addEventListener('DOMContentLoaded', function() {
+				if (document.readyState === 'loading') {
+					document.addEventListener('DOMContentLoaded', function() {
+						window.advajraConsent.init();
+					});
+				} else {
 					window.advajraConsent.init();
-				});
-			} else {
-				window.advajraConsent.init();
-			}
-		})();
-		</script>
-		<?php
+				}
+			})();",
+			wp_json_encode( $cookie_name ),
+			wp_json_encode( $cookie_value ),
+			wp_json_encode( $cookie_regex )
+		);
+
+		wp_add_inline_script( 'advajra-tracking', $script, 'before' );
 	}
 
 	/**

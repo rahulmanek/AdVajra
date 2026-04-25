@@ -45,9 +45,11 @@ class Shortcode {
 
 		// Placement takes priority when explicitly provided.
 		if ( $placement_id ) {
-			return \AdVajra\Delivery\PlacementRenderer::render(
-				$placement_id,
-				\AdVajra\Delivery\RenderContext::SHORTCODE
+			return wp_kses_post(
+				\AdVajra\Delivery\PlacementRenderer::render(
+					$placement_id,
+					\AdVajra\Delivery\RenderContext::SHORTCODE
+				)
 			);
 		}
 
@@ -55,9 +57,11 @@ class Shortcode {
 			return '';
 		}
 
-		return \AdVajra\Delivery\AdRenderer::render(
-			$ad_id,
-			\AdVajra\Delivery\RenderContext::SHORTCODE
+		return wp_kses_post(
+			\AdVajra\Delivery\AdRenderer::render(
+				$ad_id,
+				\AdVajra\Delivery\RenderContext::SHORTCODE
+			)
 		);
 	}
 }

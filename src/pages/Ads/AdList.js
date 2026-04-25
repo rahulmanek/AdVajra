@@ -26,6 +26,7 @@ import SmartSelect from '../../components/SmartSelect';
 import { applyFilters, doAction } from '../../hooks';
 import useDocumentTitle from '../../hooks/useDocumentTitle';
 import { AdsNavIcon } from '../../components/AdvajraIcons';
+import { useNotification } from '../../context/NotificationDataCtx';
 
 // Shared Selection & Bulk HUD
 import useSelection from '../../hooks/useSelection';
@@ -46,6 +47,7 @@ import LazyView from '../../components/LazyView';
 const AdList = () => {
     const navigate = useNavigate();
     const isPro = window.advajraSettings?.isPro || false;
+    const { addNotification } = useNotification();
 
     useDocumentTitle('Ads');
 
@@ -253,12 +255,34 @@ const DEFAULT_COLUMNS = ['title', 'stats', 'trend', 'schedule', 'date', 'modifie
             return;
         }
 
+        let duplicatedCount = 0;
+
         // Process sequentially to be safe with state updates
         for (const id of selection.selectedIds) {
-            await duplicateAd(id);
+            const result = await duplicateAd(id);
+
+            if (!result?.success) {
+                addNotification(
+                    result?.reason ? `${__('Failed to duplicate ad:', 'advajra')} ${result.reason}` : __('Failed to duplicate ad.', 'advajra'),
+                    'error'
+                );
+                return;
+            }
+
+            duplicatedCount += 1;
         }
+
+        if (duplicatedCount > 0) {
+            addNotification(
+                duplicatedCount === 1
+                    ? __('Ad duplicated!', 'advajra')
+                    : `${duplicatedCount} ${__('ads duplicated!', 'advajra')}`,
+                'success'
+            );
+        }
+
         selection.clear();
-    }, [selection, isPro, duplicateAd]);
+    }, [selection, isPro, duplicateAd, addNotification]);
 
     const handleBulkDelete = useCallback(async () => {
         if (!selection.hasSelection) return;
@@ -284,13 +308,23 @@ const DEFAULT_COLUMNS = ['title', 'stats', 'trend', 'schedule', 'date', 'modifie
         }
     }, [deleteAd, selection]);
 
-    const handleDuplicate = useCallback((id) => {
+    const handleDuplicate = useCallback(async (id) => {
         if (isPro) {
-            duplicateAd(id);
+            const result = await duplicateAd(id);
+
+            if (result?.success) {
+                addNotification(__('Ad duplicated!', 'advajra'), 'success');
+                return;
+            }
+
+            addNotification(
+                result?.reason ? `${__('Failed to duplicate ad:', 'advajra')} ${result.reason}` : __('Failed to duplicate ad.', 'advajra'),
+                'error'
+            );
         } else {
             window.open('https://advajra.com/pricing', '_blank');
         }
-    }, [isPro, duplicateAd]);
+    }, [isPro, duplicateAd, addNotification]);
 
 	const renderView = () => {
         // Common props passed to all views

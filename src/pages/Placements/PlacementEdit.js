@@ -11,6 +11,7 @@ import { STORE_NAME } from '../../store/constants';
 import SmartSelect from '../../components/SmartSelect';
 import useDocumentTitle from '../../hooks/useDocumentTitle';
 import { SaveActionIcon } from '../../components/AdvajraIcons';
+import { useNotification } from '../../context/NotificationDataCtx';
 
 // Placement type config with icons for SmartSelect
 const TYPE_OPTIONS = [
@@ -312,6 +313,7 @@ const AdPreviewCard = ({ itemId, itemType, ads, groups }) => {
 
 // ─── Main Component ────────────────────────────────────────────────
 const PlacementEdit = () => {
+    const { addNotification } = useNotification();
     const { id } = useParams();
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(true);
@@ -450,7 +452,7 @@ const PlacementEdit = () => {
             return;
         }
         try {
-            await dispatchDuplicate({
+            const result = await dispatchDuplicate({
                 id: placementId,
                 name,
                 type,
@@ -459,10 +461,23 @@ const PlacementEdit = () => {
                 status: isDisabled ? 'disabled' : (itemId ? 'active' : 'empty'),
                 ...(type === 'after_paragraph' && { args: { paragraph: paragraphNum } }),
             });
-            navigate('/placements');
+
+            if (result?.success && result?.data?.id) {
+                addNotification(__('Placement duplicated!', 'advajra'), 'success');
+                navigate('/placements');
+                return;
+            }
+
+            addNotification(
+                result?.reason ? `${__('Failed to duplicate placement:', 'advajra')} ${result.reason}` : __('Failed to duplicate placement.', 'advajra'),
+                'error'
+            );
         } catch (err) {
             console.error(err);
-            alert('Failed to duplicate');
+            addNotification(
+                err?.message ? `${__('Failed to duplicate placement:', 'advajra')} ${err.message}` : __('Failed to duplicate placement.', 'advajra'),
+                'error'
+            );
         }
     };
 

@@ -82,11 +82,11 @@ class Block {
 		}
 
 		if ( 'ad' === $type ) {
-			return \AdVajra\Delivery\AdRenderer::render( $id, \AdVajra\Delivery\RenderContext::BLOCK );
+			return wp_kses_post( \AdVajra\Delivery\AdRenderer::render( $id, \AdVajra\Delivery\RenderContext::BLOCK ) );
 		}
 
 		if ( 'placement' === $type ) {
-			return \AdVajra\Delivery\PlacementRenderer::render( $id, \AdVajra\Delivery\RenderContext::BLOCK );
+			return wp_kses_post( \AdVajra\Delivery\PlacementRenderer::render( $id, \AdVajra\Delivery\RenderContext::BLOCK ) );
 		}
 
 		return '';

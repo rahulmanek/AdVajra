@@ -64,7 +64,7 @@ class AdRenderer {
 
 			$track_server = self::should_track_server_metrics( $snapshot );
 			if ( $track_server ) {
-				TrackingCollector::collect( $snapshot['id'], 'ad_requests', 1 );
+				do_action( 'advajra_track_server_event', $snapshot['id'], 'ad_requests', 1 );
 			}
 
 			if ( ! self::should_display( $snapshot ) ) {
@@ -108,7 +108,7 @@ class AdRenderer {
 			);
 
 			if ( $track_server ) {
-				TrackingCollector::collect( $snapshot['id'], 'matched_requests', 1 );
+				do_action( 'advajra_track_server_event', $snapshot['id'], 'matched_requests', 1 );
 			}
 
 			$requires_tracking_asset = Scripts::requires_tracking_runtime( $snapshot['tracking_mode'] );

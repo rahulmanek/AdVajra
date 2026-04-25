@@ -48,3 +48,13 @@
         line-height: 1.6;
     }
 }
+
+/* Ads page: keep the empty icon in brand dark tone (not white) */
+.advajra-ad-list-page .advajra-empty-state .empty-icon {
+    color: #0f1c2e;
+}
+
+.groups-page .advajra-empty-state .empty-icon,
+.av-placements-page .advajra-empty-state .empty-icon {
+    color: #0f1c2e;
+}

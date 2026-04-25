@@ -9,7 +9,7 @@
 import { __ } from '@wordpress/i18n';
 import { useState, useMemo } from '@wordpress/element';
 import { Button, Icon, TextControl, Spinner } from '@wordpress/components';
-import { plus, trash, copy, pages, shuffle } from '@wordpress/icons';
+import { plus, trash, copy, pages, shuffle, group } from '@wordpress/icons';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { Link, useNavigate } from 'react-router-dom';
 import { STORE_NAME } from '../../store/constants';
@@ -85,15 +85,32 @@ const GroupList = () => {
     };
 
     // Duplicate group (PRO only)
-    const duplicateGroup = (e, group) => {
+    const duplicateGroup = async (e, group) => {
         e.preventDefault();
         e.stopPropagation();
 
-        if (!isPro) return;
+        if (!isPro) {
+            return;
+        }
 
-        dispatchDuplicateGroup(group).then(() => {
-            addNotification('Group duplicated!', 'success');
-        });
+        try {
+            const result = await dispatchDuplicateGroup(group);
+
+            if (result?.success && result?.data?.id) {
+                addNotification(__('Group duplicated!', 'advajra'), 'success');
+                return;
+            }
+
+            addNotification(
+                result?.reason ? `${__('Failed to duplicate group:', 'advajra')} ${result.reason}` : __('Failed to duplicate group.', 'advajra'),
+                'error'
+            );
+        } catch (error) {
+            addNotification(
+                error?.message ? `${__('Failed to duplicate group:', 'advajra')} ${error.message}` : __('Failed to duplicate group.', 'advajra'),
+                'error'
+            );
+        }
     };
 
     // Get rotation icon
@@ -144,7 +161,7 @@ const GroupList = () => {
             <div className="groups-page">
                 <div className="advajra-empty-state">
                     <div className="empty-icon">
-                        <Icon icon={pages} />
+                        <Icon icon={group} />
                     </div>
                     <h2>{__('No groups yet', 'advajra')}</h2>
                     <p>{__('Groups let you bundle multiple ads together and rotate them. Create your first group to get started!', 'advajra')}</p>
@@ -224,8 +241,8 @@ const GroupList = () => {
                                     onClick={(e) => duplicateGroup(e, group)}
                                     title={isPro ? __('Duplicate', 'advajra') : __('Duplicate (PRO)', 'advajra')}
                                 >
-                                    <Icon icon={copy} />
-                                    <span className="pro-badge">PRO</span>
+                                    <Icon icon={copy} size={18} />
+                                    {!isPro && <span className="pro-badge">PRO</span>}
                                 </button>
 
                                 {/* Delete Button */}
@@ -235,7 +252,7 @@ const GroupList = () => {
                                     onClick={(e) => deleteGroup(e, group.id)}
                                     title={__('Delete', 'advajra')}
                                 >
-                                    <Icon icon={trash} />
+                                    <Icon icon={trash} size={18} />
                                 </button>
                             </div>
 

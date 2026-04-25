@@ -51,6 +51,7 @@ class AuditLog {
 
 		global $wpdb;
 		$table              = self::get_table_name();
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Cached in the static table-exists flag for this request.
 		$found              = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) );
 		self::$table_exists = ! empty( $found );
 
@@ -96,6 +97,7 @@ class AuditLog {
 			$encoded_context = wp_json_encode( $context );
 		}
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom audit log table write.
 		$wpdb->insert(
 			self::get_table_name(),
 			[
@@ -125,18 +127,18 @@ class AuditLog {
 		}
 
 		$limit = max( 1, min( 100, absint( $limit ) ) );
-		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Audit log table name is internal and trusted; limit remains prepared.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Recent audit rows are request-scoped and actor metadata is resolved below.
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
 				'SELECT id, actor, action, entity_type, entity_id, summary, context, created_at
-				FROM ' . self::get_table_name() . '
+				FROM %i
 				ORDER BY created_at DESC
 				LIMIT %d',
+				self::get_table_name(),
 				$limit
 			),
 			ARRAY_A
 		);
-		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		if ( empty( $rows ) ) {
 			return [];

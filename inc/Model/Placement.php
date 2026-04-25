@@ -210,9 +210,10 @@ class Placement {
 		$name   = sanitize_text_field( $data['name'] ?? '' );
 		$config = wp_json_encode( $data['config'] ?? $data['args'] ?? [] );
 
-		$table  = self::get_table();
-		$sql    = null;
-		$result = $wpdb->insert(
+			$table  = self::get_table();
+			$sql    = null;
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom placement table write.
+			$result = $wpdb->insert(
 			$table,
 			[
 				'name'          => $name,
@@ -267,10 +268,11 @@ class Placement {
 
 		if ( false === $item ) {
 			$table = self::get_table();
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Result is cached by placement ID immediately below.
 			$item  = $wpdb->get_row(
 				$wpdb->prepare(
-					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Placement table name is internal and trusted.
-					"SELECT * FROM {$table} WHERE id = %d",
+					'SELECT * FROM %i WHERE id = %d',
+					$table,
 					$id
 				)
 			);
@@ -335,6 +337,7 @@ class Placement {
 			return false;
 		}
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom placement table write.
 		$result = $wpdb->update( self::get_table(), $update, [ 'id' => $id ], $format, [ '%d' ] );
 
 		if ( false !== $result ) {
@@ -366,6 +369,7 @@ class Placement {
 			return false;
 		}
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom placement table write.
 		$result = $wpdb->delete( self::get_table(), [ 'id' => $id ], [ '%d' ] );
 
 		if ( $result ) {
@@ -397,8 +401,10 @@ class Placement {
 
 		if ( false === $items ) {
 			$table = self::get_table();
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
-			$items = $wpdb->get_results( "SELECT * FROM {$table} ORDER BY id DESC" );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Result is cached by all-placements cache key immediately below.
+			$items = $wpdb->get_results(
+				$wpdb->prepare( 'SELECT * FROM %i ORDER BY id DESC', $table )
+			);
 
 			foreach ( $items as &$item ) {
 				$item = self::transform_for_api( $item );
@@ -420,10 +426,11 @@ class Placement {
 		$type_id = self::type_to_id( $type_slug );
 		$table   = self::get_table();
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Placement queries use a small custom table and are cached at higher rendering layers.
 		$items = $wpdb->get_results(
 			$wpdb->prepare(
-				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Placement table name is internal and trusted.
-				"SELECT * FROM {$table} WHERE type = %d AND status = %d ORDER BY id ASC",
+				'SELECT * FROM %i WHERE type = %d AND status = %d ORDER BY id ASC',
+				$table,
 				$type_id,
 				self::STATUS_ACTIVE
 			)

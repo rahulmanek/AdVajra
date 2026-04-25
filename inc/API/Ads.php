@@ -234,18 +234,18 @@ class Ads extends Controller {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'advajra_stats';
 
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Stats table name is built from the trusted WordPress prefix.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Ad stats are read from the plugin's aggregate custom table.
 		$result = $wpdb->get_row(
 			$wpdb->prepare(
 				"SELECT
 					COALESCE(SUM(impressions), 0) as impressions,
 					COALESCE(SUM(clicks), 0) as clicks
-				FROM {$table_name}
+				FROM %i
 				WHERE ad_id = %d",
+				$table_name,
 				$ad_id
 			)
 		);
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		$impressions = (int) ( $result->impressions ?? 0 );
 		$clicks      = (int) ( $result->clicks ?? 0 );

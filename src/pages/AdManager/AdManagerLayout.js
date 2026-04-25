@@ -66,10 +66,7 @@ const AdManagerLayout = ({ children }) => {
                     <NavPill label="Settings" icon={settings} active={activeTab === 'settings'} onClick={() => navigate('/settings')} />
                 </div>
 
-                {/* Right Side / Meta */}
-                <div style={{ fontSize: '13px', color: 'var(--av-text-muted)', fontWeight: 500 }}>
-                    v2.0.0
-                </div>
+
             </div>
 
 			{/* Main Content Area */}

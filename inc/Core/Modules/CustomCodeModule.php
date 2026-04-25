@@ -96,11 +96,57 @@ class CustomCodeModule implements ModuleInterface {
 		}
 	}
 
+	/**
+	 * Get expanded allowed HTML tags for custom code output.
+	 *
+	 * Includes script, style, noscript, and link tags since custom code
+	 * fields are used for ad network embeds, analytics, and tracking pixels.
+	 * Input is gated by `unfiltered_html` capability on save.
+	 *
+	 * @return array
+	 */
+	private function get_allowed_html() {
+		return array_merge(
+			wp_kses_allowed_html( 'post' ),
+			[
+				'script'   => [
+					'type'    => true,
+					'src'     => true,
+					'async'   => true,
+					'defer'   => true,
+					'id'      => true,
+					'class'   => true,
+					'charset' => true,
+				],
+				'style'    => [
+					'type'  => true,
+					'id'    => true,
+					'media' => true,
+				],
+				'noscript' => [],
+				'link'     => [
+					'rel'   => true,
+					'href'  => true,
+					'type'  => true,
+					'media' => true,
+					'id'    => true,
+				],
+				'meta'     => [
+					'name'       => true,
+					'content'    => true,
+					'property'   => true,
+					'http-equiv' => true,
+					'charset'    => true,
+				],
+			]
+		);
+	}
+
 	public function inject_header(): void {
 		$settings = get_option( 'advajra_settings', [] );
 		if ( ! empty( $settings['custom_code_header'] ) ) {
 			echo "\n<!-- AdVajra Custom Code (Header) -->\n";
-			echo $settings['custom_code_header']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo wp_kses( $settings['custom_code_header'], $this->get_allowed_html() );
 			echo "\n";
 		}
 	}
@@ -109,7 +155,7 @@ class CustomCodeModule implements ModuleInterface {
 		$settings = get_option( 'advajra_settings', [] );
 		if ( ! empty( $settings['custom_code_body'] ) ) {
 			echo "\n<!-- AdVajra Custom Code (Body) -->\n";
-			echo $settings['custom_code_body']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo wp_kses( $settings['custom_code_body'], $this->get_allowed_html() );
 			echo "\n";
 		}
 	}
@@ -118,7 +164,7 @@ class CustomCodeModule implements ModuleInterface {
 		$settings = get_option( 'advajra_settings', [] );
 		if ( ! empty( $settings['custom_code_footer'] ) ) {
 			echo "\n<!-- AdVajra Custom Code (Footer) -->\n";
-			echo $settings['custom_code_footer']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo wp_kses( $settings['custom_code_footer'], $this->get_allowed_html() );
 			echo "\n";
 		}
 	}

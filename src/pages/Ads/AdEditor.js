@@ -94,7 +94,7 @@ const AdEditor = () => {
             setLoading(true);
             await dispatchDelete(parseInt(id, 10), { silent: true });
             addNotification({ type: 'success', message: 'Campaign moved to Trash.' });
-            navigate('/advajra/ads');
+            navigate('/ads');
         } catch (error) {
             console.error(error);
             setLoading(false);

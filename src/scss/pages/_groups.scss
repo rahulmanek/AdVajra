@@ -128,8 +128,15 @@
         width: 36px; height: 36px; border-radius: 50%; border: none;
         background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); color: var(--av-text-muted);
         cursor: pointer; display: flex; align-items: center; justify-content: center;
+        position: relative;
         transition: all 0.25s var(--av-ease-bounce); box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        svg { width: 16px; height: 16px; pointer-events: none; }
+        svg {
+            width: 18px;
+            height: 18px;
+            flex: 0 0 18px;
+            fill: currentColor;
+            pointer-events: none;
+        }
         &:hover { background: var(--av-primary); color: white; transform: scale(1.15); box-shadow: 0 6px 20px rgba(var(--av-primary-rgb), 0.3); }
         &.delete:hover { background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3); }
         &.duplicate:disabled { cursor: not-allowed; opacity: 0.7; &:hover { background: rgba(255,255,255,0.95); color: var(--av-text-muted); transform: scale(1); } }

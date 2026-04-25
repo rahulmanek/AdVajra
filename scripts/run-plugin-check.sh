@@ -36,13 +36,18 @@ RESULT="$(
 		--path="${WP_ROOT}" \
 		--format=strict-json \
 		--skip-plugins=easy-digital-downloads \
-		--exclude-directories=".release,scripts,.github,.git,docs,wordpress-org-assets" \
+		--exclude-directories=".release,scripts,.github,.git,docs" \
 		--exclude-files=".DS_Store,.gitattributes,.gitignore,package-lock.json" \
 		2>/dev/null || true
 )"
 printf '%s\n' "${RESULT}"
 
 if ! printf '%s' "${RESULT}" | php -r '$data = json_decode(stream_get_contents(STDIN), true); exit(is_array($data) ? 0 : 1);'; then
+	if printf '%s' "${RESULT}" | grep -q 'No errors found'; then
+		log "Plugin Check passed with zero issues"
+		exit 0
+	fi
+
 	die "Plugin Check did not return JSON output."
 fi
 

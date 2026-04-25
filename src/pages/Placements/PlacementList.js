@@ -385,10 +385,23 @@ const PlacementList = () => {
             return;
         }
         try {
-            await dispatchDuplicate(placement);
+            const result = await dispatchDuplicate(placement);
+
+            if (result?.success && result?.data?.id) {
+                addNotification(__('Placement duplicated!', 'advajra'), 'success');
+                return;
+            }
+
+            addNotification(
+                result?.reason ? `${__('Failed to duplicate placement:', 'advajra')} ${result.reason}` : __('Failed to duplicate placement.', 'advajra'),
+                'error'
+            );
         } catch (err) {
             console.error(err);
-            alert('Failed to duplicate placement');
+            addNotification(
+                err?.message ? `${__('Failed to duplicate placement:', 'advajra')} ${err.message}` : __('Failed to duplicate placement.', 'advajra'),
+                'error'
+            );
         }
     };
 
@@ -520,12 +533,39 @@ const PlacementList = () => {
             window.open('https://advajra.com/pricing', '_blank');
             return;
         }
+
+        let duplicatedCount = 0;
+
         for (const id of selection.selectedIds) {
             const p = placements.find(pl => pl.id === id);
-            if (p) await dispatchDuplicate(p);
+            if (!p) {
+                continue;
+            }
+
+            const result = await dispatchDuplicate(p);
+
+            if (!result?.success || !result?.data?.id) {
+                addNotification(
+                    result?.reason ? `${__('Failed to duplicate placement:', 'advajra')} ${result.reason}` : __('Failed to duplicate placement.', 'advajra'),
+                    'error'
+                );
+                return;
+            }
+
+            duplicatedCount += 1;
         }
+
+        if (duplicatedCount > 0) {
+            addNotification(
+                duplicatedCount === 1
+                    ? __('Placement duplicated!', 'advajra')
+                    : `${duplicatedCount} ${__('placements duplicated!', 'advajra')}`,
+                'success'
+            );
+        }
+
         selection.clear();
-    }, [selection, placements, dispatchDuplicate, isPro]);
+    }, [selection, placements, dispatchDuplicate, isPro, addNotification]);
 
     const handleBulkToggle = useCallback(async () => {
         if (!selection.hasSelection) return;

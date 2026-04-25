@@ -28,29 +28,14 @@ const BASE_CATEGORIES = [
 
     },
     {
-        id: 'display',
-        icon: '📍',
-        title: 'Display',
-        description: 'Where to show ads',
+        id: 'display_audience',
+        icon: '👁️',
+        title: 'Display & Audience',
+        description: 'Where and who sees ads',
         isPro: false,
 
     },
-    {
-        id: 'audience',
-        icon: '👥',
-        title: 'Audience',
-        description: 'Who sees ads',
-        isPro: false,
 
-    },
-    {
-        id: 'protection',
-        icon: '🛡️',
-        title: 'Protection',
-        description: 'Bots, fraud & ad blockers',
-        isPro: false,
-
-    },
     {
         id: 'performance',
         icon: '⚡',
@@ -394,9 +379,9 @@ const ToggleRow = ({ icon, title, description, isEnabled, onClick, badge, isLock
 
 
 // ===========================================
-// DISPLAY PANEL (Page Types)
+// DISPLAY & AUDIENCE PANEL
 // ===========================================
-const DisplayPanel = ({ settings, updateSetting, onBack }) => {
+const DisplayAudiencePanel = ({ settings, updateSetting, onBack }) => {
     const PAGE_TYPES = [
         { key: 'disable_homepage', label: 'Homepage', icon: '🏠', desc: 'Front page of your site' },
         { key: 'disable_posts', label: 'Posts', icon: '📝', desc: 'Single blog posts' },
@@ -409,18 +394,28 @@ const DisplayPanel = ({ settings, updateSetting, onBack }) => {
 
     const enabledCount = PAGE_TYPES.filter(p => !settings[p.key]).length;
 
+    const userRoles = window.advajraSettings?.userRoles || [];
+    const hiddenRoles = settings?.hidden_roles || [];
+
+    const toggleRole = (roleSlug) => {
+        const newHidden = hiddenRoles.includes(roleSlug)
+            ? hiddenRoles.filter(r => r !== roleSlug)
+            : [...hiddenRoles, roleSlug];
+        updateSetting('hidden_roles', newHidden);
+    };
+
     return (
         <DrillDownPanel
-            icon="📍"
-            title="Display Settings"
-            subtitle="Choose where ads appear on your site"
-            statusText={`${enabledCount}/${PAGE_TYPES.length} enabled`}
+            icon="👁️"
+            title="Display & Audience Settings"
+            subtitle="Control exactly where and to whom your ads appear"
+            statusText={`${enabledCount}/${PAGE_TYPES.length} active`}
             onBack={onBack}
         >
 
             <div className="panel-section">
                 <div className="section-header">
-                    <h4>Page Types</h4>
+                    <h4>📍 Page Types</h4>
                     <p className="section-desc">Toggle which page types show ads</p>
                 </div>
 
@@ -446,49 +441,12 @@ const DisplayPanel = ({ settings, updateSetting, onBack }) => {
                     })}
                 </div>
             </div>
-        </DrillDownPanel>
-    );
-};
 
-// ===========================================
-// AUDIENCE PANEL (Roles + IPs)
-// ===========================================
-const AudiencePanel = ({ settings, updateSetting, onBack }) => {
-    const userRoles = window.advajraSettings?.userRoles || [];
-    const hiddenRoles = settings?.hidden_roles || [];
-    const [newIP, setNewIP] = useState('');
-    const blockedIPs = settings?.blocked_ips || [];
+            <div className="section-divider" style={{ borderTop: '1px solid #e5e7eb', margin: '24px 0' }} />
 
-    const toggleRole = (roleSlug) => {
-        const newHidden = hiddenRoles.includes(roleSlug)
-            ? hiddenRoles.filter(r => r !== roleSlug)
-            : [...hiddenRoles, roleSlug];
-        updateSetting('hidden_roles', newHidden);
-    };
-
-    const addIP = () => {
-        if (newIP && !blockedIPs.includes(newIP)) {
-            updateSetting('blocked_ips', [...blockedIPs, newIP]);
-            setNewIP('');
-        }
-    };
-
-    const removeIP = (ip) => {
-        updateSetting('blocked_ips', blockedIPs.filter(i => i !== ip));
-    };
-
-    return (
-        <DrillDownPanel
-            icon="👥"
-            title="Audience Settings"
-            subtitle="Control who sees your ads"
-            onBack={onBack}
-        >
-
-            {/* User Roles Section */}
             <div className="panel-section">
                 <div className="section-header">
-                    <h4>👤 User Roles</h4>
+                    <h4>👥 User Roles</h4>
                     <p className="section-desc">Toggle ad visibility for logged-in users by role</p>
                 </div>
 
@@ -507,41 +465,11 @@ const AudiencePanel = ({ settings, updateSetting, onBack }) => {
                     })}
                 </div>
             </div>
-
-            {/* IP Blocking Section - Migrated to Standalone Module */}
         </DrillDownPanel>
     );
 };
 
-// ===========================================
-// PROTECTION PANEL
-// ===========================================
-const ProtectionPanel = ({ settings, updateSetting, onBack }) => {
-    return (
-        <DrillDownPanel
-            icon="🛡️"
-            title="Protection Settings"
-            subtitle="Protect your ad revenue from invalid traffic"
-            onBack={onBack}
-        >
 
-            {/* Bot Protection */}
-            <div className="panel-section">
-                <div className="section-header">
-                    <h4>🤖 Bot Protection</h4>
-                </div>
-
-                <ToggleRow
-                    icon="🤖"
-                    title="Block Bots & Crawlers"
-                    description="Prevent search engines and bots from triggering ad impressions"
-                    isEnabled={settings?.hide_from_bots}
-                    onClick={() => updateSetting('hide_from_bots', !settings?.hide_from_bots)}
-                />
-            </div>
-        </DrillDownPanel>
-    );
-};
 
 // ===========================================
 // PERFORMANCE PANEL (PRO)
@@ -909,7 +837,6 @@ const SyncStatusWidget = ({ syncInterval }) => {
                         <button className="sync-now-btn sync-now-btn--locked" disabled>
                             <span className="sync-now-btn__icon">⚡</span>
                             <span className="sync-now-btn__label">Sync Now</span>
-                            <span className="sync-now-btn__pro-badge">PRO</span>
                         </button>
                     </Tooltip>
                 </div>
@@ -1019,7 +946,7 @@ const AnalyticsPanel = ({ settings, updateSetting, onBack }) => {
                     <p className="section-desc">How often to save tracking data to database</p>
                 </div>
 
-                <div className="option-buttons">
+                <div className={`option-buttons ${!isPro ? 'is-locked' : ''}`} style={{ opacity: isPro ? 1 : 0.6, pointerEvents: isPro ? 'auto' : 'none' }}>
                     {[
                         { value: 1,  label: '1 min - Fast',        icon: '⚡', title: 'Fastest, more DB load' },
                         { value: 5,  label: '5 min - Recommended', icon: '✓', title: 'Recommended' },
@@ -1029,8 +956,9 @@ const AnalyticsPanel = ({ settings, updateSetting, onBack }) => {
                         <button
                             key={opt.value}
                             className={`option-btn ${syncInterval === opt.value ? 'active' : ''}`}
-                            onClick={() => updateSetting('sync_interval', opt.value)}
+                            onClick={() => isPro && updateSetting('sync_interval', opt.value)}
                             title={opt.title}
+                            disabled={!isPro}
                         >
                             <span className="option-icon">{opt.icon}</span>
                             <span className="option-label">{opt.label}</span>
@@ -1597,9 +1525,8 @@ const SettingsDashboard = ({ settings, updateSetting, batchUpdateSettings, onSav
 
         // Default FREE panels
         switch (activePanel) {
-            case 'display': return <DisplayPanel {...panelProps} />;
-            case 'audience': return <AudiencePanel {...panelProps} />;
-            case 'protection': return <ProtectionPanel {...panelProps} />;
+            case 'display_audience': return <DisplayAudiencePanel {...panelProps} />;
+
             case 'performance': return <PerformancePanel {...panelProps} />;
             case 'privacy': return <PrivacyPanel {...panelProps} />;
             case 'analytics': return <AnalyticsPanel {...panelProps} />;

@@ -115,6 +115,10 @@ class Scripts {
 	 * @return void
 	 */
 	public function maybe_enqueue_tracking_script() {
+		if ( ! apply_filters( 'advajra_enable_tracking_script', false ) ) {
+			return;
+		}
+
 		if ( \AdVajra\Delivery\RenderState::needs_tracking_asset() ) {
 			self::enqueue_tracking_script();
 		}

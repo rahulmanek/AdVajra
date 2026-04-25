@@ -29,7 +29,6 @@ class ApiRuntime {
 				( new \AdVajra\API\Placements() )->register_routes();
 				( new \AdVajra\API\Settings() )->register_routes();
 				( new \AdVajra\API\Targeting() )->register_routes();
-				( new \AdVajra\API\Tracking() )->register_routes();
 				( new \AdVajra\API\Analytics() )->register_routes();
 				( new \AdVajra\API\Modules() )->register_routes();
 				( new \AdVajra\API\AdsTxt() )->register_routes();

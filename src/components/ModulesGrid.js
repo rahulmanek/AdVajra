@@ -12,7 +12,16 @@ const ModulesGrid = ({ isSettingsContext = false }) => {
     const [isLoading, setIsLoading] = useState(true);
 
     const navigate = useNavigate();
-    const { createNotice } = useDispatch('core/notices');
+    const noticesDispatch = useDispatch('core/notices');
+
+    const notifyError = (message) => {
+        if (noticesDispatch && typeof noticesDispatch.createNotice === 'function') {
+            noticesDispatch.createNotice('error', message, { isDismissible: true });
+            return;
+        }
+
+        console.error(message);
+    };
 
     // Fetch modules on mount
     useEffect(() => {
@@ -22,10 +31,10 @@ const ModulesGrid = ({ isSettingsContext = false }) => {
                 setIsLoading(false);
             })
             .catch(() => {
-                createNotice('error', __('Failed to load Advajra Modules.', 'advajra'), { isDismissible: true });
+                notifyError(__('Failed to load Advajra Modules.', 'advajra'));
                 setIsLoading(false);
             });
-    }, [createNotice]);
+    }, [noticesDispatch]);
 
     const handleToggle = (id, active) => {
         // Optimistic UI update
@@ -43,7 +52,7 @@ const ModulesGrid = ({ isSettingsContext = false }) => {
             if (!response.success) {
                 // Revert on failure
                 setModules(prevModules);
-                createNotice('error', __('Failed to toggle module.', 'advajra'), { isDismissible: true });
+                notifyError(__('Failed to toggle module.', 'advajra'));
             } else {
                 // Update global JS state synchronously
                 if (!window.advajraSettings.activeModules) {
@@ -64,7 +73,7 @@ const ModulesGrid = ({ isSettingsContext = false }) => {
         }).catch(() => {
             // Revert on error
             setModules(prevModules);
-            createNotice('error', __('Failed to toggle module.', 'advajra'), { isDismissible: true });
+            notifyError(__('Failed to toggle module.', 'advajra'));
         });
     };
 

@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name:       AdVajra
+ * Plugin Name:       AdVajra - Ad Manager, Ad Inserter & AdSense Plugin
  * Description:       Control. Optimize. Monetize.
  * Version:           1.0.0
- * Requires at least: 6.0
+ * Requires at least: 6.2
  * Requires PHP:      7.4
  * Plugin URI:        https://advajra.com
  * Author:            Rahul Manek (idevelop.pro)

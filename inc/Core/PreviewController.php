@@ -97,6 +97,11 @@ class PreviewController {
 		);
 
 		add_action(
+			'wp_enqueue_scripts',
+			[ __CLASS__, 'enqueue_preview_assets' ]
+		);
+
+		add_action(
 			'wp_footer',
 			function () use ( $placement, $placement_id ) {
 				self::render_preview_ui( $placement, $placement_id );
@@ -106,100 +111,28 @@ class PreviewController {
 	}
 
 	/**
+	 * Enqueue live preview overlay assets.
+	 */
+	public static function enqueue_preview_assets() {
+		wp_enqueue_style(
+			'advajra-preview',
+			ADVAJRA_URL . 'assets/css/preview.css',
+			[],
+			ADVAJRA_VERSION
+		);
+	}
+
+	/**
 	 * Render the live preview frontend UI overlay.
 	 */
 	private static function render_preview_ui( $placement, $placement_id ) {
 		$position_info = self::get_position_info( $placement );
 		?>
-		<style>
-			/* Highlight the injected ad */
-			.advajra-ad-wrapper[data-ad-id] {
-				position: relative !important;
-				outline: 4px dashed #6366f1 !important;
-				outline-offset: 4px !important;
-				border-radius: 4px !important;
-				animation: advajra-pulse-border 2s infinite !important;
-				z-index: 9999 !important;
-			}
-			.advajra-ad-wrapper[data-ad-id]::before {
-				content: "📍 YOUR PLACEMENT";
-				position: absolute;
-				top: -30px;
-				left: -4px;
-				background: #6366f1;
-				color: white;
-				font-size: 11px;
-				font-weight: bold;
-				padding: 4px 8px;
-				border-radius: 4px 4px 0 0;
-				letter-spacing: 0.5px;
-				z-index: 10000;
-				pointer-events: none;
-				box-shadow: 0 -2px 10px rgba(99, 102, 241, 0.4);
-				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-			}
-			@keyframes advajra-pulse-border {
-				0% { outline-color: #6366f1; }
-				50% { outline-color: #a855f7; }
-				100% { outline-color: #6366f1; }
-			}
-
-			/* Floating Toolbar */
-			#advajra-preview-toolbar {
-				position: fixed;
-				bottom: 0;
-				left: 0;
-				right: 0;
-				background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-				color: white;
-				padding: 12px 24px;
-				display: flex;
-				align-items: center;
-				justify-content: space-between;
-				z-index: 2147483647;
-				box-shadow: 0 -4px 25px rgba(0,0,0,0.4);
-				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-			}
-			body {
-				margin-bottom: 60px !important;
-			}
-			.av-tb-title {
-				font-size: 14px;
-				font-weight: 600;
-				display: flex;
-				align-items: center;
-				gap: 12px;
-			}
-			.av-tb-badge {
-				background: rgba(255,255,255,0.15);
-				padding: 3px 10px;
-				border-radius: 12px;
-				font-size: 11px;
-				text-transform: uppercase;
-				letter-spacing: 1px;
-				border: 1px solid rgba(255,255,255,0.1);
-			}
-			.av-tb-btn {
-				background: #ef4444;
-				color: white;
-				text-decoration: none;
-				padding: 6px 16px;
-				border-radius: 6px;
-				font-size: 13px;
-				font-weight: 600;
-				transition: 0.2s;
-				box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
-			}
-			.av-tb-btn:hover {
-				background: #dc2626;
-				color: white;
-			}
-		</style>
 		<div id="advajra-preview-toolbar">
 			<div class="av-tb-title">
 				<span>👁️ Live Preview Mode</span>
 				<span class="av-tb-badge"><?php echo esc_html( $placement->name ); ?></span>
-				<span class="av-tb-badge" style="background:#6366f1; border-color:#818cf8;"><?php echo esc_html( $position_info ); ?></span>
+				<span class="av-tb-badge av-tb-badge--position"><?php echo esc_html( $position_info ); ?></span>
 			</div>
 			<a href="javascript:window.close();" class="av-tb-btn">Exit Preview</a>
 		</div>

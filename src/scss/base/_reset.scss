@@ -8,6 +8,16 @@
     padding-left: 0 !important;
 }
 
+body.toplevel_page_advajra {
+    background: var(--av-bg-main);
+}
+
+body.toplevel_page_advajra #wpcontent,
+body.toplevel_page_advajra #wpbody,
+body.toplevel_page_advajra #wpbody-content {
+    background-color: var(--av-bg-main);
+}
+
 /* Hide WP Footer, Notices, and Screen Options inside AdVajra */
 #wpfooter,
 .update-nag,
@@ -41,4 +51,11 @@
     }
 
     width: 100%;
+    min-height: calc(100vh - 32px);
+}
+
+@media screen and (max-width: 782px) {
+    #advajra-app {
+        min-height: calc(100vh - 46px);
+    }
 }

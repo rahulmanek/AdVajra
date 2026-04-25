@@ -2,7 +2,7 @@
 /**
  * Ads.txt REST Controller.
  *
- * Handles direct file system Read/Write operations for the ads.txt file at ABSPATH.
+ * Handles direct file system Read/Write operations for the ads.txt file at the site root.
  *
  * @package AdVajra\API
  */
@@ -31,7 +31,11 @@ class AdsTxt extends Controller {
 	 * @return string
 	 */
 	private function get_file_path(): string {
-		return ABSPATH . 'ads.txt';
+		if ( ! function_exists( 'get_home_path' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+
+		return trailingslashit( get_home_path() ) . 'ads.txt';
 	}
 
 	/**
@@ -84,7 +88,8 @@ class AdsTxt extends Controller {
 		$fs        = $this->get_filesystem();
 		$exists    = $fs ? $fs->exists( $file_path ) : file_exists( $file_path );
 		$content   = '';
-		$writable  = $fs ? $fs->is_writable( ABSPATH ) || ( $exists && $fs->is_writable( $file_path ) ) : false;
+		$root_path = trailingslashit( get_home_path() );
+		$writable  = $fs ? $fs->is_writable( $root_path ) || ( $exists && $fs->is_writable( $file_path ) ) : false;
 
 		if ( $exists ) {
 			$file_content = $fs ? $fs->get_contents( $file_path ) : false;
@@ -127,7 +132,7 @@ class AdsTxt extends Controller {
 		}
 
 		$exists   = $fs->exists( $file_path );
-		$writable = $exists ? $fs->is_writable( $file_path ) : $fs->is_writable( ABSPATH );
+		$writable = $exists ? $fs->is_writable( $file_path ) : $fs->is_writable( trailingslashit( get_home_path() ) );
 
 		if ( ! $writable ) {
 			return new \WP_Error(

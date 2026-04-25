@@ -33,7 +33,6 @@ class FrontendRuntime {
 		( new \AdVajra\Display\Shortcode() )->init();
 		( new \AdVajra\Display\Block() )->init();
 		( new \AdVajra\Display\Scripts() )->init();
-		\AdVajra\Delivery\TrackingCollector::bootstrap();
 		\AdVajra\Core\Placements\Injector::get_instance()->init();
 	}
 }

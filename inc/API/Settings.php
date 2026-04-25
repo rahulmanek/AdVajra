@@ -44,19 +44,8 @@ class Settings extends Controller {
 			]
 		);
 
-		// GET /sync-status — returns next scheduled cron time + current interval.
-		// Available to all users; UI uses it to display next run time.
-		register_rest_route(
-			$this->namespace,
-			'/sync-status',
-			[
-				'methods'             => \WP_REST_Server::READABLE,
-				'callback'            => [ $this, 'get_sync_status' ],
-				'permission_callback' => [ $this, 'permissions_check' ],
-			]
-		);
-
-		// NOTE: POST /sync-now is a PRO-only endpoint registered in advajra-pro.
+		// GET /sync-status is moved to the PRO plugin.
+		// POST /sync-now is moved to the PRO plugin.
 	}
 
 	/**
@@ -90,7 +79,6 @@ class Settings extends Controller {
 			'default_sponsored'          => 'rest_sanitize_boolean',
 			'default_tracking'           => 'sanitize_text_field',
 			'analytics_enabled'          => 'rest_sanitize_boolean',
-			'sync_interval'              => 'absint',
 			'disable_all_ads'            => 'rest_sanitize_boolean',
 			'disable_homepage'           => 'rest_sanitize_boolean',
 			'disable_posts'              => 'rest_sanitize_boolean',
@@ -111,6 +99,7 @@ class Settings extends Controller {
 			'custom_code_header_enabled' => 'rest_sanitize_boolean',
 			'custom_code_body_enabled'   => 'rest_sanitize_boolean',
 			'custom_code_footer_enabled' => 'rest_sanitize_boolean',
+			'custom_code_header'         => 'raw',
 			'custom_code_body'           => 'raw',
 			'custom_code_footer'         => 'raw',
 			'erase_data_on_uninstall'    => 'rest_sanitize_boolean',
@@ -162,25 +151,9 @@ class Settings extends Controller {
 					continue;
 				}
 
-				if ( 'sync_interval' === $key ) {
-					$interval         = absint( $value );
-					$settings[ $key ] = in_array( $interval, [ 1, 5, 15, 30 ], true ) ? $interval : 5;
-					continue;
+				if ( is_callable( $sanitize_callback ) ) {
+					$settings[ $key ] = call_user_func( $sanitize_callback, $value );
 				}
-
-				if ( function_exists( $sanitize_callback ) ) {
-					$settings[ $key ] = $sanitize_callback( $value );
-				}
-			}
-		}
-
-		// Handle Data Retention (Free Constraint logic preserved)
-		$is_pro = defined( 'ADVAJRA_PRO_ACTIVE' ) && ADVAJRA_PRO_ACTIVE;
-		if ( isset( $data['data_retention'] ) ) {
-			if ( $is_pro ) {
-				$settings['data_retention'] = absint( $data['data_retention'] );
-			} else {
-				$settings['data_retention'] = 7;
 			}
 		}
 
@@ -200,41 +173,9 @@ class Settings extends Controller {
 			);
 		}
 
-		$old_interval = isset( $current['sync_interval'] ) ? absint( $current['sync_interval'] ) : 5;
-		$new_interval = isset( $merged['sync_interval'] ) ? absint( $merged['sync_interval'] ) : 5;
-
-		if ( $old_interval !== $new_interval ) {
-			wp_clear_scheduled_hook( 'advajra_sync_tracking' );
-			$schedule_name = "advajra_every_{$new_interval}min";
-			wp_schedule_event( time(), $schedule_name, 'advajra_sync_tracking' );
-		}
-
 		return rest_ensure_response( $merged );
 	}
 
-	/**
-	 * Get sync status: next scheduled cron time and current interval.
-	 *
-	 * @return \WP_REST_Response
-	 */
-	public function get_sync_status() {
-		$settings = get_option( 'advajra_settings', [] );
-		$interval = isset( $settings['sync_interval'] ) ? absint( $settings['sync_interval'] ) : 5;
-		$next_run = wp_next_scheduled( 'advajra_sync_tracking' );
 
-		// Format next run in site's local timezone.
-		$next_run_formatted = null;
-		if ( $next_run ) {
-			$next_run_formatted = wp_date( 'g:i A', $next_run );
-		}
-
-		return rest_ensure_response(
-			[
-				'next_run'           => $next_run ? (int) $next_run : null,
-				'next_run_formatted' => $next_run_formatted,
-				'interval'           => $interval,
-			]
-		);
-	}
 
 }

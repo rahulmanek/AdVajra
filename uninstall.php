@@ -14,9 +14,7 @@ $advajra_settings           = get_option( 'advajra_settings', [] );
 $advajra_erase_on_uninstall = ! empty( $advajra_settings['erase_data_on_uninstall'] );
 
 
-// 1. CRON EVENTS
-wp_clear_scheduled_hook( 'advajra_sync_tracking' );
-wp_clear_scheduled_hook( 'advajra_cleanup_stats' );
+
 
 /*
  * advajra_expire_single_ad is scheduled per-ad with [ $post_id ] as args.
@@ -41,8 +39,6 @@ foreach ( $advajra_ad_ids as $advajra_ad_id ) {
 $advajra_housekeeping_options = [
 	'advajra_version',
 	'advajra_active_modules',
-	'advajra_deleted_stats',
-	'advajra_last_tracking_sync',
 ];
 
 foreach ( $advajra_housekeeping_options as $advajra_option ) {
@@ -57,7 +53,6 @@ if ( ! $advajra_erase_on_uninstall ) {
 // 3. OPTIONS
 $advajra_user_options = [
 	'advajra_settings',
-	'advajra_trial_started',
 ];
 
 foreach ( $advajra_user_options as $advajra_option ) {
@@ -81,11 +76,10 @@ foreach ( $advajra_post_ids as $advajra_post_id ) {
 
 // 5. DATABASE TABLES
 
-// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared
-$wpdb->query( 'DROP TABLE IF EXISTS ' . $wpdb->prefix . 'advajra_stats' );
-$wpdb->query( 'DROP TABLE IF EXISTS ' . $wpdb->prefix . 'advajra_placements' );
-$wpdb->query( 'DROP TABLE IF EXISTS ' . $wpdb->prefix . 'advajra_activity_log' );
-// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange -- Uninstall cleanup removes plugin-owned custom tables.
+$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $wpdb->prefix . 'advajra_placements' ) );
+$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $wpdb->prefix . 'advajra_activity_log' ) );
+// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange
 
 // 6. UPLOAD DIRECTORY
 $advajra_upload_dir = wp_upload_dir();
