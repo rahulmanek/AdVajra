@@ -12,6 +12,7 @@ import SmartSelect from '../../components/SmartSelect';
 import useDocumentTitle from '../../hooks/useDocumentTitle';
 import { SaveActionIcon } from '../../components/AdvajraIcons';
 import { useNotification } from '../../context/NotificationDataCtx';
+import { PRICING_URL } from '../../utils/urls';
 
 // Placement type config with icons for SmartSelect
 const TYPE_OPTIONS = [
@@ -448,7 +449,7 @@ const PlacementEdit = () => {
     // Duplicate (PRO only — passes current placement to PRO-gated store action)
     const handleDuplicate = async () => {
         if (!isPro) {
-            window.open('https://advajra.com/pricing', '_blank');
+            window.open(PRICING_URL.placementEdit, '_blank');
             return;
         }
         try {

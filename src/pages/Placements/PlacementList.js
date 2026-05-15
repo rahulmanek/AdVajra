@@ -15,6 +15,7 @@ import useSelection from '../../hooks/useSelection';
 import BulkHUD from '../../components/BulkHUD';
 import { useNotification } from '../../context/NotificationDataCtx';
 import { PlacementStatusToggleIcon, PlacementsNavIcon } from '../../components/AdvajraIcons';
+import { PRICING_URL } from '../../utils/urls';
 
 // Location type icons and labels
 const LOCATION_CONFIG = {
@@ -381,7 +382,7 @@ const PlacementList = () => {
     // Actions
     const handleDuplicate = async (placement) => {
         if (!isPro) {
-            window.open('https://advajra.com/pricing', '_blank');
+            window.open(PRICING_URL.placementListSmart, '_blank');
             return;
         }
         try {
@@ -530,7 +531,7 @@ const PlacementList = () => {
     const handleBulkDuplicate = useCallback(async () => {
         if (!selection.hasSelection) return;
         if (!isPro) {
-            window.open('https://advajra.com/pricing', '_blank');
+            window.open(PRICING_URL.placementListBulk, '_blank');
             return;
         }
 

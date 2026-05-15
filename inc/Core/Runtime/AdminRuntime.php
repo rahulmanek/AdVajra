@@ -24,6 +24,7 @@ class AdminRuntime {
 	public function init() {
 		if ( is_admin() ) {
 			( new \AdVajra\Core\Admin() )->init();
+			( new \AdVajra\Core\DeactivationSurvey() )->init();
 		}
 	}
 }

@@ -1,4 +1,5 @@
 import { __ } from '@wordpress/i18n';
+import { PRICING_URL } from '../utils/urls';
 import Switch from './Switch';
 import './ModuleCard.scss';
 
@@ -40,7 +41,7 @@ const ModuleCard = ({ module, onToggle, onConfigure }) => {
         event.stopPropagation();
         if (isProLocked) {
             // Action for locked Pro module
-            window.open('https://advajra.com/pricing', '_blank');
+            window.open(PRICING_URL.moduleCard, '_blank');
             return;
         }
         if (onConfigure) {

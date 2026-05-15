@@ -88,6 +88,11 @@ class AdSnapshotRepository {
 			$tracking_mode = 'disabled';
 		}
 
+		// Tracking runtime is only available when PRO is active
+		if ( 'disabled' !== $tracking_mode && ! apply_filters( 'advajra_enable_tracking_script', false ) ) {
+			$tracking_mode = 'disabled';
+		}
+
 		$snapshot = [
 			'id'             => $ad_id,
 			'title'          => $post->post_title,

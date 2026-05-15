@@ -2,6 +2,7 @@
  * Settings Dashboard
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { PRICING_URL } from '../utils/urls';
 import apiFetch from '@wordpress/api-fetch';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Slot } from '@wordpress/components';
@@ -527,7 +528,7 @@ const PerformancePanel = ({ settings, updateSetting, onBack }) => {
                 <div className="upgrade-cta">
                     <span className="upgrade-icon">🚀</span>
                     <span className="upgrade-text">Upgrade to PRO to unlock all performance features</span>
-                    <button className="upgrade-btn">Upgrade Now</button>
+                    <button className="upgrade-btn" onClick={() => window.open(PRICING_URL.settingsCard, '_blank')}>Upgrade Now</button>
                 </div>
             )}
         </DrillDownPanel>
@@ -752,7 +753,7 @@ const PrivacyPanel = ({ settings, updateSetting, onBack }) => {
                 <div className="upgrade-cta">
                     <span className="upgrade-icon">🔮</span>
                     <span className="upgrade-text">Upgrade to PRO for auto-detection of CookieYes, Cookiebot, Complianz & more</span>
-                    <button className="upgrade-btn">Upgrade Now</button>
+                    <button className="upgrade-btn" onClick={() => window.open(PRICING_URL.settingsCard, '_blank')}>Upgrade Now</button>
                 </div>
             )}
         </DrillDownPanel>
@@ -996,7 +997,7 @@ const AnalyticsPanel = ({ settings, updateSetting, onBack }) => {
                 <div className="upgrade-cta">
                     <span className="upgrade-icon">📈</span>
                     <span className="upgrade-text">Upgrade to PRO to unlock advanced analytics</span>
-                    <button className="upgrade-btn">Upgrade Now</button>
+                    <button className="upgrade-btn" onClick={() => window.open(PRICING_URL.settingsCard, '_blank')}>Upgrade Now</button>
                 </div>
             )}
         </DrillDownPanel>
@@ -1187,7 +1188,7 @@ const AdvancedPanel = ({ settings, updateSetting, onBack, onReset }) => {
                     <div className="upgrade-cta">
                         <span className="upgrade-icon">🔧</span>
                         <span className="upgrade-text">Upgrade to PRO to enable debug logging &amp; log viewer</span>
-                        <button className="upgrade-btn">Upgrade Now</button>
+                        <button className="upgrade-btn" onClick={() => window.open(PRICING_URL.settingsCard, '_blank')}>Upgrade Now</button>
                     </div>
                 )}
             </div>
@@ -1295,6 +1296,7 @@ const AdvancedPanel = ({ settings, updateSetting, onBack, onReset }) => {
 };
 
 const DefaultsPanel = ({ settings, updateSetting, onBack }) => {
+    const isPro = window.advajraSettings?.isPro || false;
     const trackingOptions = [
         { value: 'both', label: 'All', icon: '📊' },
         { value: 'impressions', label: 'Impressions', icon: '👁️' },
@@ -1361,17 +1363,26 @@ const DefaultsPanel = ({ settings, updateSetting, onBack }) => {
             className="defaults-panel"
         >
 
-            {/* Tracking */}
+            {/* Tracking — PRO only */}
             <div className="panel-section">
                 <div className="section-header">
                     <h4>📊 Default Tracking</h4>
                     <p className="section-desc">What to track when ad uses "Default" tracking mode</p>
                 </div>
-                <OptionButton
-                    options={trackingOptions}
-                    value={settings?.default_tracking || 'both'}
-                    onChange={(val) => updateSetting('default_tracking', val)}
-                />
+                <div className={`option-buttons ${!isPro ? 'is-locked' : ''}`} style={{ opacity: isPro ? 1 : 0.6, pointerEvents: isPro ? 'auto' : 'none' }}>
+                    <OptionButton
+                        options={trackingOptions}
+                        value={settings?.default_tracking || 'both'}
+                        onChange={(val) => isPro && updateSetting('default_tracking', val)}
+                    />
+                </div>
+                {!isPro && (
+                    <div className="upgrade-cta">
+                        <span className="upgrade-icon">📊</span>
+                        <span className="upgrade-text">Upgrade to PRO to configure tracking defaults</span>
+                        <button className="upgrade-btn" onClick={() => window.open(PRICING_URL.settingsCard, '_blank')}>Upgrade Now</button>
+                    </div>
+                )}
             </div>
 
             {/* Target Window */}

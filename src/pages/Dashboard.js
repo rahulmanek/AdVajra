@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { PRICING_URL, FEATURES_URL } from '../utils/urls';
 import { Button, Icon, Slot, Spinner } from '@wordpress/components';
 import { arrowRight, external, plus, warning } from '@wordpress/icons';
 import { useSelect } from '@wordpress/data';
@@ -226,28 +227,23 @@ const Dashboard = () => {
 	const inventoryRows = overview.inventory_health?.rows || [];
 	const advanced = overview.advanced_optimization || {};
 	const licenseValue = getLicenseLabel( state?.license );
-	const onJoinWaitlist = () => {
-		addNotification( {
-			type: 'success',
-			message:
-				'Waitlist action saved. We will connect this in a later update.',
-		} );
-	};
 
+
+	const isPro = !! window.advajraSettings?.isPro;
 	const stateRail = [
 		{
 			id: 'last_sync',
 			label: 'Last Sync',
-			value: state?.last_sync?.label || 'Not available',
-			status: state?.tracking_pipeline?.status || 'pending',
-			help: state?.last_sync?.help,
+			value: isPro ? ( state?.last_sync?.label || 'Not available' ) : 'Requires PRO',
+			status: isPro ? ( state?.tracking_pipeline?.status || 'pending' ) : 'pending',
+			help: isPro ? state?.last_sync?.help : 'Tracking sync is a PRO feature.',
 		},
 		{
 			id: 'pipeline',
 			label: 'Tracking Status',
-			value: state?.tracking_pipeline?.message || 'Pending',
-			status: state?.tracking_pipeline?.status || 'pending',
-			help: state?.tracking_pipeline?.help,
+			value: isPro ? ( state?.tracking_pipeline?.message || 'Pending' ) : 'Requires PRO',
+			status: isPro ? ( state?.tracking_pipeline?.status || 'pending' ) : 'pending',
+			help: isPro ? state?.tracking_pipeline?.help : 'Impression and click tracking is a PRO feature.',
 		},
 		{
 			id: 'license',
@@ -318,22 +314,32 @@ const Dashboard = () => {
 							</span>
 						) }
 					</div>
-					<div className="av-kpi-grid">
-						{ [
-							'ad_requests',
-							'coverage',
-							'impressions',
-							'ctr',
-							'impression_rpm',
-							'avg_viewable_time',
-						].map( ( key ) => (
+					<div className="av-kpi-grid" style={{ position: 'relative' }}>
+						{ KPI_KEYS.map( ( key ) => (
 							<KpiCard
 								key={ key }
 								kpiKey={ key }
 								card={ kpis[ key ] || {} }
-								onJoinWaitlist={ onJoinWaitlist }
+
+								isPro={ isPro }
 							/>
 						) ) }
+						{ ! isPro && (
+							<div className="av-kpi-lock-overlay">
+								<div className="av-kpi-lock-card">
+									<span className="av-kpi-lock-icon">📊</span>
+									<div>
+										<strong>Real-time Analytics</strong>
+										<span>Track impressions, clicks, CTR and viewability per ad in real-time</span>
+									</div>
+									<a
+										href={ PRICING_URL.overviewKpiOverlay }
+										target="_blank"
+										rel="noreferrer"
+									>Unlock PRO</a>
+								</div>
+							</div>
+						) }
 					</div>
 				</div>
 
@@ -493,7 +499,7 @@ const Dashboard = () => {
 							<ActionLink
 								target={
 									advanced.cta?.target ||
-									'https://advajra.com/pricing'
+									PRICING_URL.overviewPulseLock
 								}
 								label={
 									advanced.cta?.label || 'Upgrade to PRO'
@@ -513,39 +519,166 @@ const Dashboard = () => {
 	);
 };
 
-const KpiCard = ( { card, kpiKey, onJoinWaitlist } ) => {
-	const isRpmComingSoon =
-		kpiKey === 'impression_rpm' && card.connected === false;
+// KPI keys and display labels — defined at module level for reuse.
+const KPI_KEYS = [ 'ad_requests', 'coverage', 'impressions', 'ctr', 'impression_rpm', 'avg_viewable_time' ];
+const KPI_LABELS = {
+	ad_requests: 'Ad Requests',
+	coverage: 'Coverage',
+	impressions: 'Impressions',
+	ctr: 'CTR',
+	impression_rpm: 'Revenue RPM',
+	avg_viewable_time: 'Avg Viewable Time',
+};
+const KPI_PLACEHOLDER_VALUES = {
+	ad_requests: '12,847',
+	coverage: '94.6%',
+	impressions: '11,290',
+	ctr: '3.21%',
+	impression_rpm: '$2.40',
+	avg_viewable_time: '8.7s',
+};
+
+// Kit.com waitlist form ID — module-level constant, easy to update.
+const KIT_FORM_ID = '9447449';
+const KIT_FORM_URL = `https://app.kit.com/forms/${ KIT_FORM_ID }/subscriptions`;
+const KIT_LS_KEY = 'advajra_waitlist_subscribed'; // localStorage key (email stored as value)
+
+/**
+ * Checks if the current user's email is already stored in localStorage as subscribed.
+ * @param {string} email
+ * @returns {boolean}
+ */
+const isAlreadySubscribed = ( email ) => {
+	if ( ! email ) return false;
+	try {
+		const stored = JSON.parse( localStorage.getItem( KIT_LS_KEY ) || '[]' );
+		return stored.includes( email );
+	} catch {
+		return false;
+	}
+};
+
+/**
+ * Persists a subscribed email to localStorage.
+ * @param {string} email
+ */
+const markSubscribed = ( email ) => {
+	try {
+		const stored = JSON.parse( localStorage.getItem( KIT_LS_KEY ) || '[]' );
+		if ( ! stored.includes( email ) ) {
+			stored.push( email );
+			localStorage.setItem( KIT_LS_KEY, JSON.stringify( stored ) );
+		}
+	} catch {}
+};
+
+const KpiCard = ( { card, kpiKey, isPro } ) => {
+	const { useState, useCallback } = window.React || wp.element;
+
+	// Revenue RPM waitlist state — owned by the card, not the parent.
+	const userEmail = window.advajraSettings?.currentUserEmail || '';
+	const [ waitlistState, setWaitlistState ] = useState(
+		() => isAlreadySubscribed( userEmail ) ? 'subscribed' : 'idle'
+		// states: 'idle' | 'loading' | 'subscribed' | 'error'
+	);
+
+	const handleJoinWaitlist = useCallback( async () => {
+		if ( ! userEmail || waitlistState !== 'idle' ) return;
+		setWaitlistState( 'loading' );
+
+		try {
+			const body = new URLSearchParams();
+			body.append( 'email_address', userEmail );
+
+			const res = await fetch( KIT_FORM_URL, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+				body: body.toString(),
+			} );
+
+			// Kit returns 200 for new subscribers AND for already-subscribed emails.
+			// Either way — they're on the list.
+			if ( res.ok || res.status === 422 ) {
+				markSubscribed( userEmail );
+				setWaitlistState( 'subscribed' );
+			} else {
+				setWaitlistState( 'error' );
+			}
+		} catch {
+			setWaitlistState( 'error' );
+		}
+	}, [ userEmail, waitlistState ] );
+
+	// In Free mode, all metrics including RPM are just blurred placeholders.
+	// The Waitlist/GAM integration teaser is only shown when PRO is active.
+	const isLocked = ! isPro;
+	const isRpm = kpiKey === 'impression_rpm';
+	const isRpmComingSoon = isPro && isRpm && card.connected === false;
+
+	// Resolve display label: prefer API-provided label, fallback to our constant map.
+	const label = isRpmComingSoon ? 'Revenue RPM' : ( card.label || KPI_LABELS[ kpiKey ] || 'Metric' );
 
 	return (
 		<div
 			className={ `av-kpi-card ${
 				isRpmComingSoon ? 'av-kpi-card--coming-soon' : ''
+			} ${
+				isLocked ? 'av-kpi-card--locked' : ''
 			}` }
 		>
 			<div className="av-label-row">
-				<span className="av-kpi-label">
-					{ isRpmComingSoon ? 'Revenue RPM' : card.label || 'Metric' }
-				</span>
+				<span className="av-kpi-label">{ label }</span>
 				{ isRpmComingSoon && (
 					<em className="av-soon-pill">Coming soon</em>
 				) }
 				<HelpHint text={ card.help } />
 			</div>
-			{ ! isRpmComingSoon && <strong>{ card.display || '0' }</strong> }
+
+			{ /* Locked placeholder value for free users */ }
+			{ isLocked && (
+				<strong className="av-kpi-blurred">{ KPI_PLACEHOLDER_VALUES[ kpiKey ] || '0' }</strong>
+			) }
+
+			{ /* Real value for PRO users */ }
+			{ ! isLocked && ! isRpmComingSoon && (
+				<strong>{ card.display || '0' }</strong>
+			) }
+
+			{ /* RPM Coming Soon state (PRO only) */ }
 			{ isRpmComingSoon && (
 				<span className="av-kpi-note">AdSense + GAM integration</span>
 			) }
-			{ isRpmComingSoon && (
+			{ isRpmComingSoon && waitlistState === 'idle' && (
 				<button
 					type="button"
 					className="av-kpi-cta av-kpi-cta--text"
-					onClick={ onJoinWaitlist }
+					onClick={ handleJoinWaitlist }
 				>
-					Join waitlist
+					Join waitlist →
 				</button>
 			) }
-			{ ! isRpmComingSoon && card.connected === false && card.cta && (
+			{ isRpmComingSoon && waitlistState === 'loading' && (
+				<span className="av-kpi-waitlist-status av-kpi-waitlist-status--loading">
+					Signing you up…
+				</span>
+			) }
+			{ isRpmComingSoon && waitlistState === 'subscribed' && (
+				<span className="av-kpi-waitlist-status av-kpi-waitlist-status--done">
+					✓ You’re on the list
+				</span>
+			) }
+			{ isRpmComingSoon && waitlistState === 'error' && (
+				<button
+					type="button"
+					className="av-kpi-cta av-kpi-cta--text av-kpi-cta--error"
+					onClick={ () => setWaitlistState( 'idle' ) }
+				>
+					Retry →
+				</button>
+			) }
+
+			{ /* Connect CTA for PRO metrics not yet connected */ }
+			{ ! isLocked && ! isRpmComingSoon && card.connected === false && card.cta && (
 				<ActionLink
 					target={ card.cta }
 					label="Connect"
@@ -775,7 +908,7 @@ const buildFallbackOverviewV2 = (
 			last_sync: { label: 'No sync data yet' },
 			tracking_pipeline: {
 				status: 'pending',
-				message: 'Waiting for first tracking batch',
+				message: window.advajraSettings?.isPro ? 'Waiting for first tracking batch' : 'Requires PRO',
 			},
 			license: { tier: 'trial', trial_days_remaining: 7, locked: false },
 			api_degradation: {
@@ -903,7 +1036,7 @@ const buildFallbackOverviewV2 = (
 				action_key: 'ad_groups',
 				action_target: '/settings',
 			},
-			{
+			...( window.advajraSettings?.isPro ? [ {
 				id: 'tracking',
 				label: 'Tracking (Impressions + Clicks)',
 				description:
@@ -913,7 +1046,7 @@ const buildFallbackOverviewV2 = (
 				action_type: 'setting',
 				action_key: 'analytics_enabled',
 				action_target: '/settings/analytics',
-			},
+			} ] : [] ),
 		],
 		optimization_queue: groups.length
 			? []
@@ -941,7 +1074,7 @@ const buildFallbackOverviewV2 = (
 			status: 'locked',
 			description:
 				'Advanced forecasting and optimization automation available with PRO.',
-			cta: { label: 'Upgrade to PRO', target: 'https://advajra.com/pricing' },
+			cta: { label: 'Upgrade to PRO', target: PRICING_URL.overviewStateCta },
 		},
 	};
 };
@@ -984,8 +1117,8 @@ const convertLegacyToV2 = ( payload, placements, settings, activeModules ) => {
 			last_sync: { label: 'Legacy overview mode' },
 			tracking_pipeline: {
 				status: 'pending',
-				message: 'Legacy overview payload detected',
-				help: 'Tracking events are collected first, then synced on interval.',
+				message: window.advajraSettings?.isPro ? 'Legacy overview payload detected' : 'Requires PRO',
+				help: window.advajraSettings?.isPro ? 'Tracking events are collected first, then synced on interval.' : 'Impression and click tracking is a PRO feature.',
 			},
 			license: {
 				tier: payload?.locked ? 'free_locked' : 'trial',

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { PRICING_URL, FEATURES_URL } from '../../utils/urls';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, CardBody, Icon, Spinner } from '@wordpress/components';
 import AdvTooltip from '../../components/Tooltip';
@@ -651,7 +652,7 @@ const AnalyticsDashboard = () => {
 
 	const isPro = !! data?.is_pro || !! data?.retention?.is_pro;
 	const analyticsLocked = !! data?.locked || !! data?.is_preview;
-	const upgradeUrl = data?.upgrade_url || 'https://advajra.com/pricing';
+	const upgradeUrl = data?.upgrade_url || PRICING_URL.analyticsBanner;
 	const availablePresets = useMemo( () => {
 		const apiPresets = ( data?.presets || [] ).map( ( option ) => ( {
 			label: option.label,
@@ -1423,7 +1424,7 @@ const AnalyticsDashboard = () => {
 									<Icon icon={ external } size={ 16 } style={{marginLeft: '4px'}} />
 								</button>
 								<a
-									href="https://advajra.com/features/analytics"
+									href={ FEATURES_URL.analyticsLearnMore }
 									target="_blank"
 									rel="noreferrer"
 									className="av-btn-ghost"
