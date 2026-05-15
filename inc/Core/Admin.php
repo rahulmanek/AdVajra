@@ -116,20 +116,22 @@ class Admin {
 		$module_manager = new \AdVajra\Core\Modules\ModuleManager();
 		$module_manager->init();
 
+		$current_user  = wp_get_current_user();
 		$settings_data = [
-			'root'            => esc_url_raw( rest_url( 'advajra/v1/' ) ),
-			'nonce'           => wp_create_nonce( 'wp_rest' ),
-			'previewNonce'    => wp_create_nonce( 'advajra_preview' ),
-			'pluginUrl'       => ADVAJRA_URL,
-			'timezone'        => wp_timezone_string(),
-			'timezone_offset' => 'UTC' . $offset_string,
-			'isPro'           => defined( 'ADVAJRA_PRO_ACTIVE' ) && ADVAJRA_PRO_ACTIVE,
-			'proFeatures'     => apply_filters( 'advajra_pro_features', [] ),
-			'presets'         => \AdVajra\Data\Defaults::get_presets_for_frontend(),
-			'reset_defaults'  => \AdVajra\Data\Defaults::get_reset_defaults(),
-			'userRoles'       => $this->get_user_roles(),
-			'adTypes'         => $ad_types,
-			'activeModules'   => $module_manager->get_active_module_ids(),
+			'root'             => esc_url_raw( rest_url( 'advajra/v1/' ) ),
+			'nonce'            => wp_create_nonce( 'wp_rest' ),
+			'previewNonce'     => wp_create_nonce( 'advajra_preview' ),
+			'pluginUrl'        => ADVAJRA_URL,
+			'timezone'         => wp_timezone_string(),
+			'timezone_offset'  => 'UTC' . $offset_string,
+			'isPro'            => defined( 'ADVAJRA_PRO_ACTIVE' ) && ADVAJRA_PRO_ACTIVE,
+			'proFeatures'      => apply_filters( 'advajra_pro_features', [] ),
+			'presets'          => \AdVajra\Data\Defaults::get_presets_for_frontend(),
+			'reset_defaults'   => \AdVajra\Data\Defaults::get_reset_defaults(),
+			'userRoles'        => $this->get_user_roles(),
+			'adTypes'          => $ad_types,
+			'activeModules'    => $module_manager->get_active_module_ids(),
+			'currentUserEmail' => $current_user->user_email ?: '',
 		];
 
 		/**

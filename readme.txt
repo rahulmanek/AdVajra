@@ -16,11 +16,13 @@ AdVajra is a modern WordPress ad manager built for site owners who want to creat
 
 Stop using multiple plugins. Run your entire ad setup from one place.
 
+► **[Learn more about AdVajra - The Best WordPress Ad Manager](https://advajra.com/?utm_source=wordpress-org&utm_medium=readme&utm_campaign=description-link)**
+
 Whether you run banner ads, affiliate ads, house ads, sponsor placements, or internal promotions, AdVajra helps you launch cleaner campaigns, control who sees them, and manage ad placement inside WordPress with less friction. Beyond raw reports, AdVajra also helps you spot placement issues, review ad controls, and surface optimization opportunities from your data.
 
 = Why AdVajra =
 
-Most WordPress ad plugins only help you insert ads. AdVajra helps you **manage, control, and monetize your entire ad operation**.
+Most WordPress ad plugins only help you insert ads. **[AdVajra Ad Manager](https://advajra.com/?utm_source=wordpress-org&utm_medium=readme&utm_campaign=why-advajra)** helps you **manage, control, and monetize your entire ad operation**.
 
 ✔ No scattered tools — one ad manager for everything
 ✔ No messy workflows — create, place, and track in minutes
@@ -155,6 +157,8 @@ AdVajra gives you:
 
 = AdVajra Pro =
 
+Ready to maximize your ad revenue? **[Upgrade to AdVajra PRO](https://advajra.com/pricing?utm_source=wordpress-org&utm_medium=readme&utm_campaign=pro-upsell)**.
+
 AdVajra Pro helps you go beyond basic ad management and actually grow your ad revenue. Get stronger protection, deeper optimization, and advanced performance control to maximize monetization.
 
 Unlock advanced features like:
@@ -208,7 +212,7 @@ Yes. AdVajra includes impression and click tracking plus an analytics dashboard 
 
 = Does AdVajra only show reports, or does it also help me find issues? =
 
-AdVajra is designed to do more than show raw metrics. It also helps you review placement health, tracking status, ad controls, and optimization opportunities so you can understand what to improve next.
+AdVajra is designed to do more than show raw metrics. It also helps you review placement health, tracking status, ad controls, and optimization opportunities so you can understand what to improve next. Learn more about our **[WordPress Ad Analytics](https://advajra.com/#features?utm_source=wordpress-org&utm_medium=readme&utm_campaign=faq-analytics)**.
 
 = Can I manage ads.txt inside WordPress? =
 

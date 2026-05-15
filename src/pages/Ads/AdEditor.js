@@ -6,6 +6,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { PRICING_URL } from '../../utils/urls';
 import { Button, Spinner, Popover, Modal, ButtonGroup } from '@wordpress/components';
 import { check, chevronLeft, tablet, desktop, mobile, upload, code, formatAscii, calendar, globe, edit, clock, settings, trash, pause } from '@wordpress/icons';
 import { useSelect, useDispatch } from '@wordpress/data';
@@ -28,12 +29,22 @@ import CampaignSettingsCard from '../../components/CampaignSettingsCard';
 import useDocumentTitle from '../../hooks/useDocumentTitle';
 import { SaveActionIcon } from '../../components/AdvajraIcons';
 
+// Tracking mode options for the per-ad SmartSelect. Defined at module level to avoid re-creation on every render.
+const TRACKING_OPTIONS = [
+    { label: 'Default',            value: 'default',     icon: TrackingIcons.Default },
+    { label: 'All (Imp + Click)',  value: 'both',        icon: TrackingIcons.Both },
+    { label: 'Impressions Only',   value: 'impressions', icon: TrackingIcons.Impressions },
+    { label: 'Clicks Only',        value: 'clicks',      icon: TrackingIcons.Clicks },
+    { label: 'Disabled',           value: 'disabled',    icon: TrackingIcons.Disabled },
+];
+
 
 const AdEditor = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { addNotification } = useNotification();
     const isNew = !id;
+    const isPro = !! window.advajraSettings?.isPro;
 
     // State
     // Removed activeSection - defaulting to Single View
@@ -452,19 +463,14 @@ const AdEditor = () => {
 
                                         {/* Row 2: Tracking (Left) & Click URL (Right) */}
                                         <div className="flex flex-wrap gap-6 w-full">
-                                            {/* Tracking */}
+                                            {/* Tracking — full control in PRO, locked preview in free */}
                                             <div className="flex-1 min-w-[200px]">
                                                 <SmartSelect
-                                                    label="Tracking"
-                                                    value={tracking}
-                                                    onChange={setTracking}
-                                                    options={[
-                                                        { label: 'Default', value: 'default', icon: TrackingIcons.Default },
-                                                        { label: 'All (Imp + Click)', value: 'both', icon: TrackingIcons.Both },
-                                                        { label: 'Impressions Only', value: 'impressions', icon: TrackingIcons.Impressions },
-                                                        { label: 'Clicks Only', value: 'clicks', icon: TrackingIcons.Clicks },
-                                                        { label: 'Disabled', value: 'disabled', icon: TrackingIcons.Disabled }
-                                                    ]}
+                                                    label={<>Tracking{!isPro && <a href={ PRICING_URL.adEditorTrackingBadge } target="_blank" rel="noopener noreferrer" className="pro-badge pro-badge--inline" style={{ marginLeft: '6px' }}>PRO</a>}</>}
+                                                    value={isPro ? tracking : 'disabled'}
+                                                    onChange={isPro ? setTracking : () => {}}
+                                                    options={TRACKING_OPTIONS.map(o => isPro ? o : ({ ...o, disabled: true, isPro: true }))}
+                                                    onDisabledClick={() => window.open(PRICING_URL.adEditorTrackingClick, '_blank')}
                                                 />
                                             </div>
 
@@ -566,7 +572,7 @@ const AdEditor = () => {
                                 onDelete={handleDelete}
                                 onDuplicate={() => addNotification({ type: 'info', message: 'Duplicate requires Pro license.' })}
                                 isNew={isNew}
-                                isPro={window.advajraSettings?.isPro || false}
+                                isPro={isPro}
                             />
 
                             {/* 2. Device Simulator */}

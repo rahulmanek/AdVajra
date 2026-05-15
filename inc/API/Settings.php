@@ -77,7 +77,6 @@ class Settings extends Controller {
 			'default_target'             => 'sanitize_text_field',
 			'default_nofollow'           => 'rest_sanitize_boolean',
 			'default_sponsored'          => 'rest_sanitize_boolean',
-			'default_tracking'           => 'sanitize_text_field',
 			'analytics_enabled'          => 'rest_sanitize_boolean',
 			'disable_all_ads'            => 'rest_sanitize_boolean',
 			'disable_homepage'           => 'rest_sanitize_boolean',
@@ -143,11 +142,6 @@ class Settings extends Controller {
 
 				if ( 'default_target' === $key ) {
 					$settings[ $key ] = in_array( $value, [ '_blank', '_self' ], true ) ? $value : '_blank';
-					continue;
-				}
-
-				if ( 'default_tracking' === $key ) {
-					$settings[ $key ] = in_array( $value, [ 'both', 'impressions', 'clicks', 'disabled' ], true ) ? $value : 'both';
 					continue;
 				}
 

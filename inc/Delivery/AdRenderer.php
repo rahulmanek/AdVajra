@@ -114,10 +114,6 @@ class AdRenderer {
 			$requires_tracking_asset = Scripts::requires_tracking_runtime( $snapshot['tracking_mode'] );
 			RenderState::mark_rendered( $snapshot['id'], $requires_tracking_asset );
 
-			if ( $requires_tracking_asset ) {
-				Scripts::enqueue_tracking_script();
-			}
-
 			return apply_filters( 'advajra_ad_output', $final_output, $snapshot['id'] );
 
 		} catch ( \Throwable $e ) {

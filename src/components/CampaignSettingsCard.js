@@ -11,6 +11,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import SmartSelect from './SmartSelect';
 import { STATUS_CONFIG } from '../pages/AdManager/AdSchema';
+import { PRICING_URL } from '../utils/urls';
 
 const CampaignSettingsCard = ({
     status,
@@ -185,7 +186,7 @@ const CampaignSettingsCard = ({
                     <div className={`csc-weekday-section ${!isPro ? 'is-locked' : ''}`}>
                         <label className="advajra-label">
                             Run Only On
-                            {!isPro && <a href="https://advajra.com/pricing" target="_blank" rel="noopener noreferrer" className="pro-badge pro-badge--inline">PRO</a>}
+                            {!isPro && <a href={ PRICING_URL.campaignSettingsBadge } target="_blank" rel="noopener noreferrer" className="pro-badge pro-badge--inline">PRO</a>}
                         </label>
                         <div className="csc-weekday-selector">
                             {weekDayOptions.map(day => {

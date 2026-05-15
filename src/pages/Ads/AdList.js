@@ -27,6 +27,7 @@ import { applyFilters, doAction } from '../../hooks';
 import useDocumentTitle from '../../hooks/useDocumentTitle';
 import { AdsNavIcon } from '../../components/AdvajraIcons';
 import { useNotification } from '../../context/NotificationDataCtx';
+import { PRICING_URL } from '../../utils/urls';
 
 // Shared Selection & Bulk HUD
 import useSelection from '../../hooks/useSelection';
@@ -251,7 +252,7 @@ const DEFAULT_COLUMNS = ['title', 'stats', 'trend', 'schedule', 'date', 'modifie
         if (!selection.hasSelection) return;
 
         if (!isPro) {
-            window.open('https://advajra.com/pricing', '_blank');
+            window.open(PRICING_URL.adListBulkActions, '_blank');
             return;
         }
 
@@ -322,7 +323,7 @@ const DEFAULT_COLUMNS = ['title', 'stats', 'trend', 'schedule', 'date', 'modifie
                 'error'
             );
         } else {
-            window.open('https://advajra.com/pricing', '_blank');
+            window.open(PRICING_URL.adListAdLimit, '_blank');
         }
     }, [isPro, duplicateAd, addNotification]);
 

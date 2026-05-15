@@ -146,7 +146,7 @@ class Analytics extends Controller {
 				],
 			],
 			'switchboard' => [
-				[ 'id' => 'pro_upsell_1', 'title' => 'Unlock Advanced Tracking', 'action_label' => 'Upgrade to PRO', 'action_target' => 'https://advajra.com/pricing', 'primary' => true ],
+				[ 'id' => 'pro_upsell_1', 'title' => 'Unlock Advanced Tracking', 'action_label' => 'Upgrade to PRO', 'action_target' => 'https://advajra.com/pricing?utm_source=advajra-plugin&utm_medium=plugin-upsell&utm_campaign=pricing&utm_content=overview-state-cta', 'primary' => true ],
 			],
 			'risk_queue' => [],
 			'optimization_queue' => [],
