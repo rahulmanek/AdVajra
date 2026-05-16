@@ -1,11 +1,9 @@
 /**
  * AdVajra — Deactivation Survey
- * Vanilla JS, zero dependencies.
- * Runs only on wp-admin/plugins.php.
  */
-( function () {
-	'use strict';
+'use strict';
 
+( function () {
 	const cfg = window.advajraDeactivation || {};
 
 	// ── Reasons config ────────────────────────────────────────────────────────
@@ -16,7 +14,7 @@
 			label: 'Found a bug',
 			nudge: {
 				icon: '🛠️',
-				html: 'Please <a href="' + cfg.supportUrl + '" target="_blank">report the bug here</a> — we fix critical issues within 24h.',
+				html: `Please <a href="${ cfg.supportUrl }" target="_blank">report the bug here</a> — we fix critical issues within 24h.`,
 			},
 			placeholder: 'Describe what happened...',
 		},
@@ -26,7 +24,7 @@
 			label: 'Plugin conflict',
 			nudge: {
 				icon: '💬',
-				html: 'We can help troubleshoot conflicts. <a href="' + cfg.supportUrl + '" target="_blank">Open a support ticket</a> and we\'ll sort it out.',
+				html: `We can help troubleshoot conflicts. <a href="${ cfg.supportUrl }" target="_blank">Open a support ticket</a> and we'll sort it out.`,
 			},
 			placeholder: 'Which plugin is conflicting?',
 		},
@@ -36,7 +34,7 @@
 			label: 'Missing a feature',
 			nudge: {
 				icon: '💡',
-				html: 'We love feature requests! <a href="' + cfg.featureUrl + '" target="_blank">Submit your idea here</a> — it may already be on our roadmap.',
+				html: `We love feature requests! <a href="${ cfg.featureUrl }" target="_blank">Submit your idea here</a> — it may already be on our roadmap.`,
 			},
 			placeholder: 'What feature were you looking for?',
 		},
@@ -250,7 +248,7 @@
 			action: 'advajra_deactivation_feedback',
 			nonce:  cfg.nonce,
 			reason: selectedReason || 'other',
-			detail: detail,
+			detail,
 			email:  cfg.userEmail || '',
 		} );
 
@@ -312,7 +310,7 @@
 
 		// Look for the deactivate link in the plugin row.
 		// Could be #advajra-advajra or just scan for the link text.
-		const allDeactivateLinks = document.querySelectorAll( 'tr.active[data-plugin="' + pluginFile + '"] a, #' + rowId + ' a' );
+		const allDeactivateLinks = document.querySelectorAll( `tr.active[data-plugin="${ pluginFile }"] a, #${ rowId } a` );
 
 		allDeactivateLinks.forEach( ( link ) => {
 			if ( link.href && link.href.includes( 'deactivate' ) && link.href.includes( 'plugin=' ) ) {

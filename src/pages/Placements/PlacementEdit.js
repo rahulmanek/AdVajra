@@ -13,6 +13,7 @@ import useDocumentTitle from '../../hooks/useDocumentTitle';
 import { SaveActionIcon } from '../../components/AdvajraIcons';
 import { useNotification } from '../../context/NotificationDataCtx';
 import { PRICING_URL } from '../../utils/urls';
+import useDirtyState from '../../hooks/useDirtyState';
 
 // Placement type config with icons for SmartSelect
 const TYPE_OPTIONS = [
@@ -330,6 +331,8 @@ const PlacementEdit = () => {
     const [paragraphNum, setParagraphNum] = useState(3);
     const [isDisabled, setIsDisabled] = useState(false);
 
+    const { markDirty, clearDirty, isDirty } = useDirtyState( `placement-editor-${ id }` );
+
     useDocumentTitle(name || 'Edit Placement');
 
     // ── Data from centralised store ──
@@ -436,6 +439,7 @@ const PlacementEdit = () => {
 
             await dispatchSave(parseInt(id, 10), data);
 
+            clearDirty();
             setSaveStatus('saved');
             setTimeout(() => setSaveStatus(''), 2500);
         } catch (err) {
@@ -513,13 +517,19 @@ const PlacementEdit = () => {
             {/* ── Pill Toolbar (shared pattern from _ad-editor.scss) ── */}
             <div className="advajra-editor-toolbar">
                 <div className="toolbar-left">
-                    <Button icon={chevronLeft} className="back-btn" onClick={() => navigate('/placements')} label="Back" />
+                    <Button icon={chevronLeft} className="back-btn" onClick={() => {
+                        if ( window.__advajraGuardedNavigate ) {
+                            window.__advajraGuardedNavigate('/placements');
+                        } else {
+                            navigate('/placements');
+                        }
+                    }} label="Back" />
                     <div className="ad-identity-group">
                         <input
                             type="text"
                             className="toolbar-title-input"
                             value={name}
-                            onChange={(e) => setName(e.target.value)}
+                            onChange={(e) => { setName(e.target.value); markDirty(); }}
                             placeholder="Placement Name"
                         />
                     </div>
@@ -529,7 +539,7 @@ const PlacementEdit = () => {
                 <div className="toolbar-right">
                     <button
                         className={`av-status-badge ${isDisabled ? 'is-disabled' : 'is-active'}`}
-                        onClick={() => setIsDisabled(!isDisabled)}
+                        onClick={() => { setIsDisabled(!isDisabled); markDirty(); }}
                         title={isDisabled ? 'Click to activate' : 'Click to disable'}
                     >
                         <span className="av-status-dot" />
@@ -570,7 +580,7 @@ const PlacementEdit = () => {
                         <SmartSelect
                             options={TYPE_OPTIONS}
                             value={type}
-                            onChange={setType}
+                            onChange={(val) => { setType(val); markDirty(); }}
                             className="av-edit-select"
                         />
                         {type === 'after_paragraph' && (
@@ -581,7 +591,7 @@ const PlacementEdit = () => {
                                     min="1"
                                     max="20"
                                     value={paragraphNum}
-                                    onChange={(e) => setParagraphNum(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                                    onChange={(e) => { setParagraphNum(Math.max(1, parseInt(e.target.value, 10) || 1)); markDirty(); }}
                                 />
                             </div>
                         )}
@@ -593,7 +603,7 @@ const PlacementEdit = () => {
                         <SmartSelect
                             options={itemOptions}
                             value={currentItemValue}
-                            onChange={handleItemChange}
+                            onChange={(val) => { handleItemChange(val); markDirty(); }}
                             className="av-edit-select"
                         />
                         <AdPreviewCard

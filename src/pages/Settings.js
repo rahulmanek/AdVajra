@@ -8,6 +8,7 @@ import { useNotification } from '../context/NotificationDataCtx';
 import SettingsDashboard from '../components/SettingsDashboard';
 import useDocumentTitle from '../hooks/useDocumentTitle';
 import { SaveActionIcon } from '../components/AdvajraIcons';
+import useDirtyState from '../hooks/useDirtyState';
 
 const Settings = () => {
     const [settings, setSettings] = useState(null);
@@ -16,6 +17,8 @@ const Settings = () => {
     const { addNotification } = useNotification();
 
     useDocumentTitle('Settings');
+
+    const { markDirty, clearDirty } = useDirtyState( 'settings' );
 
     const isPro = window.advajraSettings?.isPro || false;
 
@@ -41,10 +44,12 @@ const Settings = () => {
 
     const updateSetting = (key, value) => {
         setSettings(prevSettings => ({ ...prevSettings, [key]: value }));
+        markDirty();
     };
 
     const batchUpdateSettings = (newSettings) => {
         setSettings(prev => ({ ...prev, ...newSettings }));
+        markDirty();
     };
 
     const toggleMasterSwitch = () => {
@@ -82,6 +87,7 @@ const Settings = () => {
             if (settingsResponse) {
                 setSettings(prev => ({ ...settingsResponse, ads_txt_content: prev.ads_txt_content })); // Preserve local ads text state
             }
+            clearDirty();
             addNotification({ type: 'success', message: 'Settings saved!' });
             return true;
         } catch (err) {

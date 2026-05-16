@@ -4,7 +4,7 @@
  * The main shell for the AdVajra Admin Area.
  * Implements the "Abstract Air" design system defined in style.scss.
  */
-import React, { useState, useEffect, isValidElement } from 'react';
+import React, { useState, useEffect, isValidElement, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import NotificationSystem from '../../components/NotificationSystem';
 // User, Chart, Grid, Layout icons from wordpress
@@ -24,6 +24,18 @@ const AdManagerLayout = ({ children }) => {
         window.addEventListener('advajra_modules_changed', handleModulesChanged);
         return () => window.removeEventListener('advajra_modules_changed', handleModulesChanged);
     }, []);
+
+    /**
+     * Guarded navigate: routes through NavigationGuard's dirty-state check.
+     * Falls back to direct navigate if the guard isn't mounted yet.
+     */
+    const safeNavigate = useCallback( ( to ) => {
+        if ( window.__advajraGuardedNavigate ) {
+            window.__advajraGuardedNavigate( to );
+        } else {
+            navigate( to );
+        }
+    }, [ navigate ] );
 
     // Map routes to tabs
     const getActiveTab = () => {
@@ -46,7 +58,7 @@ const AdManagerLayout = ({ children }) => {
             {/* Abstract Air Top Navigation */}
 			<div className="advajra-top-nav">
                 {/* Brand */}
-                <div className="advajra-brand" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+                <div className="advajra-brand" onClick={() => safeNavigate('/')} style={{ cursor: 'pointer' }}>
                     <img
                         src={window.advajraSettings?.pluginUrl + 'assets/images/AdVajra-Logo.svg'}
                         alt="AdVajra"
@@ -56,14 +68,14 @@ const AdManagerLayout = ({ children }) => {
 
                 {/* Navigation Pills */}
                 <div className="advajra-nav-links">
-                    <NavPill label="Overview" icon={globe} active={activeTab === 'overview'} onClick={() => navigate('/')} />
-                    <NavPill label="Analytics" icon={<AdvajraAnalyticsIcon size={18} />} active={activeTab === 'analytics'} onClick={() => navigate('/analytics')} />
-                    <NavPill label="Ads" icon={<AdsNavIcon size={18} />} active={activeTab === 'ads'} onClick={() => navigate('/ads')} />
+                    <NavPill label="Overview" icon={globe} active={activeTab === 'overview'} onClick={() => safeNavigate('/')} />
+                    <NavPill label="Analytics" icon={<AdvajraAnalyticsIcon size={18} />} active={activeTab === 'analytics'} onClick={() => safeNavigate('/analytics')} />
+                    <NavPill label="Ads" icon={<AdsNavIcon size={18} />} active={activeTab === 'ads'} onClick={() => safeNavigate('/ads')} />
                     {isGroupsActive && (
-                        <NavPill label="Groups" icon={group} active={activeTab === 'groups'} onClick={() => navigate('/groups')} />
+                        <NavPill label="Groups" icon={group} active={activeTab === 'groups'} onClick={() => safeNavigate('/groups')} />
                     )}
-                    <NavPill label="Placements" icon={<PlacementsNavIcon size={18} />} active={activeTab === 'placements'} onClick={() => navigate('/placements')} />
-                    <NavPill label="Settings" icon={settings} active={activeTab === 'settings'} onClick={() => navigate('/settings')} />
+                    <NavPill label="Placements" icon={<PlacementsNavIcon size={18} />} active={activeTab === 'placements'} onClick={() => safeNavigate('/placements')} />
+                    <NavPill label="Settings" icon={settings} active={activeTab === 'settings'} onClick={() => safeNavigate('/settings')} />
                 </div>
 
 
@@ -89,3 +101,4 @@ const NavPill = ({ label, icon, active, onClick }) => (
 );
 
 export default AdManagerLayout;
+

@@ -21,6 +21,7 @@ import { STORE_NAME } from '../../store/constants';
 import { useNotification } from '../../context/NotificationDataCtx';
 import useDocumentTitle from '../../hooks/useDocumentTitle';
 import { SaveActionIcon } from '../../components/AdvajraIcons';
+import useDirtyState from '../../hooks/useDirtyState';
 
 // Rotation mode definitions with explanations.
 const ROTATION_MODES = [
@@ -60,6 +61,9 @@ const GroupEditor = () => {
     const navigate = useNavigate();
     const { addNotification } = useNotification();
     const isNew = !id || id === 'new';
+
+    const moduleId = isNew ? 'group-editor-new' : `group-editor-${ id }`;
+    const { markDirty, clearDirty, isDirty } = useDirtyState( moduleId );
 
     // State
     const [groupName, setGroupName] = useState('');
@@ -212,6 +216,8 @@ const GroupEditor = () => {
 
             const result = await dispatchSave( isNew ? null : id, data );
 
+            clearDirty();
+
             if ( isNew ) {
                 triggerConfetti();
                 addNotification('Group created! 🎉', 'success');
@@ -233,12 +239,14 @@ const GroupEditor = () => {
     const addToGroup = (adId) => {
         if (!groupAds.some(g => g.id === adId)) {
             setGroupAds([...groupAds, { id: adId, weight: DEFAULT_WEIGHT }]);
+            markDirty();
         }
     };
 
     // Remove ad from group
     const removeFromGroup = (adId) => {
         setGroupAds(groupAds.filter(entry => entry.id !== adId));
+        markDirty();
     };
 
     // Update weight
@@ -247,6 +255,7 @@ const GroupEditor = () => {
         setGroupAds(groupAds.map(entry =>
             entry.id === adId ? { ...entry, weight: clamped } : entry
         ));
+        markDirty();
     };
 
     // Move ad in group (reorder)
@@ -255,6 +264,7 @@ const GroupEditor = () => {
         const [moved] = newAds.splice(fromIndex, 1);
         newAds.splice(toIndex, 0, moved);
         setGroupAds(newAds);
+        markDirty();
     };
 
     // Drag handlers for available ads
@@ -302,7 +312,13 @@ const GroupEditor = () => {
                     <Button
                         icon={chevronLeft}
                         className="back-btn"
-                        onClick={() => navigate('/groups')}
+                        onClick={() => {
+                            if ( window.__advajraGuardedNavigate ) {
+                                window.__advajraGuardedNavigate('/groups');
+                            } else {
+                                navigate('/groups');
+                            }
+                        }}
                         label={__('Back to Groups', 'advajra')}
                     />
                     <div className="ad-identity-group">
@@ -310,7 +326,7 @@ const GroupEditor = () => {
                             type="text"
                             className="av-toolbar-input"
                             value={groupName}
-                            onChange={(e) => setGroupName(e.target.value)}
+                            onChange={(e) => { setGroupName(e.target.value); markDirty(); }}
                             placeholder={__('Group Name...', 'advajra')}
                             autoFocus={isNew}
                         />
@@ -502,7 +518,7 @@ const GroupEditor = () => {
                                 <button
                                     key={mode.id}
                                     className={`ge-rot-card ${rotation === mode.id ? 'active' : ''}`}
-                                    onClick={() => setRotation(mode.id)}
+                                    onClick={() => { setRotation(mode.id); markDirty(); }}
                                 >
                                     <span className="ge-rot-icon">{mode.icon}</span>
                                     <span className="ge-rot-label">{mode.label}</span>
