@@ -5,6 +5,8 @@ import { PluginArea } from '@wordpress/plugins';
 import AdManagerLayout from './pages/AdManager/AdManagerLayout';
 import LazyView from './components/LazyView';
 import { NotificationProvider } from './context/NotificationDataCtx';
+import { DirtyStateProvider } from './context/DirtyStateContext';
+import NavigationGuard from './components/NavigationGuard';
 
 import './store';
 
@@ -40,7 +42,9 @@ const App = () => {
             <PluginArea />
             <NotificationProvider>
                     <HashRouter>
-                        <AdManagerLayout>
+                        <DirtyStateProvider>
+                            <NavigationGuard />
+                            <AdManagerLayout>
                             <Routes>
                                 <Route path="/" element={<LazyView><Dashboard /></LazyView>} />
                                 <Route path="/ads" element={<LazyView><AdList /></LazyView>} />
@@ -64,6 +68,7 @@ const App = () => {
                                 <Route path="/settings/:tab" element={<LazyView><Settings /></LazyView>} />
                             </Routes>
                         </AdManagerLayout>
+                        </DirtyStateProvider>
                     </HashRouter>
             </NotificationProvider>
         </SlotFillProvider>

@@ -4,7 +4,7 @@
  * The command center for creating and editing ads.
  * Refactored for Phase 13 "Studio Layout" (70/30 Split with Tabs).
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { PRICING_URL } from '../../utils/urls';
 import { Button, Spinner, Popover, Modal, ButtonGroup } from '@wordpress/components';
@@ -28,6 +28,7 @@ import { STATUS_CONFIG } from '../AdManager/AdSchema';
 import CampaignSettingsCard from '../../components/CampaignSettingsCard';
 import useDocumentTitle from '../../hooks/useDocumentTitle';
 import { SaveActionIcon } from '../../components/AdvajraIcons';
+import useDirtyState from '../../hooks/useDirtyState';
 
 // Tracking mode options for the per-ad SmartSelect. Defined at module level to avoid re-creation on every render.
 const TRACKING_OPTIONS = [
@@ -45,6 +46,9 @@ const AdEditor = () => {
     const { addNotification } = useNotification();
     const isNew = !id;
     const isPro = !! window.advajraSettings?.isPro;
+
+    const moduleId = isNew ? 'ad-editor-new' : `ad-editor-${ id }`;
+    const { markDirty, clearDirty, isDirty, wrapSave } = useDirtyState( moduleId );
 
     // State
     // Removed activeSection - defaulting to Single View
@@ -75,6 +79,7 @@ const AdEditor = () => {
         // If moving "backward" (index decreases), content comes from LEFT (pushing old RIGHT)
         setAnimClass(newIndex > currentIndex ? 'av-slide-right' : 'av-slide-left');
         setAdType(newType);
+        markDirty();
     };
 
     // ── Data from centralised store ──
@@ -246,6 +251,7 @@ const AdEditor = () => {
 
         try {
             const response = await dispatchSave( isNew ? null : parseInt(id, 10), data );
+            clearDirty();
             setSaving(false);
             addNotification({
                 type: 'success',
@@ -267,13 +273,19 @@ const AdEditor = () => {
             {/* 1. Header (Toolbar) */}
             <div className="advajra-editor-toolbar">
                 <div className="toolbar-left items-center">
-                    <Button icon={chevronLeft} className="back-btn" onClick={() => navigate('/ads')} label="Back" />
+                    <Button icon={chevronLeft} className="back-btn" onClick={() => {
+                        if ( window.__advajraGuardedNavigate ) {
+                            window.__advajraGuardedNavigate('/ads');
+                        } else {
+                            navigate('/ads');
+                        }
+                    }} label="Back" />
 
                     <div className="ad-identity-group">
                         <input
                             type="text"
                             value={title}
-                            onChange={(e) => setTitle(e.target.value)}
+                            onChange={(e) => { setTitle(e.target.value); markDirty(); }}
                             placeholder="Campaign Name"
                             className="av-toolbar-input"
                         />
@@ -351,7 +363,7 @@ const AdEditor = () => {
                                     { adType === 'image' && (
                                         <div className={`media-uploader-zone ${animClass}`}>
                                             <MediaUpload
-                                                onSelect={(media) => setContent(media.url)}
+                                                onSelect={(media) => { setContent(media.url); markDirty(); }}
                                                 allowedTypes={['image']}
                                                 render={({ open }) => (
                                                     <div
@@ -405,7 +417,7 @@ const AdEditor = () => {
                                         <div className={`mb-6 ${animClass}`}>
                                             <textarea
                                                 value={content}
-                                                onChange={(e) => setContent(e.target.value)}
+                                                onChange={(e) => { setContent(e.target.value); markDirty(); }}
                                                 placeholder="Enter Code or Plain Text."
                                                 rows={8}
                                                 className="w-full advajra-input !rounded-2xl px-4 py-3 font-mono"
@@ -416,7 +428,7 @@ const AdEditor = () => {
 
                                     { adType === 'rich' && (
                                         <div className={`${animClass}`}>
-                                            <WPEditor id={`ad-content-editor-${id || 'new'}`} content={ content } onChange={ setContent } />
+                                            <WPEditor id={`ad-content-editor-${id || 'new'}`} content={ content } onChange={ (val) => { setContent(val); markDirty(); } } />
                                         </div>
                                     )}
                                 </div>
@@ -431,22 +443,22 @@ const AdEditor = () => {
                                             <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">Layout</h3>
 
                                             <div className="mb-6">
-                                                <LayoutSelector layout={layout} onChange={setLayout} />
+                                                <LayoutSelector layout={layout} onChange={(val) => { setLayout(val); markDirty(); }} />
                                             </div>
 
                                             {/* Unified Box Model Control */}
                                             <BoxModelControl
                                                 margin={layout.margin}
                                                 padding={layout.padding}
-                                                onMarginChange={(val) => setLayout({ ...layout, margin: val })}
-                                                onPaddingChange={(val) => setLayout({ ...layout, padding: val })}
+                                                onMarginChange={(val) => { setLayout({ ...layout, margin: val }); markDirty(); }}
+                                                onPaddingChange={(val) => { setLayout({ ...layout, padding: val }); markDirty(); }}
                                             >
                                                 <div className="flex items-center gap-1">
                                                     <input
                                                         type="text"
                                                         placeholder="W"
                                                         value={dimensions.width}
-                                                        onChange={(e) => setDimensions({ ...dimensions, width: e.target.value })}
+                                                        onChange={(e) => { setDimensions({ ...dimensions, width: e.target.value }); markDirty(); }}
                                                         className="w-12 text-center text-xs h-8 border-slate-200 rounded text-slate-600 font-medium"
                                                     />
                                                     <span className="text-slate-500 text-[10px]">x</span>
@@ -454,7 +466,7 @@ const AdEditor = () => {
                                                         type="text"
                                                         placeholder="H"
                                                         value={dimensions.height}
-                                                        onChange={(e) => setDimensions({ ...dimensions, height: e.target.value })}
+                                                        onChange={(e) => { setDimensions({ ...dimensions, height: e.target.value }); markDirty(); }}
                                                         className="w-12 text-center text-xs h-8 border-slate-200 rounded text-slate-600 font-medium"
                                                     />
                                                 </div>
@@ -468,7 +480,7 @@ const AdEditor = () => {
                                                 <SmartSelect
                                                     label={<>Tracking{!isPro && <a href={ PRICING_URL.adEditorTrackingBadge } target="_blank" rel="noopener noreferrer" className="pro-badge pro-badge--inline" style={{ marginLeft: '6px' }}>PRO</a>}</>}
                                                     value={isPro ? tracking : 'disabled'}
-                                                    onChange={isPro ? setTracking : () => {}}
+                                                    onChange={isPro ? (val) => { setTracking(val); markDirty(); } : () => {}}
                                                     options={TRACKING_OPTIONS.map(o => isPro ? o : ({ ...o, disabled: true, isPro: true }))}
                                                     onDisabledClick={() => window.open(PRICING_URL.adEditorTrackingClick, '_blank')}
                                                 />
@@ -480,7 +492,7 @@ const AdEditor = () => {
                                                 <input
                                                     type="text"
                                                     value={url}
-                                                    onChange={(e) => setUrl(e.target.value)}
+                                                    onChange={(e) => { setUrl(e.target.value); markDirty(); }}
                                                     placeholder="https://example.com"
                                                     className="w-full advajra-input px-4 py-2 min-h-[40px] transition-colors"
                                                 />
@@ -498,7 +510,7 @@ const AdEditor = () => {
                                                         { label: 'New Tab', value: 'new' }
                                                     ]}
                                                     value={target}
-                                                    onChange={setTarget}
+                                                    onChange={(val) => { setTarget(val); markDirty(); }}
                                                 />
                                             </div>
 
@@ -511,7 +523,7 @@ const AdEditor = () => {
                                                         { label: 'No', value: 'no' }
                                                     ]}
                                                     value={nofollow}
-                                                    onChange={setNofollow}
+                                                    onChange={(val) => { setNofollow(val); markDirty(); }}
                                                 />
                                             </div>
 
@@ -524,7 +536,7 @@ const AdEditor = () => {
                                                         { label: 'No', value: 'no' }
                                                     ]}
                                                     value={sponsored}
-                                                    onChange={setSponsored}
+                                                    onChange={(val) => { setSponsored(val); markDirty(); }}
                                                 />
                                             </div>
                                         </div>
@@ -537,7 +549,7 @@ const AdEditor = () => {
                                                     <input
                                                         type="text"
                                                         value={altText}
-                                                        onChange={(e) => setAltText(e.target.value)}
+                                                        onChange={(e) => { setAltText(e.target.value); markDirty(); }}
                                                         placeholder="Describe this image for accessibility"
                                                         className="w-full advajra-input px-4 py-2 min-h-[40px] transition-colors"
                                                     />
@@ -556,18 +568,18 @@ const AdEditor = () => {
                             {/* 1. Campaign Settings Card */}
                             <CampaignSettingsCard
                                 status={status}
-                                setStatus={setStatus}
+                                setStatus={(val) => { setStatus(val); markDirty(); }}
                                 startDate={startDate}
-                                setStartDate={setStartDate}
+                                setStartDate={(val) => { setStartDate(val); markDirty(); }}
                                 endDate={endDate}
-                                setEndDate={setEndDate}
+                                setEndDate={(val) => { setEndDate(val); markDirty(); }}
                                 // Pass Advanced Props
                                 scheduleTimeStart={scheduleTimeStart}
-                                setScheduleTimeStart={setScheduleTimeStart}
+                                setScheduleTimeStart={(val) => { setScheduleTimeStart(val); markDirty(); }}
                                 scheduleTimeEnd={scheduleTimeEnd}
-                                setScheduleTimeEnd={setScheduleTimeEnd}
+                                setScheduleTimeEnd={(val) => { setScheduleTimeEnd(val); markDirty(); }}
                                 scheduleWeekdays={scheduleWeekdays}
-                                setScheduleWeekdays={setScheduleWeekdays}
+                                setScheduleWeekdays={(val) => { setScheduleWeekdays(val); markDirty(); }}
 
                                 onDelete={handleDelete}
                                 onDuplicate={() => addNotification({ type: 'info', message: 'Duplicate requires Pro license.' })}
@@ -669,7 +681,7 @@ const AdEditor = () => {
                         <p>Precision control over who sees your ads. Define audiences using the logic engine.</p>
                     </div>
 
-                    <TargetingBuilder value={targeting} onChange={setTargeting} />
+                    <TargetingBuilder value={targeting} onChange={(val) => { setTargeting(val); markDirty(); }} />
                 </div>
 
                 <div className="spacer-footer" style={{ height: '100px' }}></div>
