@@ -31,3 +31,4 @@ node_modules/
 
 # Release artifacts
 .release/
+build/

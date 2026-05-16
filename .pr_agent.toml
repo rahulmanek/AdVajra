@@ -1,0 +1,46 @@
+# PR Agent Configuration for AdVajra
+# Docs: https://docs.pr-agent.ai/usage-guide/configuration_options/
+
+[config]
+# Flash: 500 free req/day. Pro: only 25/day. Both support 1M token context window.
+# Default max_model_tokens is 32000 which prunes files — raised to avoid that.
+model = "gemini/gemini-2.5-pro"
+fallback_models = ["gemini/gemini-2.5-flash"]
+max_model_tokens = 200000
+
+[ignore]
+glob = ["build/**", "node_modules/**", "vendor/**", "*.min.js", "*.min.css"]
+
+[pr_reviewer]
+extra_instructions = """\
+You are reviewing a WordPress ad management plugin called AdVajra. \
+It has a PHP backend (PSR-4 namespaced under AdVajra\\, in inc/) and \
+a React SPA admin dashboard (in src/, built with @wordpress/scripts). \
+There is also a companion PRO plugin (advajra-pro) that extends this via hooks. \
+\
+PRIORITIES (in order): \
+1. Security: SQL injection, XSS, CSRF, missing nonce/capability checks, unsanitized input/output \
+2. Data integrity: race conditions in ad delivery/tracking, cache invalidation, placement resolution \
+3. WordPress compliance: proper use of $wpdb->prepare(), esc_html/esc_attr, wp_kses, check_ajax_referer \
+4. Performance: unnecessary DB queries in frontend rendering, N+1 loops, missing transient/object caching \
+5. PRO extensibility: verify free plugin changes don't break hooks/filters that advajra-pro depends on \
+\
+IGNORE: minor code style preferences (PHPCS and ESLint handle that), import ordering, trailing whitespace \
+"""
+
+[pr_description]
+extra_instructions = """\
+Write a concise description focused on what changed and why. \
+Categorize changes by layer: PHP Backend, React Frontend, Build/Config. \
+If the PR touches ad delivery (inc/Delivery/), flag it as performance-sensitive. \
+If it touches REST API endpoints (inc/API/), flag it as API contract change. \
+"""
+
+[pr_code_suggestions]
+extra_instructions = """\
+Suggest improvements only for real issues. Do not suggest trivial refactors. \
+PHP must follow WordPress-Core coding standard with short array syntax []. \
+React/JS must follow @wordpress/scripts ESLint rules (tabs, single quotes, spaces in brackets). \
+All REST API handlers must verify permissions via permission_callback. \
+All user-facing strings must use __() or esc_html__() with text domain 'advajra'. \
+"""
