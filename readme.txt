@@ -4,7 +4,7 @@ Tags: ads, ad manager, monetization, adsense, banner
 Requires at least: 6.2
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -272,6 +272,11 @@ AdVajra Pro adds advanced analytics, longer history, deeper optimization tools, 
 6. Ad protection and privacy settings — bot blocking, IP filtering, GDPR-aware controls, ads.txt management, and delivery configuration.
 
 == Changelog ==
+
+= 1.1.0 =
+
+- feature: Added unsaved changes warning to prevent data loss.
+- improvement: Optimized tracking scripts for a faster dashboard.
 
 = 1.0.0 =
 
