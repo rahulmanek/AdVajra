@@ -63,7 +63,7 @@ const GroupEditor = () => {
     const isNew = !id || id === 'new';
 
     const moduleId = isNew ? 'group-editor-new' : `group-editor-${ id }`;
-    const { markDirty, clearDirty, isDirty } = useDirtyState( moduleId );
+    const { markDirty, clearDirty } = useDirtyState( moduleId );
 
     // State
     const [groupName, setGroupName] = useState('');

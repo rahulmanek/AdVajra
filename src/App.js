@@ -22,6 +22,21 @@ const PlacementEdit = lazy(() => import('./pages/Placements/PlacementEdit'));
 const AnalyticsDashboard = lazy(() => import('./pages/Analytics/AnalyticsDashboard'));
 const Settings = lazy(() => import('./pages/Settings'));
 
+const AppProviders = ( { children } ) => {
+    return (
+        <SlotFillProvider>
+            <PluginArea />
+            <NotificationProvider>
+                <HashRouter>
+                    <DirtyStateProvider>
+                        { children }
+                    </DirtyStateProvider>
+                </HashRouter>
+            </NotificationProvider>
+        </SlotFillProvider>
+    );
+};
+
 const App = () => {
     const [activeModules, setActiveModules] = useState(window.advajraSettings?.activeModules || []);
 
@@ -38,40 +53,33 @@ const App = () => {
     }, []);
 
     return (
-        <SlotFillProvider>
-            <PluginArea />
-            <NotificationProvider>
-                    <HashRouter>
-                        <DirtyStateProvider>
-                            <NavigationGuard />
-                            <AdManagerLayout>
-                            <Routes>
-                                <Route path="/" element={<LazyView><Dashboard /></LazyView>} />
-                                <Route path="/ads" element={<LazyView><AdList /></LazyView>} />
-                                <Route path="/ads/new" element={<LazyView><AdEditor /></LazyView>} />
-                                <Route path="/ads/:id" element={<LazyView><AdEditor /></LazyView>} />
+        <AppProviders>
+            <NavigationGuard />
+            <AdManagerLayout>
+                <Routes>
+                    <Route path="/" element={<LazyView><Dashboard /></LazyView>} />
+                    <Route path="/ads" element={<LazyView><AdList /></LazyView>} />
+                    <Route path="/ads/new" element={<LazyView><AdEditor /></LazyView>} />
+                    <Route path="/ads/:id" element={<LazyView><AdEditor /></LazyView>} />
 
 
-                                {activeModules.includes('ad_groups') && (
-                                    <>
-                                        <Route path="/groups" element={<LazyView><GroupList /></LazyView>} />
-                                        <Route path="/groups/new" element={<LazyView><GroupEditor /></LazyView>} />
-                                        <Route path="/groups/:id" element={<LazyView><GroupEditor /></LazyView>} />
-                                    </>
-                                )}
+                    {activeModules.includes('ad_groups') && (
+                        <>
+                            <Route path="/groups" element={<LazyView><GroupList /></LazyView>} />
+                            <Route path="/groups/new" element={<LazyView><GroupEditor /></LazyView>} />
+                            <Route path="/groups/:id" element={<LazyView><GroupEditor /></LazyView>} />
+                        </>
+                    )}
 
-                                <Route path="/placements" element={<LazyView><PlacementList /></LazyView>} />
-                                <Route path="/placements/new" element={<LazyView><PlacementCreate /></LazyView>} />
-                                <Route path="/placements/:id" element={<LazyView><PlacementEdit /></LazyView>} />
-                                <Route path="/analytics" element={<LazyView><AnalyticsDashboard /></LazyView>} />
-                                <Route path="/settings" element={<LazyView><Settings /></LazyView>} />
-                                <Route path="/settings/:tab" element={<LazyView><Settings /></LazyView>} />
-                            </Routes>
-                        </AdManagerLayout>
-                        </DirtyStateProvider>
-                    </HashRouter>
-            </NotificationProvider>
-        </SlotFillProvider>
+                    <Route path="/placements" element={<LazyView><PlacementList /></LazyView>} />
+                    <Route path="/placements/new" element={<LazyView><PlacementCreate /></LazyView>} />
+                    <Route path="/placements/:id" element={<LazyView><PlacementEdit /></LazyView>} />
+                    <Route path="/analytics" element={<LazyView><AnalyticsDashboard /></LazyView>} />
+                    <Route path="/settings" element={<LazyView><Settings /></LazyView>} />
+                    <Route path="/settings/:tab" element={<LazyView><Settings /></LazyView>} />
+                </Routes>
+            </AdManagerLayout>
+        </AppProviders>
     );
 };
 

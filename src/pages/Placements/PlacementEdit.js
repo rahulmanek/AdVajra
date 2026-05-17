@@ -331,7 +331,7 @@ const PlacementEdit = () => {
     const [paragraphNum, setParagraphNum] = useState(3);
     const [isDisabled, setIsDisabled] = useState(false);
 
-    const { markDirty, clearDirty, isDirty } = useDirtyState( `placement-editor-${ id }` );
+    const { markDirty, clearDirty } = useDirtyState( `placement-editor-${ id }` );
 
     useDocumentTitle(name || 'Edit Placement');
 

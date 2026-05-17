@@ -58,13 +58,21 @@ const AdManagerLayout = ({ children }) => {
             {/* Abstract Air Top Navigation */}
 			<div className="advajra-top-nav">
                 {/* Brand */}
-                <div className="advajra-brand" onClick={() => safeNavigate('/')} style={{ cursor: 'pointer' }}>
+                <a
+                    href="#/"
+                    className="advajra-brand"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        safeNavigate('/');
+                    }}
+                    style={{ cursor: 'pointer', textDecoration: 'none' }}
+                >
                     <img
                         src={window.advajraSettings?.pluginUrl + 'assets/images/AdVajra-Logo.svg'}
                         alt="AdVajra"
                         className="advajra-logo"
                     />
-                </div>
+                </a>
 
                 {/* Navigation Pills */}
                 <div className="advajra-nav-links">

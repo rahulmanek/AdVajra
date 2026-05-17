@@ -5,7 +5,7 @@
  *
  * @package advajra
  */
-import React, { createContext, useContext, useRef, useCallback, useEffect, useState } from 'react';
+import { createContext, useContext, useRef, useCallback, useEffect, useState } from 'react';
 
 const DirtyStateContext = createContext( null );
 
@@ -82,7 +82,7 @@ export const DirtyStateProvider = ( { children } ) => {
 	 */
 	const isDirty = useCallback( ( moduleId ) => {
 		if ( moduleId ) {
-			return !! registryRef.current[ moduleId ];
+			return Boolean( registryRef.current[ moduleId ] );
 		}
 		return Object.keys( registryRef.current ).length > 0;
 	}, [] );
@@ -132,6 +132,7 @@ export const DirtyStateProvider = ( { children } ) => {
 			}
 
 			// Show native confirmation for external WP admin navigation
+			// eslint-disable-next-line no-alert
 			const confirmed = window.confirm(
 				'You have unsaved changes. Are you sure you want to leave this page?'
 			);
