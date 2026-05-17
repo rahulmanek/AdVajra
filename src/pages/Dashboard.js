@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { PRICING_URL, FEATURES_URL } from '../utils/urls';
+import React, { useEffect, useState, useCallback } from 'react';
+import { PRICING_URL } from '../utils/urls';
 import { Button, Icon, Slot, Spinner } from '@wordpress/components';
 import { arrowRight, external, plus, warning } from '@wordpress/icons';
 import { useSelect } from '@wordpress/data';
@@ -11,6 +11,25 @@ import { applyFilters } from '../hooks';
 import { useNotification } from '../context/NotificationDataCtx';
 import Tooltip from '../components/Tooltip';
 
+const KPI_KEYS = [ 'ad_requests', 'coverage', 'impressions', 'ctr', 'impression_rpm', 'avg_viewable_time' ];
+const KPI_LABELS = {
+	ad_requests: 'Ad Requests',
+	coverage: 'Coverage',
+	impressions: 'Impressions',
+	ctr: 'CTR',
+	impression_rpm: 'Revenue RPM',
+	avg_viewable_time: 'Avg Viewable Time',
+};
+const KPI_PLACEHOLDER_VALUES = {
+	ad_requests: '12,847',
+	coverage: '94.6%',
+	impressions: '11,290',
+	ctr: '3.21%',
+	impression_rpm: '$2.40',
+	avg_viewable_time: '8.7s',
+};
+
+// skipcq: JS-R1005
 const Dashboard = () => {
 	const [ overview, setOverview ] = useState( null );
 	const [ dashboardSettings, setDashboardSettings ] = useState( {} );
@@ -194,7 +213,7 @@ const Dashboard = () => {
 
 	const switchboard = ( overview.switchboard || [] ).map( ( item ) => ( {
 		...item,
-		enabled: switchState[ item.id ] ?? !! item.enabled,
+		enabled: switchState[ item.id ] ?? Boolean( item.enabled ),
 	} ) );
 
 	const overviewContext = {
@@ -204,7 +223,7 @@ const Dashboard = () => {
 		placements,
 		dashboardSettings,
 		activeModules,
-		isPro: !! window.advajraSettings?.isPro,
+		isPro: Boolean( window.advajraSettings?.isPro ),
 	};
 
 	const riskQueue = applyFilters(
@@ -229,7 +248,7 @@ const Dashboard = () => {
 	const licenseValue = getLicenseLabel( state?.license );
 
 
-	const isPro = !! window.advajraSettings?.isPro;
+	const isPro = Boolean( window.advajraSettings?.isPro );
 	const stateRail = [
 		{
 			id: 'last_sync',
@@ -519,25 +538,6 @@ const Dashboard = () => {
 	);
 };
 
-// KPI keys and display labels — defined at module level for reuse.
-const KPI_KEYS = [ 'ad_requests', 'coverage', 'impressions', 'ctr', 'impression_rpm', 'avg_viewable_time' ];
-const KPI_LABELS = {
-	ad_requests: 'Ad Requests',
-	coverage: 'Coverage',
-	impressions: 'Impressions',
-	ctr: 'CTR',
-	impression_rpm: 'Revenue RPM',
-	avg_viewable_time: 'Avg Viewable Time',
-};
-const KPI_PLACEHOLDER_VALUES = {
-	ad_requests: '12,847',
-	coverage: '94.6%',
-	impressions: '11,290',
-	ctr: '3.21%',
-	impression_rpm: '$2.40',
-	avg_viewable_time: '8.7s',
-};
-
 // Kit.com waitlist form ID — module-level constant, easy to update.
 const KIT_FORM_ID = '9447449';
 const KIT_FORM_URL = `https://app.kit.com/forms/${ KIT_FORM_ID }/subscriptions`;
@@ -569,12 +569,13 @@ const markSubscribed = ( email ) => {
 			stored.push( email );
 			localStorage.setItem( KIT_LS_KEY, JSON.stringify( stored ) );
 		}
-	} catch {}
+	} catch ( _e ) {
+		// localStorage quota errors are non-critical — silently ignored.
+	}
 };
 
+// skipcq: JS-R1005
 const KpiCard = ( { card, kpiKey, isPro } ) => {
-	const { useState, useCallback } = window.React || wp.element;
-
 	// Revenue RPM waitlist state — owned by the card, not the parent.
 	const userEmail = window.advajraSettings?.currentUserEmail || '';
 	const [ waitlistState, setWaitlistState ] = useState(

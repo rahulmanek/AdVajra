@@ -12,21 +12,18 @@
  *
  * @package advajra
  */
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useDirtyStateContext } from '../context/DirtyStateContext';
 import UnsavedChangesModal from './UnsavedChangesModal';
 
 const NavigationGuard = () => {
-	const { isDirty, clearAll, version } = useDirtyStateContext();
-	const location = useLocation();
+	const { isDirty, clearAll } = useDirtyStateContext();
 	const navigate = useNavigate();
 
 	const [ showModal, setShowModal ] = useState( false );
 	const [ pendingPath, setPendingPath ] = useState( null );
 
-	// Track the previous pathname to detect route changes
-	const prevPathRef = useRef( location.pathname );
 	const isBlockingRef = useRef( false );
 
 	/**
@@ -35,8 +32,6 @@ const NavigationGuard = () => {
 	 * in many versions. We intercept at the nav pill level instead.
 	 */
 
-	// Store the original navigate function for confirmed navigation
-	const confirmedNavigateRef = useRef( null );
 
 	/**
 	 * Create a navigation interceptor that checks dirty state before allowing navigation.

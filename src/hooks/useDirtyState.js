@@ -51,14 +51,9 @@ const useDirtyState = ( moduleId ) => {
 
 	const wrapSave = useCallback( ( saveFn ) => {
 		return async ( ...args ) => {
-			try {
-				const result = await saveFn( ...args );
-				clearDirty();
-				return result;
-			} catch ( error ) {
-				// Dirty state is preserved — the user still has unsaved changes.
-				throw error;
-			}
+			const result = await saveFn( ...args );
+			clearDirty();
+			return result;
 		};
 	}, [ clearDirty ] );
 

@@ -4,7 +4,7 @@
  * The command center for creating and editing ads.
  * Refactored for Phase 13 "Studio Layout" (70/30 Split with Tabs).
  */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { PRICING_URL } from '../../utils/urls';
 import { Button, Spinner, Popover, Modal, ButtonGroup } from '@wordpress/components';
@@ -40,15 +40,16 @@ const TRACKING_OPTIONS = [
 ];
 
 
+// skipcq: JS-R1005
 const AdEditor = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { addNotification } = useNotification();
     const isNew = !id;
-    const isPro = !! window.advajraSettings?.isPro;
+    const isPro = Boolean( window.advajraSettings?.isPro );
 
     const moduleId = isNew ? 'ad-editor-new' : `ad-editor-${ id }`;
-    const { markDirty, clearDirty, isDirty, wrapSave } = useDirtyState( moduleId );
+    const { markDirty, clearDirty } = useDirtyState( moduleId );
 
     // State
     // Removed activeSection - defaulting to Single View
@@ -480,7 +481,7 @@ const AdEditor = () => {
                                                 <SmartSelect
                                                     label={<>Tracking{!isPro && <a href={ PRICING_URL.adEditorTrackingBadge } target="_blank" rel="noopener noreferrer" className="pro-badge pro-badge--inline" style={{ marginLeft: '6px' }}>PRO</a>}</>}
                                                     value={isPro ? tracking : 'disabled'}
-                                                    onChange={isPro ? (val) => { setTracking(val); markDirty(); } : () => {}}
+                                                    onChange={isPro ? (val) => { setTracking(val); markDirty(); } : undefined}
                                                     options={TRACKING_OPTIONS.map(o => isPro ? o : ({ ...o, disabled: true, isPro: true }))}
                                                     onDisabledClick={() => window.open(PRICING_URL.adEditorTrackingClick, '_blank')}
                                                 />

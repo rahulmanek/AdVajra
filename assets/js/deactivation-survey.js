@@ -313,7 +313,7 @@
 		const allDeactivateLinks = document.querySelectorAll( `tr.active[data-plugin="${ pluginFile }"] a, #${ rowId } a` );
 
 		allDeactivateLinks.forEach( ( link ) => {
-			if ( link.href && link.href.includes( 'deactivate' ) && link.href.includes( 'plugin=' ) ) {
+			if ( link.href?.includes( 'deactivate' ) && link.href?.includes( 'plugin=' ) ) {
 				link.addEventListener( 'click', function ( e ) {
 					e.preventDefault();
 					mountModal();
@@ -325,9 +325,8 @@
 		// Fallback: scan all plugin-action links on the page in case selector missed.
 		document.querySelectorAll( '.plugin-action-buttons a, .row-actions a' ).forEach( ( link ) => {
 			if (
-				link.href &&
-				link.href.includes( 'action=deactivate' ) &&
-				link.href.includes( encodeURIComponent( pluginFile ) )
+				link.href?.includes( 'action=deactivate' ) &&
+				link.href?.includes( encodeURIComponent( pluginFile ) )
 			) {
 				link.addEventListener( 'click', function ( e ) {
 					e.preventDefault();

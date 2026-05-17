@@ -1,23 +1,11 @@
 /**
  * UnsavedChangesModal.js
- *
- * Premium confirmation dialog for unsaved changes protection.
- *
- * Architecture decision: All structural CSS is inline.
- * Reason: In WordPress admin, co-located SCSS imports can be injected
- * in a different pass from the main bundle, and parent elements with
- * `transform`, `will-change: transform`, or `filter` (common in WP admin
- * and our own glass-row components) create new containing blocks that
- * break `position: fixed`. Inline styles are immune to both issues.
- *
  * @package advajra
  */
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
-// ── Inline style objects (structural layout — cannot be overridden externally) ──
-
-const OVERLAY_STYLE = {
+const WRAPPER_STYLE = {
     position:        'fixed',
     top:             0,
     left:            0,
@@ -27,12 +15,26 @@ const OVERLAY_STYLE = {
     display:         'flex',
     alignItems:      'center',
     justifyContent:  'center',
-    background:      'rgba(15, 28, 46, 0.6)',
-    backdropFilter:  'blur(8px)',
-    WebkitBackdropFilter: 'blur(8px)',
     boxSizing:       'border-box',
     margin:          0,
     padding:         0,
+};
+
+const BACKDROP_STYLE = {
+    position:        'absolute',
+    top:             0,
+    left:            0,
+    right:           0,
+    bottom:          0,
+    background:      'rgba(15, 28, 46, 0.6)',
+    backdropFilter:  'blur(8px)',
+    WebkitBackdropFilter: 'blur(8px)',
+    border:          'none',
+    width:           '100%',
+    height:          '100%',
+    cursor:          'pointer',
+    padding:         0,
+    margin:          0,
 };
 
 const MODAL_STYLE = {
@@ -147,10 +149,15 @@ const UnsavedChangesModal = ( { onConfirm, onCancel } ) => {
     }, [] );
 
     const modalContent = (
-        <div style={ OVERLAY_STYLE } onClick={ onCancel }>
+        <div style={ WRAPPER_STYLE }>
+            <button
+                type="button"
+                style={ BACKDROP_STYLE }
+                onClick={ onCancel }
+                aria-label="Stay on page"
+            />
             <div
                 style={ MODAL_STYLE }
-                onClick={ ( e ) => e.stopPropagation() }
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="av-unsaved-title"
