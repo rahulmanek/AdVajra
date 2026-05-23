@@ -32,6 +32,7 @@ class ApiRuntime {
 				( new \AdVajra\API\Analytics() )->register_routes();
 				( new \AdVajra\API\Modules() )->register_routes();
 				( new \AdVajra\API\AdsTxt() )->register_routes();
+				( new \AdVajra\API\ReviewNotice() )->register_routes();
 			}
 		);
 	}

@@ -38,6 +38,7 @@ foreach ( $advajra_ad_ids as $advajra_ad_id ) {
 
 $advajra_housekeeping_options = [
 	'advajra_version',
+	'advajra_installed_at',
 	'advajra_active_modules',
 ];
 
