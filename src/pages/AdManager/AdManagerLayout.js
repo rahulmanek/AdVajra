@@ -7,6 +7,7 @@
 import React, { useState, useEffect, isValidElement, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import NotificationSystem from '../../components/NotificationSystem';
+import ReviewNoticeBanner from '../../components/ReviewNoticeBanner';
 // User, Chart, Grid, Layout icons from wordpress
 import { Icon, globe, settings, group } from '@wordpress/icons';
 import { AdsNavIcon, AdvajraAnalyticsIcon, PlacementsNavIcon } from '../../components/AdvajraIcons';
@@ -14,6 +15,7 @@ import { AdsNavIcon, AdvajraAnalyticsIcon, PlacementsNavIcon } from '../../compo
 const AdManagerLayout = ({ children }) => {
 	const location = useLocation();
     const navigate = useNavigate();
+    const [hasReviewNotice, setHasReviewNotice] = useState(false);
 
     const [activeModules, setActiveModules] = useState(window.advajraSettings?.activeModules || []);
 
@@ -90,8 +92,11 @@ const AdManagerLayout = ({ children }) => {
             </div>
 
 			{/* Main Content Area */}
-			<div className="advajra-layout advajra-content">
-				{ children }
+			<div className={`advajra-layout advajra-content ${hasReviewNotice ? 'has-review-notice' : ''}`}>
+                <ReviewNoticeBanner onVisibilityChange={setHasReviewNotice} />
+                <div className="advajra-page-stage">
+				    { children }
+                </div>
 			</div>
 		</div>
 	);
@@ -109,4 +114,3 @@ const NavPill = ({ label, icon, active, onClick }) => (
 );
 
 export default AdManagerLayout;
-

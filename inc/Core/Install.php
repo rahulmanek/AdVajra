@@ -83,6 +83,10 @@ class Install {
 			update_option( 'advajra_version', ADVAJRA_VERSION );
 		}
 
+		if ( false === get_option( 'advajra_installed_at', false ) ) {
+			update_option( 'advajra_installed_at', time() );
+		}
+
 		if ( false === get_option( 'advajra_settings' ) ) {
 			$defaults = \AdVajra\Data\Defaults::get_balanced_defaults();
 			update_option( 'advajra_settings', $defaults );
