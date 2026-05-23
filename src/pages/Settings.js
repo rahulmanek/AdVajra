@@ -10,6 +10,61 @@ import useDocumentTitle from '../hooks/useDocumentTitle';
 import { SaveActionIcon } from '../components/AdvajraIcons';
 import useDirtyState from '../hooks/useDirtyState';
 
+const SettingsBody = ({
+    isSystemDisabled,
+    toggleMasterSwitch,
+    settings,
+    updateSetting,
+    batchUpdateSettings,
+    saveSettings
+}) => (
+    <div className="advajra-card p-6">
+        <MasterSwitchCard
+            isSystemDisabled={isSystemDisabled}
+            toggleMasterSwitch={toggleMasterSwitch}
+        />
+
+        <div className={`mt-6 ${isSystemDisabled ? 'opacity-50 pointer-events-none' : ''}`}>
+            <SettingsDashboard
+                settings={settings}
+                updateSetting={updateSetting}
+                batchUpdateSettings={batchUpdateSettings}
+                onSaveReset={saveSettings}
+                isSystemDisabled={isSystemDisabled}
+            />
+        </div>
+    </div>
+);
+
+const MasterSwitchCard = ({ isSystemDisabled, toggleMasterSwitch }) => (
+    <div className={`master-switch ${isSystemDisabled ? 'disabled' : 'active'}`}>
+        <div className="master-switch-content">
+            <div className="master-switch-info">
+                <div className="master-switch-icon">
+                    {isSystemDisabled ? '🔴' : '🟢'}
+                </div>
+                <div className="master-switch-text">
+                    <span className="master-switch-label">AD SYSTEM</span>
+                    <span className="master-switch-status">
+                        {isSystemDisabled ? 'All ads disabled' : 'Ads are live'}
+                    </span>
+                </div>
+            </div>
+            <button
+                className={`master-toggle-btn ${isSystemDisabled ? 'off' : 'on'}`}
+                onClick={toggleMasterSwitch}
+            >
+                <span className="toggle-track">
+                    <span className="toggle-thumb"></span>
+                </span>
+                <span className="toggle-label">
+                    {isSystemDisabled ? 'OFFLINE' : 'LIVE'}
+                </span>
+            </button>
+        </div>
+    </div>
+);
+
 const Settings = () => {
     const [settings, setSettings] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -139,53 +194,14 @@ const Settings = () => {
                 </Button>
             </div>
 
-            {/* Settings Cards */}
-            <div className="grid gap-6">
-
-
-                <div className="advajra-card p-6">
-
-                    <div className={`master-switch ${isSystemDisabled ? 'disabled' : 'active'}`}>
-                        <div className="master-switch-content">
-                            <div className="master-switch-info">
-                                <div className="master-switch-icon">
-                                    {isSystemDisabled ? '🔴' : '🟢'}
-                                </div>
-                                <div className="master-switch-text">
-                                    <span className="master-switch-label">AD SYSTEM</span>
-                                    <span className="master-switch-status">
-                                        {isSystemDisabled ? 'All ads disabled' : 'Ads are live'}
-                                    </span>
-                                </div>
-                            </div>
-                            <button
-                                className={`master-toggle-btn ${isSystemDisabled ? 'off' : 'on'}`}
-                                onClick={toggleMasterSwitch}
-                            >
-                                <span className="toggle-track">
-                                    <span className="toggle-thumb"></span>
-                                </span>
-                                <span className="toggle-label">
-                                    {isSystemDisabled ? 'OFFLINE' : 'LIVE'}
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-
-
-                    <div className={`mt-6 ${isSystemDisabled ? 'opacity-50 pointer-events-none' : ''}`}>
-                        <SettingsDashboard
-                            settings={settings}
-                            updateSetting={updateSetting}
-                            batchUpdateSettings={batchUpdateSettings}
-                            onSaveReset={saveSettings} // Pass modified saver
-                            isSystemDisabled={isSystemDisabled}
-                        />
-                    </div>
-                </div>
-
-
-            </div>
+            <SettingsBody
+                isSystemDisabled={isSystemDisabled}
+                toggleMasterSwitch={toggleMasterSwitch}
+                settings={settings}
+                updateSetting={updateSetting}
+                batchUpdateSettings={batchUpdateSettings}
+                saveSettings={saveSettings}
+            />
         </div>
     );
 };

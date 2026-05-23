@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import apiFetch from '@wordpress/api-fetch';
+import { __ } from '@wordpress/i18n';
 
 const ReviewNoticeBanner = ({ onVisibilityChange = null }) => {
 	const [loading, setLoading] = useState(true);
@@ -19,7 +20,7 @@ const ReviewNoticeBanner = ({ onVisibilityChange = null }) => {
 				if (payload?.eligible) {
 					setNotice(payload);
 				}
-			} catch (e) {
+			} catch {
 				// Quiet failure: review notice must never break app UX.
 			} finally {
 				if (mounted) {
@@ -51,7 +52,7 @@ const ReviewNoticeBanner = ({ onVisibilityChange = null }) => {
 
 		try {
 			await apiFetch({ path: '/advajra/v1/review-notice/dismiss', method: 'POST' });
-		} catch (e) {
+		} catch {
 			// Keep notice dismissed visually once user chooses to dismiss.
 		} finally {
 			setIsDismissing(false);
@@ -63,7 +64,7 @@ const ReviewNoticeBanner = ({ onVisibilityChange = null }) => {
 	}
 
 	return (
-		<section className="av-review-notice" aria-label="Review notice">
+		<section className="av-review-notice" aria-label={ __( 'Review notice', 'advajra' ) }>
 			<div className="av-review-notice__content">
 				<p className="av-review-notice__message">{notice.message}</p>
 				<div className="av-review-notice__actions">
@@ -74,7 +75,7 @@ const ReviewNoticeBanner = ({ onVisibilityChange = null }) => {
 						rel="noopener noreferrer"
 						onClick={persistDismissal}
 					>
-						Leave Review ❤️
+						{ __( 'Leave Review ❤️', 'advajra' ) }
 					</a>
 					<button
 						type="button"
@@ -82,7 +83,7 @@ const ReviewNoticeBanner = ({ onVisibilityChange = null }) => {
 						onClick={persistDismissal}
 						disabled={isDismissing}
 					>
-						Dismiss
+						{ __( 'Dismiss', 'advajra' ) }
 					</button>
 				</div>
 			</div>

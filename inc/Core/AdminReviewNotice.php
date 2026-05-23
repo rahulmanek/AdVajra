@@ -19,32 +19,32 @@ class AdminReviewNotice {
 	/**
 	 * Install timestamp option key.
 	 */
-	const OPTION_INSTALLED_AT = 'advajra_installed_at';
+	private const OPTION_INSTALLED_AT = 'advajra_installed_at';
 
 	/**
 	 * Dismissal user meta key.
 	 */
-	const USER_META_DISMISSED = 'advajra_review_notice_dismissed';
+	private const USER_META_DISMISSED = 'advajra_review_notice_dismissed';
 
 	/**
 	 * Reviews URL.
 	 */
-	const REVIEW_URL = 'https://wordpress.org/support/plugin/advajra/reviews/#new-post';
+	private const REVIEW_URL = 'https://wordpress.org/support/plugin/advajra/reviews/#new-post';
 
 	/**
 	 * Cache group for eligibility checks.
 	 */
-	const CACHE_GROUP = 'advajra_review_notice';
+	private const CACHE_GROUP = 'advajra_review_notice';
 
 	/**
 	 * Cache lifetime in seconds.
 	 */
-	const CACHE_TTL = 300;
+	private const CACHE_TTL = 300;
 
 	/**
 	 * Minimum active age before showing notice.
 	 */
-	const MIN_INSTALL_AGE = WEEK_IN_SECONDS;
+	private const MIN_INSTALL_AGE = WEEK_IN_SECONDS;
 
 	/**
 	 * Public payload used by React app.
