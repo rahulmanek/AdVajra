@@ -2,8 +2,6 @@
 /**
  * Ads.txt REST Controller.
  *
- * Handles direct file system Read/Write operations for the ads.txt file at the site root.
- *
  * @package AdVajra\API
  */
 
@@ -39,20 +37,88 @@ class AdsTxt extends Controller {
 	}
 
 	/**
-	 * Get a filesystem instance.
+	 * Try to get a WP_Filesystem instance using the "direct" method only.
 	 *
-	 * @return \WP_Filesystem_Base|null
+	 * @return \WP_Filesystem_Base|null  Filesystem instance, or null if unavailable.
 	 */
 	private function get_filesystem() {
 		require_once ABSPATH . 'wp-admin/includes/file.php';
 
 		global $wp_filesystem;
 
-		if ( ! $wp_filesystem && ! \WP_Filesystem() ) {
+		$root   = get_home_path();
+		$method = get_filesystem_method( [], $root );
+
+		// Only "direct" is safe in a REST context. FTP/SSH methods require an interactive HTML form.
+		if ( 'direct' !== $method ) {
 			return null;
 		}
 
+		if ( ! $wp_filesystem ) {
+			if ( ! \WP_Filesystem( [], $root ) ) {
+				return null;
+			}
+		}
+
 		return $wp_filesystem;
+	}
+
+	/**
+	 * Read the contents of a file.
+	 *
+	 * Tries WP_Filesystem first, falls back to native PHP.
+	 *
+	 * @param string                   $path Absolute file path.
+	 * @param \WP_Filesystem_Base|null $fs   Filesystem instance or null.
+	 * @return string|false File contents or false on failure.
+	 */
+	private function read_file( string $path, $fs ) {
+		if ( $fs ) {
+			$contents = $fs->get_contents( $path );
+			if ( false !== $contents ) {
+				return $contents;
+			}
+		}
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		$contents = file_get_contents( $path );
+		return ( false !== $contents ) ? $contents : false;
+	}
+
+	/**
+	 * Write content to a file.
+	 *
+	 * @param string                   $path    Absolute file path.
+	 * @param string                   $content Content to write.
+	 * @param \WP_Filesystem_Base|null $fs      Filesystem instance or null.
+	 * @return bool True on success, false on failure.
+	 */
+	private function write_file( string $path, string $content, $fs ): bool {
+		if ( $fs ) {
+			$result = $fs->put_contents( $path, $content, FS_CHMOD_FILE );
+			if ( false !== $result ) {
+				return true;
+			}
+		}
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+		$bytes = file_put_contents( $path, $content );
+		return ( false !== $bytes );
+	}
+
+	/**
+	 * Check whether the given path (file or directory) is writable.
+	 *
+	 * @param string                   $path Absolute path.
+	 * @param \WP_Filesystem_Base|null $fs   Filesystem instance or null.
+	 * @return bool
+	 */
+	private function path_is_writable( string $path, $fs ): bool {
+		if ( $fs ) {
+			return $fs->is_writable( $path );
+		}
+
+		return is_writable( $path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable
 	}
 
 	/**
@@ -86,13 +152,20 @@ class AdsTxt extends Controller {
 	public function get_item( $request ) {
 		$file_path = $this->get_file_path();
 		$fs        = $this->get_filesystem();
-		$exists    = $fs ? $fs->exists( $file_path ) : file_exists( $file_path );
-		$content   = '';
 		$root_path = trailingslashit( get_home_path() );
-		$writable  = $fs ? $fs->is_writable( $root_path ) || ( $exists && $fs->is_writable( $file_path ) ) : false;
+
+		$exists  = $fs ? $fs->exists( $file_path ) : file_exists( $file_path );
+		$content = '';
+
+		// Writable check: root dir (for creating a new file) or the file itself.
+		if ( $exists ) {
+			$writable = $this->path_is_writable( $file_path, $fs );
+		} else {
+			$writable = $this->path_is_writable( $root_path, $fs );
+		}
 
 		if ( $exists ) {
-			$file_content = $fs ? $fs->get_contents( $file_path ) : false;
+			$file_content = $this->read_file( $file_path, $fs );
 			if ( false !== $file_content ) {
 				$content = $file_content;
 			}
@@ -122,17 +195,12 @@ class AdsTxt extends Controller {
 
 		$file_path = $this->get_file_path();
 		$fs        = $this->get_filesystem();
+		$root_path = trailingslashit( get_home_path() );
 
-		if ( ! $fs ) {
-			return new \WP_Error(
-				'advajra_fs_unavailable',
-				__( 'WordPress filesystem could not be initialized.', 'advajra' ),
-				[ 'status' => 500 ]
-			);
-		}
-
-		$exists   = $fs->exists( $file_path );
-		$writable = $exists ? $fs->is_writable( $file_path ) : $fs->is_writable( trailingslashit( get_home_path() ) );
+		$exists   = $fs ? $fs->exists( $file_path ) : file_exists( $file_path );
+		$writable = $exists
+			? $this->path_is_writable( $file_path, $fs )
+			: $this->path_is_writable( $root_path, $fs );
 
 		if ( ! $writable ) {
 			return new \WP_Error(
@@ -145,12 +213,12 @@ class AdsTxt extends Controller {
 			);
 		}
 
-		$result = $fs->put_contents( $file_path, $sanitized_content, FS_CHMOD_FILE );
+		$result = $this->write_file( $file_path, $sanitized_content, $fs );
 
-		if ( false === $result ) {
+		if ( ! $result ) {
 			return new \WP_Error(
 				'advajra_write_error',
-				__( 'Failed to write to ads.txt.', 'advajra' ),
+				__( 'Failed to write ads.txt. Check that the web server has write access to the site root.', 'advajra' ),
 				[
 					'status' => 500,
 					'path'   => $file_path,
