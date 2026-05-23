@@ -148,7 +148,10 @@ const Settings = () => {
         } catch (err) {
             console.error(err);
             setIsSaving(false);
-            addNotification({ type: 'error', message: 'Failed to save settings.' });
+            addNotification({ 
+                type: 'error', 
+                message: err.message || 'Failed to save settings.' 
+            });
             return false;
         }
     };
