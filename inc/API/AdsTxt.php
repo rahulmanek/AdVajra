@@ -24,7 +24,37 @@ class AdsTxt extends Controller {
 	protected $rest_base = 'ads-txt';
 
 	/**
+	 * Get the absolute path to the root domain's directory, even if installed in a subdirectory.
+	 *
+	 * @return string
+	 */
+	private function get_root_domain_path(): string {
+		if ( ! function_exists( 'get_home_path' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+
+		$wp_path        = get_home_path();
+		$home_url_path  = wp_parse_url( home_url(), PHP_URL_PATH );
+		$home_url_path  = trim( $home_url_path, '/' );
+
+		if ( empty( $home_url_path ) ) {
+			return trailingslashit( $wp_path );
+		}
+
+		$segments = explode( '/', $home_url_path );
+		$depth    = count( $segments );
+
+		$target_dir = $wp_path;
+		for ( $i = 0; $i < $depth; $i++ ) {
+			$target_dir = dirname( $target_dir );
+		}
+
+		return trailingslashit( $target_dir );
+	}
+
+	/**
 	 * Get the absolute path to the ads.txt file.
+	 * Checks if root domain is writable or already has an ads.txt, escalating past subdirectory.
 	 *
 	 * @return string
 	 */
@@ -33,7 +63,34 @@ class AdsTxt extends Controller {
 			require_once ABSPATH . 'wp-admin/includes/file.php';
 		}
 
-		return trailingslashit( get_home_path() ) . 'ads.txt';
+		$root_path = $this->get_root_domain_path();
+		$root_file = $root_path . 'ads.txt';
+		$wp_path   = trailingslashit( get_home_path() );
+		$wp_file   = $wp_path . 'ads.txt';
+
+		if ( $root_path === $wp_path ) {
+			return $wp_file;
+		}
+
+		$fs = $this->get_filesystem();
+
+		// Case 1: An ads.txt already exists at the root domain and is writable.
+		$root_exists = $fs ? $fs->exists( $root_file ) : file_exists( $root_file );
+		if ( $root_exists ) {
+			$root_writable = $fs ? $fs->is_writable( $root_file ) : is_writable( $root_file );
+			if ( $root_writable ) {
+				return $root_file;
+			}
+		}
+
+		// Case 2: Root domain directory itself is writable, so we can write directly there.
+		$root_dir_writable = $fs ? $fs->is_writable( $root_path ) : is_writable( $root_path );
+		if ( $root_dir_writable ) {
+			return $root_file;
+		}
+
+		// Fallback Case 3: Root is not writable, write locally to the WordPress subdirectory.
+		return $wp_file;
 	}
 
 	/**
@@ -171,12 +228,34 @@ class AdsTxt extends Controller {
 			}
 		}
 
+		$root_path       = $this->get_root_domain_path();
+		$wp_path         = trailingslashit( get_home_path() );
+		$parsed_url      = wp_parse_url( home_url() );
+		$is_subdirectory = ! empty( $parsed_url['path'] ) && '/' !== $parsed_url['path'];
+		$root_domain_url = '';
+		if ( ! empty( $parsed_url['scheme'] ) && ! empty( $parsed_url['host'] ) ) {
+			$root_domain_url = $parsed_url['scheme'] . '://' . $parsed_url['host'];
+		}
+
+		// Check if we managed to write to root domain or had to fall back to the subdirectory.
+		$written_to_root = false;
+		if ( $is_subdirectory ) {
+			if ( strpos( $file_path, $root_path ) === 0 && strpos( $file_path, $wp_path ) !== 0 ) {
+				$written_to_root = true;
+			}
+		}
+
 		return rest_ensure_response(
 			[
-				'exists'   => $exists,
-				'content'  => $content,
-				'writable' => $writable,
-				'path'     => $file_path,
+				'exists'          => $exists,
+				'content'         => $content,
+				'writable'        => $writable,
+				'path'            => $file_path,
+				'is_subdirectory' => $is_subdirectory,
+				'root_domain_url' => $root_domain_url,
+				'written_to_root' => $written_to_root,
+				'wp_path'         => $wp_path,
+				'root_path'       => $root_path,
 			]
 		);
 	}
@@ -195,17 +274,17 @@ class AdsTxt extends Controller {
 
 		$file_path = $this->get_file_path();
 		$fs        = $this->get_filesystem();
-		$root_path = trailingslashit( get_home_path() );
+		$dir_path  = dirname( $file_path );
 
 		$exists   = $fs ? $fs->exists( $file_path ) : file_exists( $file_path );
 		$writable = $exists
 			? $this->path_is_writable( $file_path, $fs )
-			: $this->path_is_writable( $root_path, $fs );
+			: $this->path_is_writable( $dir_path, $fs );
 
 		if ( ! $writable ) {
 			return new \WP_Error(
 				'advajra_fs_error',
-				__( 'The root directory or ads.txt file is not writable. Please check server permissions.', 'advajra' ),
+				__( 'The target directory or ads.txt file is not writable. Please check server permissions.', 'advajra' ),
 				[
 					'status' => 403,
 					'path'   => $file_path,
