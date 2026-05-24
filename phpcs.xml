@@ -39,6 +39,19 @@
         </properties>
     </rule>
 
+    <!-- Force constant visibility checks (PSR-12 standard) -->
+    <rule ref="PSR12.Properties.ConstantVisibility"/>
+
+    <!-- Flag insecure hashing functions and suggest modern hash() alternative -->
+    <rule ref="Generic.PHP.ForbiddenFunctions">
+        <properties>
+            <property name="forbiddenFunctions" type="array">
+                <element key="md5" value="hash"/>
+                <element key="sha1" value="hash"/>
+            </property>
+        </properties>
+    </rule>
+
     <!-- Minimum WordPress version -->
     <config name="minimum_wp_version" value="5.8"/>
 </ruleset>

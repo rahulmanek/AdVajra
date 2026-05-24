@@ -11,6 +11,7 @@ import {
 	REMOVE_ENTITY,
 	SET_ENTITY_LOADING,
 	INVALIDATE_ENTITY,
+	SET_ENTITY_ERROR,
 } from './constants';
 
 /**
@@ -20,6 +21,7 @@ const DEFAULT_ENTITY_STATE = {
 	items:   [],
 	loaded:  false,
 	loading: false,
+	error:   null,
 };
 
 /**
@@ -39,12 +41,16 @@ const createEntityReducer = ( entity ) => ( state = DEFAULT_ENTITY_STATE, action
 		case SET_ENTITY_LOADING:
 			return { ...state, loading: action.loading };
 
+		case SET_ENTITY_ERROR:
+			return { ...state, loading: false, loaded: false, error: action.error };
+
 		case SET_ENTITY_RECORDS:
 			return {
 				...state,
 				items:   action.records,
 				loaded:  true,
 				loading: false,
+				error:   null,
 			};
 
 		case RECEIVE_ENTITY:

@@ -21,3 +21,4 @@ export const UPDATE_ENTITY        = 'UPDATE_ENTITY';
 export const REMOVE_ENTITY        = 'REMOVE_ENTITY';
 export const SET_ENTITY_LOADING   = 'SET_ENTITY_LOADING';
 export const INVALIDATE_ENTITY    = 'INVALIDATE_ENTITY';
+export const SET_ENTITY_ERROR     = 'SET_ENTITY_ERROR';
