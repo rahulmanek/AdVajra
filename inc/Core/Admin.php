@@ -22,6 +22,7 @@ class Admin {
 	public function init() {
 		add_action( 'admin_menu', [ $this, 'add_menu_page' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
+		add_action( 'wp_ajax_advajra_report_error', [ $this, 'handle_report_error' ] );
 	}
 
 	/**
@@ -121,6 +122,8 @@ class Admin {
 			'root'             => esc_url_raw( rest_url( 'advajra/v1/' ) ),
 			'nonce'            => wp_create_nonce( 'wp_rest' ),
 			'previewNonce'     => wp_create_nonce( 'advajra_preview' ),
+			'telemetryNonce'   => wp_create_nonce( 'advajra_telemetry' ),
+			'ajaxUrl'          => admin_url( 'admin-ajax.php' ),
 			'pluginUrl'        => ADVAJRA_URL,
 			'timezone'         => wp_timezone_string(),
 			'timezone_offset'  => 'UTC' . $offset_string,
@@ -147,6 +150,29 @@ class Admin {
 			'advajraSettings',
 			$settings_data
 		);
+	}
+
+	/**
+	 * Handle AJAX error reporting from the React app.
+	 */
+	public function handle_report_error(): void {
+		check_ajax_referer( 'advajra_telemetry', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( 'Unauthorized', 403 );
+		}
+
+		$error_type    = sanitize_text_field( wp_unslash( $_POST['error_type'] ?? '' ) );
+		$error_message = sanitize_textarea_field( wp_unslash( $_POST['error_message'] ?? '' ) );
+		$context       = sanitize_text_field( wp_unslash( $_POST['context'] ?? '' ) );
+
+		if ( ! $error_type || ! $error_message ) {
+			wp_send_json_error( 'Bad Request', 400 );
+		}
+
+		$sent = \AdVajra\Telemetry\ErrorReporter::report( $error_type, $error_message, $context );
+
+		wp_send_json_success( [ 'reported' => $sent ] );
 	}
 
 	/**

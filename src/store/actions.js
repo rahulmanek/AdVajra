@@ -16,6 +16,7 @@ import {
 	REMOVE_ENTITY,
 	SET_ENTITY_LOADING,
 	INVALIDATE_ENTITY,
+	SET_ENTITY_ERROR,
 	ENTITY_PATHS,
 } from './constants';
 import apiFetch from '@wordpress/api-fetch';
@@ -97,6 +98,19 @@ export const setEntityLoading = ( entity, loading ) => ( {
 export const invalidateEntity = ( entity ) => ( {
 	type: INVALIDATE_ENTITY,
 	entity,
+} );
+
+/**
+ * Set an error for an entity type (e.g. REST API unreachable).
+ *
+ * @param {string} entity - Entity type.
+ * @param {string} error  - Human-readable error message.
+ * @return {Object} Action object.
+ */
+export const setEntityError = ( entity, error ) => ( {
+	type: SET_ENTITY_ERROR,
+	entity,
+	error,
 } );
 
 

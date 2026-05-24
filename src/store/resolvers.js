@@ -14,7 +14,7 @@
  */
 import apiFetch from '@wordpress/api-fetch';
 import { ENTITY_PATHS } from './constants';
-import { setEntityRecords, setEntityLoading } from './actions';
+import { setEntityRecords, setEntityLoading, setEntityError } from './actions';
 
 /**
  * Resolver for getAds selector.
@@ -32,7 +32,7 @@ export const getAds = () => async ( { dispatch, select } ) => {
 		dispatch( setEntityRecords( 'ads', records ) );
 	} catch ( error ) {
 		console.error( 'Error fetching ads:', error );
-		dispatch( setEntityLoading( 'ads', false ) );
+		dispatch( setEntityError( 'ads', error?.message || 'Failed to load ads.' ) );
 	}
 };
 
@@ -57,7 +57,7 @@ export const getGroups = () => async ( { dispatch, select } ) => {
 		dispatch( setEntityRecords( 'groups', records ) );
 	} catch ( error ) {
 		console.error( 'Error fetching groups:', error );
-		dispatch( setEntityLoading( 'groups', false ) );
+		dispatch( setEntityError( 'groups', error?.message || 'Failed to load groups.' ) );
 	}
 };
 
@@ -76,6 +76,6 @@ export const getPlacements = () => async ( { dispatch, select } ) => {
 		dispatch( setEntityRecords( 'placements', records ) );
 	} catch ( error ) {
 		console.error( 'Error fetching placements:', error );
-		dispatch( setEntityLoading( 'placements', false ) );
+		dispatch( setEntityError( 'placements', error?.message || 'Failed to load placements.' ) );
 	}
 };

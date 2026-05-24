@@ -33,6 +33,14 @@ export const hasLoadedAds = ( state ) => state.ads.loaded;
  */
 export const isLoadingAds = ( state ) => state.ads.loading;
 
+/**
+ * Get the error message for the ads collection, if any.
+ *
+ * @param {Object} state - Store state.
+ * @return {string|null}
+ */
+export const getAdsError = ( state ) => state.ads.error;
+
 
 
 /**
@@ -68,6 +76,14 @@ export const hasLoadedGroups = ( state ) => state.groups.loaded;
  * @return {boolean}
  */
 export const isLoadingGroups = ( state ) => state.groups.loading;
+
+/**
+ * Get the error message for the groups collection, if any.
+ *
+ * @param {Object} state - Store state.
+ * @return {string|null}
+ */
+export const getGroupsError = ( state ) => state.groups.error;
 
 
 
@@ -105,6 +121,14 @@ export const hasLoadedPlacements = ( state ) => state.placements.loaded;
  */
 export const isLoadingPlacements = ( state ) => state.placements.loading;
 
+/**
+ * Get the error message for the placements collection, if any.
+ *
+ * @param {Object} state - Store state.
+ * @return {string|null}
+ */
+export const getPlacementsError = ( state ) => state.placements.error;
+
 
 
 /**
@@ -116,3 +140,13 @@ export const isLoadingPlacements = ( state ) => state.placements.loading;
  */
 export const isFullyLoaded = ( state ) =>
 	state.ads.loaded && state.groups.loaded && state.placements.loaded;
+
+/**
+ * Whether ANY entity has a REST API error.
+ * Useful for showing a global connectivity error banner.
+ *
+ * @param {Object} state - Store state.
+ * @return {string|null} First error message found, or null.
+ */
+export const getRestApiError = ( state ) =>
+	state.ads.error || state.placements.error || state.groups.error || null;

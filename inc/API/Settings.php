@@ -102,6 +102,7 @@ class Settings extends Controller {
 			'custom_code_body'           => 'raw',
 			'custom_code_footer'         => 'raw',
 			'erase_data_on_uninstall'    => 'rest_sanitize_boolean',
+			'telemetry_enabled'          => 'rest_sanitize_boolean',
 		];
 
 		$whitelist = apply_filters( 'advajra_save_settings_whitelist', $whitelist );

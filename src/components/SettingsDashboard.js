@@ -1184,6 +1184,42 @@ const AdvancedPanel = ({ settings, updateSetting, onBack, onReset }) => {
 
                 {isPro && settings?.debug_mode && <DebugLogViewer />}
 
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '16px',
+                    padding: '12px 12px 0 12px',
+                    borderTop: '1px solid var(--av-border, #e2e8f0)',
+                    marginTop: '16px'
+                }}>
+                    <span style={{ fontSize: '13px', color: 'var(--av-text-muted, #64748b)' }}>
+                        Anonymous error reporting is used to detect server REST API issues.
+                    </span>
+                    <button
+                        type="button"
+                        onClick={() => updateSetting('telemetry_enabled', settings?.telemetry_enabled === false)}
+                        style={{
+                            flexShrink: 0,
+                            padding: '6px 14px',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            background: settings?.telemetry_enabled !== false ? 'rgba(59,130,246,0.06)' : 'rgba(100,116,139,0.08)',
+                            color: settings?.telemetry_enabled !== false ? '#3b82f6' : '#64748b',
+                            border: `1px solid ${settings?.telemetry_enabled !== false ? 'rgba(59,130,246,0.25)' : 'rgba(100,116,139,0.2)'}`,
+                            borderRadius: '6px',
+                            transition: 'all 0.15s ease',
+                            whiteSpace: 'nowrap',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                        }}
+                    >
+                        <span>📊</span> {settings?.telemetry_enabled !== false ? 'Sharing' : 'Opted Out'}
+                    </button>
+                </div>
+
                 {!isPro && (
                     <div className="upgrade-cta">
                         <span className="upgrade-icon">🔧</span>
