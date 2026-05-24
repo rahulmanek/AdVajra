@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import apiFetch from '@wordpress/api-fetch';
 import { Button, Notice } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 import CodeEditor from './CodeEditor';
 
 const LABELS = {
@@ -20,6 +21,109 @@ const COMMON_NETWORKS = [
     { label: 'Amazon', domain: 'amazon-adsystem.com' }
 ];
 
+const RootDomainSuccessNotice = ({ rootDomainUrl, showDetails, onToggleDetails }) => (
+    <div style={{
+        marginBottom: '16px',
+        padding: '10px 16px',
+        background: '#ecfdf5',
+        border: '1px solid #a7f3d0',
+        borderRadius: '6px',
+        display: 'flex',
+        flexDirection: 'column',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', fontSize: '13px', color: '#065f46', fontWeight: 500 }}>
+            <span>
+                <span style={{ color: '#10b981', marginRight: '8px' }}>●</span>
+                {__('Root Domain Writing Active — managing', 'advajra')} <code>{rootDomainUrl ? `${rootDomainUrl.replace(/^https?:\/\//, '')}/ads.txt` : 'root/ads.txt'}</code>
+            </span>
+            <button 
+                type="button"
+                onClick={onToggleDetails}
+                style={{
+                    background: 'rgba(16, 185, 129, 0.08)',
+                    border: 'none',
+                    color: '#047857',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    padding: '4px 10px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    marginLeft: '8px',
+                    transition: 'all 0.15s ease'
+                }}
+            >
+                {showDetails ? __('Hide Info ▴', 'advajra') : __('Show Info ▾', 'advajra')}
+            </button>
+        </div>
+        {showDetails && (
+            <div style={{ marginTop: '10px', borderTop: '1px solid rgba(16, 185, 129, 0.15)', paddingTop: '10px', fontSize: '12px', color: '#047857', lineHeight: 1.5 }}>
+                {__('WordPress is installed in a subdirectory, but server permissions allowed AdVajra to escalate and write the physical file to your root directory. Crawlers will find the file automatically. No further action needed.', 'advajra')}
+            </div>
+        )}
+    </div>
+);
+
+const SubdirectoryWarningNotice = ({ rootDomainUrl, wpPath, rootPath, showDetails, onToggleDetails }) => (
+    <div style={{
+        marginBottom: '16px',
+        padding: '10px 16px',
+        background: '#fffbeb',
+        border: '1px solid #fde68a',
+        borderRadius: '6px',
+        display: 'flex',
+        flexDirection: 'column',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', fontSize: '13px', color: '#92400e', fontWeight: 500 }}>
+            <span>
+                <span style={{ color: '#f59e0b', marginRight: '8px' }}>●</span>
+                {__('Subdirectory Warning — root directory not writable. Writing locally.', 'advajra')}
+            </span>
+            <button 
+                type="button"
+                onClick={onToggleDetails}
+                style={{
+                    background: 'rgba(245, 158, 11, 0.08)',
+                    border: 'none',
+                    color: '#b45309',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    padding: '4px 10px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    marginLeft: '8px',
+                    transition: 'all 0.15s ease'
+                }}
+            >
+                {showDetails ? __('Hide Fix ▴', 'advajra') : __('How to Fix ▾', 'advajra')}
+            </button>
+        </div>
+        {showDetails && (
+            <div style={{ marginTop: '10px', borderTop: '1px solid rgba(245, 158, 11, 0.15)', paddingTop: '10px', fontSize: '12px', color: '#78350f', lineHeight: 1.6 }}>
+                <p style={{ margin: '0 0 8px 0' }}>{__("Because WordPress is in a subdirectory, crawlers won't find the file unless it's at the root. Choose an option to resolve:", 'advajra')}</p>
+                <ul style={{ margin: '0', paddingLeft: '16px' }}>
+                    <li style={{ marginBottom: '6px' }}>
+                        <strong>{__('Option A:', 'advajra')}</strong> {__('Make the main root folder writable:', 'advajra')} <code>{rootPath}</code>{__('. AdVajra will automatically move the file to the root.', 'advajra')}
+                    </li>
+                    <li style={{ marginBottom: '6px' }}>
+                        <strong>{__('Option B:', 'advajra')}</strong> {__('Add a redirect rule from', 'advajra')} <code>/ads.txt</code> {__('to', 'advajra')} <code>{rootDomainUrl ? `${rootDomainUrl.replace(/^https?:\/\//, '')}/${wpPath.replace(/^\/|\/$/g, '')}/ads.txt` : 'subdirectory'}</code>.
+                    </li>
+                    <li style={{ marginBottom: '0' }}>
+                        <strong>{__('Option C:', 'advajra')}</strong> {__('Download and copy this file to your public root folder manually.', 'advajra')}
+                    </li>
+                </ul>
+            </div>
+        )}
+    </div>
+);
+
 const AdsTxtManager = ({ onChange = () => {} }) => {
     const [content, setContent] = useState('');
     const [initialContent, setInitialContent] = useState('');
@@ -27,6 +131,12 @@ const AdsTxtManager = ({ onChange = () => {} }) => {
     const [message, setMessage] = useState('');
     const [validation, setValidation] = useState(null);
     const [isWritable, setIsWritable] = useState(true);
+    const [isSubdirectory, setIsSubdirectory] = useState(false);
+    const [rootDomainUrl, setRootDomainUrl] = useState('');
+    const [writtenToRoot, setWrittenToRoot] = useState(false);
+    const [wpPath, setWpPath] = useState('');
+    const [rootPath, setRootPath] = useState('');
+    const [showDetails, setShowDetails] = useState(false);
 
     // Tools state
     const [activeTool, setActiveTool] = useState(null);
@@ -43,6 +153,11 @@ const AdsTxtManager = ({ onChange = () => {} }) => {
             setContent(response.content || '');
             setInitialContent(response.content || '');
             setIsWritable(response.writable);
+            setIsSubdirectory(Boolean(response.is_subdirectory));
+            setRootDomainUrl(response.root_domain_url || '');
+            setWrittenToRoot(Boolean(response.written_to_root));
+            setWpPath(response.wp_path || '');
+            setRootPath(response.root_path || '');
             setStatus('ready');
             if (!response.exists) {
                 setMessage('No ads.txt file detected on this site. Saving will create one automatically.');
@@ -294,6 +409,24 @@ const AdsTxtManager = ({ onChange = () => {} }) => {
                 <Notice status="warning" isDismissible={false} style={{ marginBottom: '16px' }}>
                     <strong>Filesystem Permission Warning:</strong> The root directory is not writable. Automatic saving may fail. You may need to update file permissions or download and upload the file manually via FTP.
                 </Notice>
+            )}
+
+            {isSubdirectory && writtenToRoot && (
+                <RootDomainSuccessNotice 
+                    rootDomainUrl={rootDomainUrl} 
+                    showDetails={showDetails} 
+                    onToggleDetails={() => setShowDetails(!showDetails)} 
+                />
+            )}
+
+            {isSubdirectory && !writtenToRoot && (
+                <SubdirectoryWarningNotice 
+                    rootDomainUrl={rootDomainUrl} 
+                    wpPath={wpPath} 
+                    rootPath={rootPath} 
+                    showDetails={showDetails} 
+                    onToggleDetails={() => setShowDetails(!showDetails)} 
+                />
             )}
 
             <CodeEditor 
