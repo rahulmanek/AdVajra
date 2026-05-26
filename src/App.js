@@ -6,6 +6,7 @@ import { useSelect } from '@wordpress/data';
 import AdManagerLayout from './pages/AdManager/AdManagerLayout';
 import LazyView from './components/LazyView';
 import { NotificationProvider } from './context/NotificationDataCtx';
+import { InboxProvider } from './context/InboxContext';
 import { DirtyStateProvider } from './context/DirtyStateContext';
 import NavigationGuard from './components/NavigationGuard';
 import { STORE_NAME } from './store/constants';
@@ -29,11 +30,13 @@ const AppProviders = ( { children } ) => {
         <SlotFillProvider>
             <PluginArea />
             <NotificationProvider>
-                <HashRouter>
-                    <DirtyStateProvider>
-                        { children }
-                    </DirtyStateProvider>
-                </HashRouter>
+                <InboxProvider>
+                    <HashRouter>
+                        <DirtyStateProvider>
+                            { children }
+                        </DirtyStateProvider>
+                    </HashRouter>
+                </InboxProvider>
             </NotificationProvider>
         </SlotFillProvider>
     );
