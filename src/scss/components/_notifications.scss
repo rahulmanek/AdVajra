@@ -1,119 +1,357 @@
 /*
- * AdVajra Notifications (Prism)
- * Location: src/scss/components/_notifications.scss
+ * AdVajra Pulse Center
+ * Compact temporary action feedback. Persistent records live in the Inbox.
  */
 
-// NOTIFICATION SYSTEM ("Prism")
-.advajra-notification-container {
-    position: fixed;
-    bottom: 40px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 100000;
-    display: flex;
-    flex-direction: column-reverse;
-    align-items: center;
-    gap: 12px;
-    pointer-events: none;
-    perspective: 1200px;
+.av-pulse-center {
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	display: grid;
+	place-items: center;
+	padding-top: var(--av-nav-height);
+	pointer-events: none;
 }
 
-.advajra-prism-pill {
-    position: relative;
-    border-radius: var(--av-radius-xl); /* ROUNDED */
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    min-width: 380px;
-    max-width: 600px;
-    cursor: pointer;
-    pointer-events: auto;
-    color: #fff;
-    border: 2px solid transparent; // Logic handled by background clip
-    background-clip: padding-box, border-box;
-    background-origin: padding-box, border-box;
-    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-    animation: springUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+.av-pulse-center__constellation {
+	position: absolute;
+	display: flex;
+	gap: 6px;
+	transform: translateY(58px);
+	pointer-events: none;
+}
 
-    &:hover { transform: scale(1.02); }
+.av-pulse-center__satellite {
+	width: 7px;
+	height: 7px;
+	border-radius: 999px;
+	background: var(--av-pulse-tone);
+	box-shadow: 0 0 0 4px color-mix(in srgb, var(--av-pulse-tone) 14%, transparent);
+	opacity: calc(0.62 - (var(--av-pulse-satellite) * 0.14));
+	animation: av-pulse-dot 1600ms ease-in-out infinite;
+	animation-delay: calc(var(--av-pulse-satellite) * 120ms);
+}
 
-    .holo-noise {
-        position: absolute;
-        inset: 0;
-        opacity: 0.07;
-        pointer-events: none;
-        border-radius: 14px;
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-    }
+.av-vajra-pulse {
+	--av-pulse-tone: var(--av-accent-gold);
+	--av-pulse-tone-soft: rgba(var(--av-accent-gold-rgb), 0.14);
+	--av-pulse-border: rgba(var(--av-accent-gold-rgb), 0.42);
+	--av-pulse-text: var(--av-text-heading);
+	--av-pulse-muted: var(--av-text-muted);
 
-    .prism-icon {
-        width: 42px;
-        height: 42px;
-        border-radius: 12px;
-        background: rgba(255,255,255,0.15);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        backdrop-filter: blur(4px);
-        flex-shrink: 0;
-    }
+	position: absolute;
+	width: min(420px, calc(100vw - 40px));
+	min-height: 76px;
+	padding: 0;
+	border: 0;
+	border-radius: 22px;
+	color: var(--av-pulse-text);
+	background: transparent;
+	cursor: pointer;
+	pointer-events: auto;
+	appearance: none;
+	transform:
+		translateY(calc(var(--av-pulse-stack) * 12px))
+		scale(calc(1 - (var(--av-pulse-stack) * 0.035)));
+	opacity: calc(1 - (var(--av-pulse-stack) * 0.28));
+	transition:
+		transform 0.22s var(--av-ease-bounce),
+		opacity 0.2s ease;
+	animation: av-pulse-arrive 420ms var(--av-ease-bounce) both;
 
-    .prism-content {
-        flex: 1;
+	&:hover,
+	&:focus-visible {
+		transform:
+			translateY(calc(var(--av-pulse-stack) * 10px - 2px))
+			scale(calc(1.01 - (var(--av-pulse-stack) * 0.03)));
+	}
 
-        .message {
-            font-size: 15px;
-            font-weight: 600;
-            margin-bottom: 2px;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-        }
+	&:focus-visible {
+		outline: none;
+		box-shadow: var(--av-focus-glow);
+	}
 
-        .sub {
-            font-size: 12px;
-            opacity: 0.7;
-        }
-    }
+	&.is-echo {
+		pointer-events: none;
+	}
 
-    .prism-close {
-        opacity: 0.4;
-        transition: opacity 0.2s;
-        &:hover { opacity: 1; }
-    }
+	&.is-success {
+		--av-pulse-tone: #16a36f;
+		--av-pulse-tone-soft: rgba(16, 185, 129, 0.12);
+		--av-pulse-border: rgba(16, 185, 129, 0.34);
+	}
 
-    .prism-progress {
-        position: absolute;
-        bottom: 0;
-        left: 16px;
-        right: 16px;
-        height: 3px;
-        border-radius: 10px 10px 0 0;
-        opacity: 0.6;
-        animation: time-progress 4s linear forwards;
-    }
+	&.is-error {
+		--av-pulse-tone: #dc2626;
+		--av-pulse-tone-soft: rgba(239, 68, 68, 0.12);
+		--av-pulse-border: rgba(239, 68, 68, 0.32);
+	}
 
-    // VARIANTS
-    &.type-success {
-        background-image: linear-gradient(#0f172a, #0f172a), linear-gradient(90deg, #00ff87, #60efff);
-        box-shadow: 0 10px 40px -10px rgba(0, 255, 135, 0.3);
+	&.is-warning {
+		--av-pulse-tone: #d97706;
+		--av-pulse-tone-soft: rgba(245, 158, 11, 0.14);
+		--av-pulse-border: rgba(245, 158, 11, 0.36);
+	}
 
-        .prism-icon { color: #00ff87; box-shadow: inset 0 0 15px rgba(0, 255, 135, 0.2); }
-        .prism-progress { background: #00ff87; box-shadow: 0 0 10px #00ff87; }
-    }
+	&.is-info {
+		--av-pulse-tone: #2563eb;
+		--av-pulse-tone-soft: rgba(59, 130, 246, 0.11);
+		--av-pulse-border: rgba(59, 130, 246, 0.3);
+	}
+}
 
-    &.type-error {
-        background-image: linear-gradient(#0f172a, #0f172a), linear-gradient(90deg, #ff4b1f, #ff9068);
-        box-shadow: 0 10px 40px -10px rgba(255, 75, 31, 0.3);
+.av-vajra-pulse__aura,
+.av-vajra-pulse__ring,
+.av-vajra-pulse__timer {
+	position: absolute;
+	pointer-events: none;
+}
 
-        .prism-icon { color: #ff4b1f; box-shadow: inset 0 0 15px rgba(255, 75, 31, 0.2); }
-        .prism-progress { background: #ff4b1f; box-shadow: 0 0 10px #ff4b1f; }
-    }
+.av-vajra-pulse__scan {
+	display: none;
+}
 
-    &.type-info {
-        background-image: linear-gradient(#0f172a, #0f172a), linear-gradient(90deg, #30cfd0, #330867);
-        box-shadow: 0 10px 40px -10px rgba(48, 207, 208, 0.3);
+.av-vajra-pulse__aura {
+	inset: -18px;
+	z-index: -2;
+	border-radius: 30px;
+	background:
+		radial-gradient(circle at 18% 50%, var(--av-pulse-tone-soft), transparent 54%),
+		radial-gradient(circle at 82% 50%, rgba(var(--av-accent-gold-rgb), 0.08), transparent 48%);
+	filter: blur(10px);
+	opacity: 0.9;
+	animation: av-pulse-breathe 2600ms ease-in-out infinite;
+}
 
-        .prism-icon { color: #30cfd0; box-shadow: inset 0 0 15px rgba(48, 207, 208, 0.2); }
-        .prism-progress { background: #30cfd0; box-shadow: 0 0 10px #30cfd0; }
-    }
+.av-vajra-pulse__ring {
+	inset: -5px;
+	z-index: -1;
+	border: 1px solid var(--av-pulse-border);
+	border-radius: 26px;
+	opacity: 0.6;
+	animation: av-pulse-ring 1600ms ease-out 120ms infinite;
+}
+
+.av-vajra-pulse__core {
+	position: relative;
+	display: grid;
+	grid-template-columns: 44px minmax(0, 1fr);
+	align-items: center;
+	gap: 14px;
+	min-height: 76px;
+	padding: 14px 18px;
+	border: 1px solid color-mix(in srgb, var(--av-pulse-border) 72%, var(--av-border));
+	border-radius: inherit;
+	background:
+		linear-gradient(90deg, var(--av-pulse-tone-soft), transparent 34%),
+		rgba(255, 255, 255, 0.88);
+	box-shadow:
+		0 22px 54px -28px rgba(15, 28, 46, 0.42),
+		0 10px 24px -18px color-mix(in srgb, var(--av-pulse-tone) 42%, transparent),
+		0 1px 0 rgba(255, 255, 255, 0.9) inset;
+	backdrop-filter: blur(16px) saturate(1.15);
+	overflow: hidden;
+
+	&::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		background: linear-gradient(120deg, rgba(255, 255, 255, 0.48), transparent 42%);
+		pointer-events: none;
+	}
+}
+
+.av-vajra-pulse__glyph {
+	position: relative;
+	z-index: 1;
+	display: grid;
+	place-items: center;
+	width: 42px;
+	height: 42px;
+	border: 1px solid color-mix(in srgb, var(--av-pulse-tone) 34%, #fff);
+	border-radius: 14px;
+	color: var(--av-pulse-tone);
+	background:
+		linear-gradient(145deg, rgba(255, 255, 255, 0.95), color-mix(in srgb, var(--av-pulse-tone) 8%, #fff)),
+		var(--av-bg-surface);
+	box-shadow: 0 10px 24px -18px var(--av-pulse-tone);
+
+	svg {
+		width: 24px;
+		height: 24px;
+		overflow: visible;
+	}
+}
+
+.av-pulse-glyph__shape {
+	fill: color-mix(in srgb, var(--av-pulse-tone) 9%, transparent);
+	stroke: currentcolor;
+	stroke-width: 1.55;
+}
+
+.av-pulse-glyph__mark,
+.av-pulse-glyph__dot {
+	fill: none;
+	stroke: currentcolor;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	stroke-width: 2.05;
+}
+
+.av-vajra-pulse__copy {
+	position: relative;
+	z-index: 1;
+	display: grid;
+	gap: 2px;
+	min-width: 0;
+	text-align: left;
+}
+
+.av-vajra-pulse__kicker {
+	color: var(--av-pulse-tone);
+	font-size: 10px;
+	font-weight: 800;
+	line-height: 1.2;
+	text-transform: uppercase;
+	letter-spacing: 0;
+}
+
+.av-vajra-pulse__message {
+	display: block;
+	max-width: 100%;
+	color: var(--av-text-heading);
+	font-size: 15px;
+	font-weight: 700;
+	line-height: 1.28;
+	overflow-wrap: anywhere;
+}
+
+.av-vajra-pulse__timer {
+	right: 18px;
+	bottom: 0;
+	left: 76px;
+	height: 2px;
+	border-radius: 999px;
+	background: linear-gradient(90deg, var(--av-pulse-tone), rgba(var(--av-accent-gold-rgb), 0.42));
+	transform-origin: left;
+	animation: av-pulse-timer var(--av-pulse-duration) linear forwards;
+}
+
+@keyframes av-pulse-arrive {
+
+	0% {
+		opacity: 0;
+		transform: translateY(18px) scale(0.96);
+	}
+
+	100% {
+		opacity: calc(1 - (var(--av-pulse-stack) * 0.28));
+		transform:
+			translateY(calc(var(--av-pulse-stack) * 12px))
+			scale(calc(1 - (var(--av-pulse-stack) * 0.035)));
+	}
+}
+
+@keyframes av-pulse-breathe {
+
+	0%,
+	100% {
+		opacity: 0.68;
+		transform: scale(0.98);
+	}
+
+	50% {
+		opacity: 0.96;
+		transform: scale(1.03);
+	}
+}
+
+@keyframes av-pulse-ring {
+
+	0% {
+		opacity: 0.42;
+		transform: scale(0.99);
+	}
+
+	100% {
+		opacity: 0;
+		transform: scale(1.07);
+	}
+}
+
+@keyframes av-pulse-dot {
+
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+
+	50% {
+		transform: translateY(-3px);
+	}
+}
+
+@keyframes av-pulse-timer {
+
+	0% {
+		transform: scaleX(1);
+	}
+
+	100% {
+		transform: scaleX(0);
+	}
+}
+
+@media (max-width: 640px) {
+
+	.av-pulse-center {
+		place-items: end center;
+		padding: 0 16px 28px;
+	}
+
+	.av-pulse-center__constellation {
+		display: none;
+	}
+
+	.av-vajra-pulse {
+		width: calc(100vw - 32px);
+		min-height: 72px;
+		border-radius: 20px;
+	}
+
+	.av-vajra-pulse__core {
+		grid-template-columns: 40px minmax(0, 1fr);
+		gap: 12px;
+		min-height: 72px;
+		padding: 12px 14px;
+	}
+
+	.av-vajra-pulse__glyph {
+		width: 40px;
+		height: 40px;
+		border-radius: 13px;
+	}
+
+	.av-vajra-pulse__message {
+		font-size: 14px;
+	}
+
+	.av-vajra-pulse__timer {
+		right: 14px;
+		left: 66px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+	.av-vajra-pulse,
+	.av-vajra-pulse__aura,
+	.av-vajra-pulse__ring,
+	.av-vajra-pulse__timer,
+	.av-pulse-center__satellite {
+		animation-duration: 1ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 1ms !important;
+	}
 }
