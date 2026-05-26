@@ -1,0 +1,838 @@
+/*
+ * AdVajra Notification Inbox
+ * Location: src/scss/components/_inbox.scss
+ *
+ * Frosted Glass Bell + Segmented active ring + Frosted sliding panel + Dynamic Aether cards.
+ * Uses styling tokens matching the AdVajra placements deck and strategy cards.
+ */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Keyframes & Motion
+// ─────────────────────────────────────────────────────────────────────────────
+
+@keyframes bell-swing {
+    0%   { transform: rotate(0deg);   transform-origin: top center; }
+    15%  { transform: rotate(14deg);  transform-origin: top center; }
+    30%  { transform: rotate(-11deg); transform-origin: top center; }
+    45%  { transform: rotate(8deg);   transform-origin: top center; }
+    60%  { transform: rotate(-5deg);  transform-origin: top center; }
+    75%  { transform: rotate(3deg);   transform-origin: top center; }
+    100% { transform: rotate(0deg);   transform-origin: top center; }
+}
+
+@keyframes inbox-panel-in {
+    from { transform: translateX(calc(100% + 20px)); opacity: 0; }
+    to   { transform: translateX(0);                 opacity: 1; }
+}
+
+@keyframes inbox-backdrop-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes inbox-panel-out {
+    from { transform: translateX(0);                 opacity: 1; }
+    to   { transform: translateX(calc(100% + 20px)); opacity: 0; }
+}
+
+@keyframes inbox-backdrop-out {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+}
+
+@keyframes inbox-card-in {
+    from { transform: translateY(12px) scale(0.97); opacity: 0; }
+    to   { transform: translateY(0) scale(1);       opacity: 1; }
+}
+
+@keyframes inbox-card-out {
+    to {
+        transform: translateX(36px) scale(0.95);
+        opacity: 0;
+        max-height: 0;
+        margin-bottom: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+}
+
+@keyframes ring-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.45; transform: scale(1.02); }
+}
+
+@keyframes badge-pop {
+    0%   { transform: scale(0.5); opacity: 0; }
+    60%  { transform: scale(1.3); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes dot-glow-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+    50%      { transform: scale(1.25); opacity: 1; box-shadow: 0 0 8px 3px rgba(59, 130, 246, 0.75); }
+}
+
+@keyframes red-glow-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+    50%      { transform: scale(1.25); opacity: 1; box-shadow: 0 0 8px 3px rgba(239, 68, 68, 0.75); }
+}
+
+@keyframes bell-radar-critical {
+    0%   { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.35); }
+    70%  { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+@keyframes bell-radar-warning {
+    0%   { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.3); }
+    70%  { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+}
+
+@keyframes bell-radar-info {
+    0%   { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.3); }
+    70%  { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Navigation Right Slot Placement
+// ─────────────────────────────────────────────────────────────────────────────
+
+.advajra-nav-right {
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 1000;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Bell Button (Premium Frosted Glass Circular shape matching SS)
+// ─────────────────────────────────────────────────────────────────────────────
+
+.advajra-inbox-bell {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%; // Match exact circle from screenshots
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(15, 28, 46, 0.08); // Frosted border
+    box-shadow: 0 2px 8px -2px rgba(15, 28, 46, 0.03);
+    transition: all 0.22s cubic-bezier(0.25, 1, 0.5, 1);
+    flex-shrink: 0;
+    margin-left: auto;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+
+    &:hover {
+        background: #fff;
+        border-color: rgba(15, 28, 46, 0.16);
+        box-shadow: 0 4px 12px -2px rgba(15, 28, 46, 0.06);
+        transform: translateY(-1px);
+    }
+
+    &:active {
+        transform: translateY(0) scale(0.97);
+    }
+
+    &.is-ringing .advajra-inbox-bell__icon {
+        animation: bell-swing 0.75s var(--av-ease-spring);
+    }
+
+    // Dynamic unread radar circles
+    &.has-critical {
+        animation: bell-radar-critical 2s infinite ease-out;
+        border-color: #ef4444 !important;
+        border-width: 1.5px;
+    }
+
+    &.has-warning:not(.has-critical) {
+        animation: bell-radar-warning 2s infinite ease-out;
+        border-color: #f59e0b !important;
+        border-width: 1.5px;
+    }
+
+    &.has-info:not(.has-critical):not(.has-warning) {
+        animation: bell-radar-info 2s infinite ease-out;
+        border-color: #3b82f6 !important;
+        border-width: 1.5px;
+    }
+
+    // Bell SVG
+    &__icon {
+        display: block;
+        color: var(--av-text-body);
+        transition: color 0.2s;
+
+        svg {
+            stroke-width: 2.2px;
+        }
+    }
+
+    &:hover &__icon {
+        color: var(--av-primary);
+    }
+
+    // Red unread numeric badge
+    &__badge {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        min-width: 17px;
+        height: 17px;
+        padding: 0 4px;
+        background: linear-gradient(135deg, #ff4b2b, #ff416c);
+        color: #fff;
+        font-size: 9.5px;
+        font-weight: 800;
+        font-family: 'Inter', system-ui, sans-serif;
+        border-radius: 99px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        border: 2px solid #fff;
+        box-shadow: 0 2px 6px rgba(255, 75, 43, 0.3);
+        animation: badge-pop 0.38s var(--av-ease-bounce) forwards;
+        pointer-events: none;
+
+        &.is-critical {
+            background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+            box-shadow: 0 2px 6px rgba(239, 68, 68, 0.35) !important;
+        }
+
+        &.is-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+            box-shadow: 0 2px 6px rgba(245, 158, 11, 0.35) !important;
+        }
+
+        &.is-info {
+            background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.35) !important;
+        }
+    }
+
+    // Dynamic SVG segment active ring
+    &__ring {
+        position: absolute;
+        inset: -3.5px;
+        pointer-events: none;
+        width: calc(100% + 7px);
+        height: calc(100% + 7px);
+
+        circle.ring-track {
+            opacity: 0.08;
+            stroke: var(--av-primary);
+        }
+
+        circle.ring-critical {
+            stroke: #ef4444;
+            animation: ring-pulse 2.2s ease-in-out infinite;
+        }
+
+        circle.ring-warning {
+            stroke: #f59e0b;
+            animation: ring-pulse 2.2s ease-in-out 0.7s infinite;
+        }
+
+        circle.ring-info {
+            stroke: #3b82f6;
+        }
+
+        circle.ring-success {
+            stroke: #10b981;
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Panel Backdrop
+// ─────────────────────────────────────────────────────────────────────────────
+
+.advajra-inbox-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    background: rgba(15, 23, 42, 0.12);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    animation: inbox-backdrop-in 0.22s ease-out forwards;
+
+    &.is-closing {
+        animation: inbox-backdrop-out 0.22s ease-in forwards;
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Panel (Sleek light-mode frosted-glass slide-out)
+// ─────────────────────────────────────────────────────────────────────────────
+
+.advajra-inbox-panel {
+    position: fixed;
+    top: 32px; // Clear WordPress admin bar
+    right: 0;
+    bottom: 0;
+    width: min(420px, 100vw);
+    height: calc(100vh - 32px);
+    height: calc(100dvh - 32px);
+    max-width: 100vw;
+    min-height: 0;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-left: 1px solid rgba(15, 23, 42, 0.06);
+    box-shadow: -8px 0 40px -4px rgba(15, 23, 42, 0.06), -2px 0 8px -2px rgba(15, 23, 42, 0.02);
+    animation: inbox-panel-in 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+    &.is-closing {
+        animation: inbox-panel-out 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    // Header
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 24px 20px 0;
+        flex-shrink: 0;
+
+        h2 {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--av-text-heading);
+            margin: 0;
+            letter-spacing: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            .bell-emoji {
+                font-size: 18px;
+            }
+        }
+    }
+
+    &__close {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        border: 1px solid rgba(15, 23, 42, 0.05);
+        background: #fff;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--av-text-muted);
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
+        transition: all 0.2s;
+        font-size: 16px;
+
+        &:hover {
+            background: rgba(15, 23, 42, 0.04);
+            border-color: rgba(15, 23, 42, 0.12);
+            color: var(--av-text-heading);
+            transform: scale(1.05);
+        }
+    }
+
+    // RailSwitcher capsule matching placements tabs
+    &__tabs {
+        display: flex;
+        gap: 6px;
+        padding: 16px 20px 0;
+        flex-shrink: 0;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.05);
+        padding-bottom: 0;
+        overflow-x: auto;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+    }
+
+    &__tab-btn {
+        padding: 8px 14px;
+        border: none;
+        background: transparent;
+        font-size: 13.5px;
+        font-weight: 700;
+        color: var(--av-text-muted);
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        letter-spacing: 0;
+        white-space: nowrap;
+
+        &.active {
+            color: var(--av-primary);
+            border-bottom-color: var(--av-accent-gold);
+        }
+
+        &:hover:not(.active) {
+            color: var(--av-text-body);
+        }
+
+        // Tab count bubble
+        span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 5px;
+            border-radius: 99px;
+            font-size: 10px;
+            font-weight: 800;
+            background: rgba(15, 23, 42, 0.05);
+            color: var(--av-text-body);
+            transition: all 0.2s;
+        }
+
+        &.active span {
+            background: var(--av-primary);
+            color: #fff;
+        }
+    }
+
+    // Actions Row
+    &__actions {
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-shrink: 0;
+        min-height: 42px;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.04);
+    }
+
+    &__action-btn {
+        padding: 5px 12px;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        background: #fff;
+        border-radius: 8px;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--av-text-muted);
+        cursor: pointer;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
+        transition: all 0.2s;
+
+        &:hover {
+            color: var(--av-text-heading);
+            border-color: rgba(15, 23, 42, 0.18);
+            background: rgba(15, 23, 42, 0.02);
+            box-shadow: 0 2px 4px rgba(15, 23, 42, 0.04);
+        }
+    }
+
+    // Scroll container
+    &__list {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-gutter: stable;
+        padding: 16px 16px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+
+        > * + * {
+            margin-top: 16px;
+        }
+
+        &::-webkit-scrollbar { width: 5px; }
+        &::-webkit-scrollbar-track { background: transparent; }
+        &::-webkit-scrollbar-thumb { background: rgba(15, 23, 42, 0.08); border-radius: 10px; }
+    }
+
+    // Empty state
+    &__empty {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 24px;
+        text-align: center;
+        color: var(--av-text-muted);
+
+        .empty-icon {
+            font-size: 42px;
+            margin-bottom: 16px;
+            opacity: 0.65;
+        }
+
+        p {
+            font-size: 13px;
+            line-height: 1.6;
+            font-weight: 500;
+            margin: 0;
+            color: var(--av-text-muted);
+            white-space: pre-line;
+        }
+    }
+}
+
+@media screen and (max-width: 782px) {
+    .advajra-inbox-panel {
+        top: 46px;
+        height: calc(100vh - 46px);
+        height: calc(100dvh - 46px);
+        width: min(420px, 100vw);
+
+        &__header {
+            padding: 20px 16px 0;
+        }
+
+        &__tabs {
+            padding: 14px 16px 0;
+        }
+
+        &__actions {
+            padding: 10px 16px;
+        }
+
+        &__list {
+            padding: 14px 12px 20px;
+
+            > * + * {
+                margin-top: 12px;
+            }
+        }
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .advajra-inbox-panel {
+        left: 0;
+        width: 100vw;
+        border-left: 0;
+
+        &__header {
+            h2 {
+                font-size: 15px;
+            }
+        }
+
+        &__tab-btn {
+            flex: 1 0 auto;
+            justify-content: center;
+            padding: 8px 10px;
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sub-sections (New vs Earlier)
+// ─────────────────────────────────────────────────────────────────────────────
+
+.advajra-inbox-section {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+
+    &__header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 10.5px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--av-text-muted); // Matches your dashboard overview card subtitles
+        margin-bottom: 8px;
+        padding-left: 4px;
+    }
+
+    .section-glow {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+
+        &--new {
+            background: #3b82f6;
+            animation: dot-glow-pulse 1.8s infinite ease-in-out;
+        }
+    }
+
+    &__list {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+
+        > .advajra-inbox-card + .advajra-inbox-card {
+            margin-top: 8px;
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Notification Cards (Sleek light-mode matches Placement grid)
+// ─────────────────────────────────────────────────────────────────────────────
+
+.advajra-inbox-card {
+    position: relative;
+    display: flex;
+    flex: 0 0 auto;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 12px; // Match exact border-radius of placement grid
+    background: #fff;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    overflow: hidden;
+    min-width: 0;
+    box-sizing: border-box;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.015);
+    animation: inbox-card-in 0.32s cubic-bezier(0.25, 1, 0.5, 1) both;
+    transition:
+        max-height 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+        margin 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+        padding 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+        border-width 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+        opacity 0.2s ease,
+        transform 0.24s cubic-bezier(0.25, 1, 0.5, 1),
+        box-shadow 0.24s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        border-color 0.24s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        background 0.24s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+    // Dynamic HSL hover glow
+    &:hover {
+        transform: translateY(-1.5px);
+        box-shadow: 0 6px 16px -4px rgba(15, 23, 42, 0.04);
+    }
+
+    // Unread glowing styling
+    &.is-unread {
+        background: rgba(59, 130, 246, 0.012);
+        border-color: rgba(59, 130, 246, 0.1);
+
+        &:hover {
+            border-color: rgba(59, 130, 246, 0.22);
+            box-shadow: 0 6px 18px -4px rgba(59, 130, 246, 0.06);
+        }
+    }
+
+    // Archive quiet state
+    &.is-archived {
+        opacity: 0.65;
+        background: #fcfcfd;
+        border-color: rgba(15, 23, 42, 0.04);
+
+        &:hover {
+            opacity: 0.9;
+        }
+    }
+
+    // Vaporize dismiss state
+    &.is-dismissing {
+        animation: none;
+        max-height: 0;
+        margin-top: 0 !important;
+        padding-top: 0;
+        padding-bottom: 0;
+        border-width: 0;
+        opacity: 0;
+        transform: translateX(28px) scale(0.98);
+        pointer-events: none;
+    }
+
+    // Stripe
+    &__stripe {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 5px;
+        border-radius: 4px 0 0 4px;
+    }
+
+    // Body
+    &__body {
+        flex: 1;
+        min-width: 0;
+    }
+
+    &__header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 4px;
+        min-width: 0;
+    }
+
+    &__title {
+        flex: 1 1 auto;
+        min-width: 0;
+        font-size: 13.5px;
+        font-weight: 700;
+        color: var(--av-text-heading);
+        line-height: 1.4;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        overflow-wrap: anywhere;
+    }
+
+    // Fresh blue dot
+    &__unread-dot {
+        display: inline-block;
+        width: 6.5px;
+        height: 6.5px;
+        border-radius: 50%;
+        background: #3b82f6;
+        animation: dot-glow-pulse 1.8s infinite ease-in-out;
+        flex-shrink: 0;
+    }
+
+    &__header-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+        margin-left: auto;
+    }
+
+    &__time {
+        font-size: 10.5px;
+        font-weight: 500;
+        color: var(--av-text-muted);
+        white-space: nowrap;
+        flex-shrink: 0;
+        margin-top: 1.5px;
+    }
+
+    &__message {
+        font-size: 12.5px;
+        color: var(--av-text-body);
+        line-height: 1.55;
+        font-weight: 500;
+        overflow-wrap: anywhere;
+        word-break: normal;
+        white-space: normal;
+    }
+
+    // Outline CTA Button matching placements grid edit link
+    &__cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 10px;
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 11px;
+        font-weight: 700;
+        cursor: pointer;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        background: #fff;
+        color: var(--av-text-body);
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.01);
+        transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+
+        .cta-arrow {
+            display: inline-block;
+            transition: transform 0.18s ease;
+        }
+
+        &:hover {
+            color: var(--av-primary);
+            border-color: rgba(15, 23, 42, 0.2);
+            box-shadow: 0 2px 5px rgba(15, 23, 42, 0.04);
+            transform: translateY(-0.5px);
+
+            .cta-arrow {
+                transform: translateX(2px);
+            }
+        }
+
+        &:active {
+            transform: translateY(0);
+        }
+    }
+
+    // X dismiss button (Inline Flow next to time)
+    &__dismiss {
+        width: 18px;
+        height: 18px;
+        border-radius: 4px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        line-height: 1;
+        color: var(--av-text-muted);
+        transition: all 0.2s;
+        padding: 0;
+        margin: 0;
+
+        &:hover {
+            background: rgba(15, 23, 42, 0.06);
+            color: var(--av-text-heading);
+            transform: rotate(90deg);
+        }
+    }
+
+    // ── Variant customized color sets using classic WordPress notice colors ──
+    &--critical {
+        .advajra-inbox-card__stripe { background: #d63638; }
+        .advajra-inbox-card__unread-dot { background: #d63638; animation: red-glow-pulse 1.8s infinite ease-in-out; }
+
+        &:hover {
+            border-color: rgba(214, 54, 56, 0.18);
+            box-shadow: 0 6px 18px -4px rgba(214, 54, 56, 0.05);
+        }
+    }
+
+    &--warning {
+        .advajra-inbox-card__stripe { background: #dba617; }
+
+        &:hover {
+            border-color: rgba(219, 166, 23, 0.18);
+            box-shadow: 0 6px 18px -4px rgba(219, 166, 23, 0.05);
+        }
+    }
+
+    &--info {
+        .advajra-inbox-card__stripe { background: #007cba; }
+
+        &:hover {
+            border-color: rgba(0, 124, 186, 0.18);
+            box-shadow: 0 6px 18px -4px rgba(0, 124, 186, 0.05);
+        }
+    }
+
+    &--success {
+        .advajra-inbox-card__stripe { background: #00a32a; }
+
+        &:hover {
+            border-color: rgba(0, 163, 42, 0.18);
+            box-shadow: 0 6px 18px -4px rgba(0, 163, 42, 0.05);
+        }
+    }
+}
